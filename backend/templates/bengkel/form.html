@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == 'edit' %}Edit — {{ bengkel.title }}{% else %}Bengkel Baharu{% endif %} — NDHB{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'bengkel:list' %}" class="text-blue-600 hover:underline text-[11.5px]">Bengkel</a> /
+  {% if mode == 'edit' %}<a href="{% url 'bengkel:detail' pk=bengkel.pk %}" class="text-blue-600 hover:underline text-[11.5px]">{{ bengkel.title|truncatechars:30 }}</a> / Edit
+  {% else %}Bengkel Baharu{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in max-w-3xl mx-auto">
+
+  <!-- Header -->
+  <div class="rounded-2xl px-7 py-5 mb-6 flex items-center gap-4"
+       style="background:linear-gradient(135deg,#0f172a,#1e40af)">
+    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-white text-lg font-extrabold tracking-tight">
+        {% if mode == 'edit' %}Kemaskini Bengkel{% else %}Cipta Bengkel Baharu{% endif %}
+      </h1>
+      <p class="text-blue-200/55 text-xs mt-0.5">Isi semua maklumat yang diperlukan</p>
+    </div>
+  </div>
+
+  {% if errors %}
+  <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-sm text-red-700 font-semibold">Sila betulkan ralat dalam borang di bawah.</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Section A: Maklumat Asas -->
+    <div class="rounded-xl mb-1 px-4 py-2.5 text-white text-[11px] font-bold uppercase tracking-widest"
+         style="background:linear-gradient(90deg,#0f172a,#1e40af)">A — Maklumat Asas</div>
+    <div class="bg-white border border-slate-100 rounded-b-2xl rounded-tr-2xl shadow-card px-6 py-5 mb-5 space-y-4">
+
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+          Tajuk Bengkel <span class="text-red-400">*</span>
+        </label>
+        <input type="text" name="title" required maxlength="255"
+               value="{{ form_data.title|default:'' }}"
+               placeholder="cth: Bengkel Transformasi Digital Kesihatan 2026"
+               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 transition-all" />
+        {% if errors.title %}<p class="text-red-500 text-xs mt-1">{{ errors.title }}</p>{% endif %}
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Penerangan</label>
+        <textarea name="description" rows="3" placeholder="Huraian ringkas bengkel..."
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 transition-all resize-vertical">{{ form_data.description|default:'' }}</textarea>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+            Tarikh & Masa Mula <span class="text-red-400">*</span>
+          </label>
+          <input type="datetime-local" name="tarikh" required
+                 value="{{ form_data.tarikh|default:'' }}"
+                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 transition-all" />
+          {% if errors.tarikh %}<p class="text-red-500 text-xs mt-1">{{ errors.tarikh }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Tarikh & Masa Tamat</label>
+          <input type="datetime-local" name="tarikh_tamat"
+                 value="{{ form_data.tarikh_tamat|default:'' }}"
+                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 transition-all" />
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Had Peserta <span class="text-slate-400 font-normal">(0 = tiada had)</span></label>
+          <input type="number" name="had_peserta" min="0" value="{{ form_data.had_peserta|default:'0' }}"
+                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10 transition-all" />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Section B: Lokasi -->
+    <div class="rounded-xl mb-1 px-4 py-2.5 text-white text-[11px] font-bold uppercase tracking-widest"
+         style="background:linear-gradient(90deg,#134e4a,#0d9488)">B — Lokasi</div>
+    <div class="bg-white border border-slate-100 rounded-b-2xl rounded-tr-2xl shadow-card px-6 py-5 mb-5 space-y-4">
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+          Nama Lokasi / Dewan <span class="text-red-400">*</span>
+        </label>
+        <input type="text" name="lokasi_nama" required maxlength="300"
+               value="{{ form_data.lokasi_nama|default:'' }}"
+               placeholder="cth: Dewan Sri Perdana, Putrajaya"
+               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/10 transition-all" />
+        {% if errors.lokasi_nama %}<p class="text-red-500 text-xs mt-1">{{ errors.lokasi_nama }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Alamat Penuh</label>
+        <textarea name="lokasi_alamat" rows="2" placeholder="No. xx, Jalan ...&#10;Putrajaya 62000"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/10 transition-all resize-none">{{ form_data.lokasi_alamat|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Section C: Penganjur -->
+    <div class="rounded-xl mb-1 px-4 py-2.5 text-white text-[11px] font-bold uppercase tracking-widest"
+         style="background:linear-gradient(90deg,#78350f,#d97706)">C — Penganjur</div>
+    <div class="bg-white border border-slate-100 rounded-b-2xl rounded-tr-2xl shadow-card px-6 py-5 mb-5 space-y-4">
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">
+          Nama Penganjur <span class="text-red-400">*</span>
+        </label>
+        <input type="text" name="organizer_nama" required maxlength="200"
+               value="{{ form_data.organizer_nama|default:'' }}"
+               placeholder="cth: Bahagian Pembangunan Kesihatan Digital, KKM"
+               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 transition-all" />
+        {% if errors.organizer_nama %}<p class="text-red-500 text-xs mt-1">{{ errors.organizer_nama }}</p>{% endif %}
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">E-mel Penganjur</label>
+          <input type="email" name="organizer_email"
+                 value="{{ form_data.organizer_email|default:'' }}"
+                 placeholder="ndhb@moh.gov.my"
+                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 transition-all" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Telefon</label>
+          <input type="tel" name="organizer_telefon"
+                 value="{{ form_data.organizer_telefon|default:'' }}"
+                 placeholder="03-8000 0000"
+                 class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 transition-all" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section D: Media -->
+    <div class="rounded-xl mb-1 px-4 py-2.5 text-white text-[11px] font-bold uppercase tracking-widest"
+         style="background:linear-gradient(90deg,#4c1d95,#7c3aed)">D — Video & Media</div>
+    <div class="bg-white border border-slate-100 rounded-b-2xl rounded-tr-2xl shadow-card px-6 py-5 mb-6 space-y-4">
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">URL Video Ucapan Alu-aluan</label>
+        <input type="url" name="video_ucapan_url"
+               value="{{ form_data.video_ucapan_url|default:'' }}"
+               placeholder="https://www.youtube.com/watch?v=..."
+               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-400/10 transition-all" />
+        <p class="text-[11px] text-slate-400 mt-1">Sokong URL YouTube (watch atau youtu.be) — akan ditukar ke embed secara automatik.</p>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">URL Video Arah ke Dewan</label>
+        <input type="url" name="video_arah_url"
+               value="{{ form_data.video_arah_url|default:'' }}"
+               placeholder="https://www.youtube.com/watch?v=..."
+               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-400/10 transition-all" />
+      </div>
+    </div>
+
+    <!-- Section E: Tentative / Jadual Program -->
+    <div class="rounded-xl mb-1 px-4 py-2.5 text-white text-[11px] font-bold uppercase tracking-widest"
+         style="background:linear-gradient(90deg,#064e3b,#059669)">E — Tentative / Jadual Program</div>
+    <div class="bg-white border border-slate-100 rounded-b-2xl rounded-tr-2xl shadow-card px-6 py-5 mb-6">
+      <p class="text-[11.5px] text-slate-400 mb-4">Isikan jadual perjalanan program. Peserta akan dapat melihat tentative ini di dashboard mereka.</p>
+
+      <!-- Rows container -->
+      <div id="tentative-rows" class="space-y-2 mb-4">
+        {% if tentative_items %}
+          {% for item in tentative_items %}
+          <div class="tentative-row flex gap-2 items-start p-3 rounded-xl border border-slate-200 bg-slate-50">
+            <div class="flex-shrink-0 w-5 h-5 mt-2.5 flex items-center justify-center text-slate-300 drag-handle cursor-grab">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 6a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm8-14a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4z"/></svg>
+            </div>
+            <div class="flex-shrink-0">
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Masa</label>
+              <div class="flex items-center gap-1">
+                <input type="time" class="masa-mula w-[104px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all" value="{{ item.masa|slice:':5' }}">
+                <span class="text-slate-300 text-xs font-bold flex-shrink-0">–</span>
+                <input type="time" class="masa-tamat w-[104px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all" value="{{ item.masa|slice:'8:13' }}">
+              </div>
+              <input type="hidden" name="tentative_masa" value="{{ item.masa }}">
+            </div>
+            <div class="flex-1 min-w-0">
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Aktiviti</label>
+              <input type="text" name="tentative_aktiviti" value="{{ item.aktiviti }}"
+                     placeholder="cth: Ucapan Pembukaan"
+                     class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Penerangan <span class="text-slate-300 font-normal">(pilihan)</span></label>
+              <input type="text" name="tentative_penerangan" value="{{ item.penerangan }}"
+                     placeholder="Butiran tambahan..."
+                     class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all" />
+            </div>
+            <button type="button" onclick="this.closest('.tentative-row').remove()"
+                    class="flex-shrink-0 mt-6 w-7 h-7 flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-400 transition-all">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <button type="button" id="add-tentative-row"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-emerald-300 text-emerald-700 text-xs font-bold hover:bg-emerald-50 transition-all">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Tambah Baris
+      </button>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex items-center gap-3">
+      <button type="submit"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all"
+              style="background:linear-gradient(135deg,#1e40af,#2563eb);box-shadow:0 4px 14px rgba(37,99,235,.3)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+        {% if mode == 'edit' %}Simpan Perubahan{% else %}Cipta Bengkel{% endif %}
+      </button>
+      <a href="{% if mode == 'edit' %}{% url 'bengkel:detail' pk=bengkel.pk %}{% else %}{% url 'bengkel:list' %}{% endif %}"
+         class="px-5 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+        Batal
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.getElementById('add-tentative-row').addEventListener('click', function() {
+  var row = document.createElement('div');
+  row.className = 'tentative-row flex gap-2 items-start p-3 rounded-xl border border-slate-200 bg-slate-50';
+  row.innerHTML = `
+    <div class="flex-shrink-0 w-5 h-5 mt-2.5 flex items-center justify-center text-slate-300">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 6a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm8-14a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4z"/></svg>
+    </div>
+    <div class="flex-shrink-0">
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Masa</label>
+      <div class="flex items-center gap-1">
+        <input type="time" class="masa-mula w-[104px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all">
+        <span class="text-slate-300 text-xs font-bold flex-shrink-0">–</span>
+        <input type="time" class="masa-tamat w-[104px] px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all">
+      </div>
+      <input type="hidden" name="tentative_masa" value="">
+    </div>
+    <div class="flex-1 min-w-0">
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Aktiviti</label>
+      <input type="text" name="tentative_aktiviti" placeholder="cth: Ucapan Pembukaan"
+             class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all" />
+    </div>
+    <div class="flex-1 min-w-0">
+      <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Penerangan <span class="text-slate-300 font-normal">(pilihan)</span></label>
+      <input type="text" name="tentative_penerangan" placeholder="Butiran tambahan..."
+             class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-emerald-400 transition-all" />
+    </div>
+    <button type="button" onclick="this.closest('.tentative-row').remove()"
+            class="flex-shrink-0 mt-6 w-7 h-7 flex items-center justify-center rounded-lg text-slate-300 hover:bg-red-50 hover:text-red-400 transition-all">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>`;
+  document.getElementById('tentative-rows').appendChild(row);
+  row.querySelector('.masa-mula').focus();
+});
+
+document.querySelector('form').addEventListener('submit', function() {
+  document.querySelectorAll('.tentative-row').forEach(function(row) {
+    var mula   = row.querySelector('.masa-mula').value;
+    var tamat  = row.querySelector('.masa-tamat').value;
+    var hidden = row.querySelector('input[name="tentative_masa"]');
+    if (hidden) {
+      hidden.value = mula && tamat ? mula + ' - ' + tamat : (mula || tamat || '');
+    }
+  });
+});
+</script>
+{% endblock %}

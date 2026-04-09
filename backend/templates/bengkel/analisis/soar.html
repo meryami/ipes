@@ -1,0 +1,70 @@
+{% extends "bengkel/analisis/_base.html" %}
+{% block title %}SOAR Analysis{% endblock %}
+{% block tool_name %}SOAR Analysis{% endblock %}
+{% block tool_tag %}INKLUSIF · POSITIF{% endblock %}
+{% block accent_bg %}#0891b2{% endblock %}
+{% block accent_color %}#0891b2{% endblock %}
+{% block accent_light %}#cffafe{% endblock %}
+{% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>{% endblock %}
+
+{% block content %}
+<style>:root{--accent:#0891b2}</style>
+
+<div style="background:#0891b2;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
+  <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">Alat Analitik Situasi</div>
+  <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">SOAR Analysis</h1>
+  <p style="font-size:12.5px;opacity:.75;margin:0">Kekuatan · Peluang · Aspirasi · Keputusan</p>
+</div>
+
+<div class="two-col">
+
+  <div class="card" style="padding:28px">
+    <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Analisis SOAR</div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="field-group"><div class="field-label" style="color:#0891b2"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">💪</span>S — Kekuatan (Strengths)</div><div class="field-hint">Apakah yang paling kukuh dalam organisasi anda? Aset unik, keupayaan terbaik dan kejayaan sedia ada.</div><textarea name="kekuatan" placeholder="Contoh: Pasukan pakar berpengalaman, teknologi proprietari, kepercayaan pelanggan setia..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#0e7490"><span style="width:22px;height:22px;border-radius:6px;background:#a5f3fc;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>O — Peluang (Opportunities)</div><div class="field-hint">Potensi luar yang boleh dimanfaatkan — trend baru, keperluan pasaran, ruang untuk berkembang.</div><textarea name="peluang" placeholder="Contoh: Pertumbuhan pasaran telehealth 30% setahun, permintaan AI diagnostik meningkat..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#155e75"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;border:1px solid #22d3ee;display:inline-flex;align-items:center;justify-content:center;font-size:12px">✨</span>A — Aspirasi (Aspirations)</div><div class="field-hint">Impian dan visi ideal — masa depan yang diinginkan jika semua berjalan dengan baik.</div><textarea name="aspirasi" placeholder="Contoh: Menjadi platform kesihatan #1 di Malaysia, memberi akses rawatan kepada 1 juta rakyat..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#0c4a6e"><span style="width:22px;height:22px;border-radius:6px;background:#bae6fd;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🏆</span>R — Keputusan (Results)</div><div class="field-hint">Apakah hasil atau petunjuk kejayaan yang boleh diukur bagi membuktikan aspirasi tercapai?</div><textarea name="keputusan" placeholder="Contoh: 500,000 pengguna aktif dalam 2 tahun, pendapatan RM10 juta, NPS skor >70..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div><textarea name="catatan" placeholder="Sebarang catatan tambahan..." style="min-height:60px"></textarea></div>
+
+      <button type="submit" class="tbtn" style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;width:100%;justify-content:center">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Simpan Analisis SOAR
+      </button>
+    </form>
+  </div>
+
+  <div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Rekod Analisis ({{ existing|length }})</div>
+    {% if existing %}
+      {% for e in existing %}
+      <div class="rec-card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:11px;font-weight:700;color:#0891b2;background:#cffafe;border-radius:99px;padding:2px 10px">SOAR</span>
+          <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div><div class="rec-label">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan|truncatechars:80 }}</div></div>
+          <div><div class="rec-label">🌱 Peluang</div><div class="rec-value">{{ e.peluang|truncatechars:80 }}</div></div>
+          <div><div class="rec-label">✨ Aspirasi</div><div class="rec-value">{{ e.aspirasi|truncatechars:80 }}</div></div>
+          <div><div class="rec-label">🏆 Keputusan</div><div class="rec-value">{{ e.keputusan|truncatechars:80 }}</div></div>
+        </div>
+        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan|truncatechars:150 }}</div>{% endif %}
+        <form method="post" action="{% url 'bengkel:analisis_soar_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">
+          {% csrf_token %}<button type="submit" style="font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:0">Padam ✕</button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:32px;margin-bottom:8px">🚀</div><div style="font-size:13px;color:#94a3b8">Belum ada analisis SOAR disimpan.</div></div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

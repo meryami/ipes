@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daftar — {{ bengkel.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Serif:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a}
+    .card{background:#fff;border-radius:1.25rem;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04)}
+    .input{width:100%;padding:.625rem .875rem;border-radius:.75rem;border:1px solid #cbd5e1;font-size:.875rem;color:#0f172a;background:#fff;outline:none;transition:all .15s}
+    .input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+    .label{display:block;font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:.375rem}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1e40af 100%)">
+    <div class="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="{% url 'bengkel:portal_list' %}" class="flex items-center gap-2 text-blue-200/70 hover:text-white transition-colors text-[12px] font-semibold">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Semua Bengkel
+      </a>
+      <div class="text-white font-bold text-[12px]">NDHB Portal</div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-5 py-8">
+    <div class="grid md:grid-cols-5 gap-6">
+
+      <!-- Left: bengkel info -->
+      <div class="md:col-span-2">
+        <div class="card p-5 mb-4">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style="background:linear-gradient(135deg,#1e40af,#0d9488)">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <h1 class="font-extrabold text-slate-800 text-[15px] leading-snug mb-4" style="font-family:'Noto Serif',Georgia,serif;">{{ bengkel.title }}</h1>
+
+          <dl class="space-y-3 text-[12.5px]">
+            <div>
+              <dt class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Tarikh</dt>
+              <dd class="font-semibold text-slate-700">{{ bengkel.tarikh|date:"d F Y, H:i" }}{% if bengkel.tarikh_tamat %} — {{ bengkel.tarikh_tamat|date:"H:i" }}{% endif %}</dd>
+            </div>
+            <div>
+              <dt class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Lokasi</dt>
+              <dd class="font-semibold text-slate-700">{{ bengkel.lokasi_nama }}</dd>
+              {% if bengkel.lokasi_alamat %}<dd class="text-slate-500 mt-0.5 leading-relaxed">{{ bengkel.lokasi_alamat }}</dd>{% endif %}
+            </div>
+            <div>
+              <dt class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Penganjur</dt>
+              <dd class="font-semibold text-slate-700">{{ bengkel.organizer_nama }}</dd>
+            </div>
+            {% if bengkel.had_peserta %}
+            <div class="pt-2 border-t border-slate-100">
+              <dt class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Kapasiti</dt>
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                  <div class="h-full rounded-full transition-all" style="width:{% widthratio bengkel.jumlah_diterima bengkel.had_peserta 100 %}%;background:linear-gradient(90deg,#1e40af,#0d9488)"></div>
+                </div>
+                <span class="text-[11px] text-slate-500 flex-shrink-0">{{ bengkel.jumlah_diterima }}/{{ bengkel.had_peserta }}</span>
+              </div>
+            </div>
+            {% endif %}
+          </dl>
+        </div>
+
+        {% if bengkel.description %}
+        <div class="card p-5">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Tentang Bengkel</h3>
+          <p class="text-slate-600 text-[13px] leading-relaxed">{{ bengkel.description }}</p>
+        </div>
+        {% endif %}
+
+        {% if bengkel.video_ucapan_embed %}
+        <div class="card overflow-hidden mt-4">
+          <div class="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Video Ucapan</div>
+          <div class="relative" style="padding-bottom:56.25%">
+            <iframe src="{{ bengkel.video_ucapan_embed }}" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen></iframe>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if bengkel.video_arah_embed %}
+        <div class="card overflow-hidden mt-4">
+          <div class="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Cara ke Dewan</div>
+          <div class="relative" style="padding-bottom:56.25%">
+            <iframe src="{{ bengkel.video_arah_embed }}" class="absolute inset-0 w-full h-full" frameborder="0" allowfullscreen></iframe>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: registration form -->
+      <div class="md:col-span-3">
+        <div class="card p-6">
+          <div class="mb-5">
+            <h2 class="font-extrabold text-slate-800 text-lg">Daftar Kehadiran</h2>
+            <p class="text-slate-500 text-[12.5px] mt-1">Isi maklumat di bawah. Anda akan dapat <strong class="text-slate-700">QR kod</strong> sebagai pas masuk bengkel.</p>
+          </div>
+
+          {% if errors %}
+          <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-sm text-red-700 font-semibold">
+            Sila betulkan ralat di bawah sebelum teruskan.
+          </div>
+          {% endif %}
+
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+              <label class="label">Nama Penuh <span class="text-red-400">*</span></label>
+              <input type="text" name="nama" required maxlength="200"
+                     value="{{ form_data.nama|default:'' }}"
+                     placeholder="cth: Dato' Ahmad bin Ismail"
+                     class="input" />
+              {% if errors.nama %}<p class="text-red-500 text-xs mt-1">{{ errors.nama }}</p>{% endif %}
+            </div>
+
+            <div>
+              <label class="label">E-mel <span class="text-red-400">*</span></label>
+              <input type="email" name="email" required
+                     value="{{ form_data.email|default:'' }}"
+                     placeholder="ahmad@example.com"
+                     class="input" />
+              {% if errors.email %}<p class="text-red-500 text-xs mt-1">{{ errors.email }}</p>{% endif %}
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="label">Organisasi / Kementerian</label>
+                <input type="text" name="organisasi"
+                       value="{{ form_data.organisasi|default:'' }}"
+                       placeholder="cth: KKM, JKNS, Hospital Kuala Lumpur"
+                       class="input" />
+              </div>
+              <div>
+                <label class="label">Jawatan</label>
+                <input type="text" name="jawatan"
+                       value="{{ form_data.jawatan|default:'' }}"
+                       placeholder="cth: Pengurus Besar, Doktor Perubatan"
+                       class="input" />
+              </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-[12px] text-blue-700">
+              <strong>Nota:</strong> Selepas mendaftar, anda akan mendapat QR kod. Tunjukkan QR kod ini kepada pengurus di pintu masuk bengkel.
+            </div>
+
+            <button type="submit"
+                    class="w-full py-3 rounded-xl font-bold text-sm text-white transition-all flex items-center justify-center gap-2"
+                    style="background:linear-gradient(135deg,#1e40af,#2563eb);box-shadow:0 4px 14px rgba(37,99,235,.3)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Daftar & Dapatkan QR Kod
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center py-6 text-slate-400 text-[11px]">
+    © 2026 Kementerian Kesihatan Malaysia · Nasional Digital Healthcare Blueprint
+  </footer>
+</body>
+</html>

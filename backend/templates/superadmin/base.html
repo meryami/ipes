@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Superadmin — NDHB{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{-webkit-font-smoothing:antialiased;}
+    body{font-family:"Inter",system-ui,sans-serif;}
+    .card{background:#fff;border-radius:.875rem;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+    .nav-link{display:flex;align-items:center;gap:.625rem;padding:.55rem .875rem;border-radius:.625rem;font-size:.8125rem;font-weight:600;color:rgba(255,255,255,.65);transition:background .15s,color .15s;}
+    .nav-link:hover{background:rgba(255,255,255,.1);color:#fff;}
+    .nav-link.active{background:rgba(255,255,255,.15);color:#fff;}
+  </style>
+</head>
+<body class="h-full bg-slate-50 flex">
+
+  <!-- Sidebar -->
+  <aside class="w-56 flex-shrink-0 flex flex-col min-h-screen" style="background:linear-gradient(180deg,#0f172a 0%,#1e3a8a 100%)">
+
+    <!-- Logo -->
+    <div class="px-5 pt-6 pb-5 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-white/15 border border-white/25 flex items-center justify-center text-base">🏥</div>
+        <div>
+          <div class="text-white text-[11px] font-extrabold leading-none">NDHB</div>
+          <div class="text-white/40 text-[9.5px] mt-0.5">Superadmin Portal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-3 pt-4 space-y-0.5">
+      <a href="{% url 'superadmin:dashboard' %}" class="nav-link {% block nav_dashboard %}{% endblock %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="{% url 'superadmin:semua_bengkel' %}" class="nav-link {% block nav_bengkel %}{% endblock %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Semua Bengkel
+      </a>
+      <a href="{% url 'superadmin:semua_pengguna' %}" class="nav-link {% block nav_pengguna %}{% endblock %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Semua Pengguna
+      </a>
+      <a href="{% url 'superadmin:semua_pernyataan' %}" class="nav-link {% block nav_pernyataan %}{% endblock %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Pernyataan Masalah
+      </a>
+      <a href="{% url 'superadmin:permohonan_penganjur' %}" class="nav-link {% block nav_permohonan %}{% endblock %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        <span class="flex-1">Permohonan</span>
+        {% if pending_permohonan %}
+        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-extrabold" style="background:#f59e0b;color:#1c1917">{{ pending_permohonan }}</span>
+        {% endif %}
+      </a>
+    </nav>
+
+    <!-- User + logout -->
+    <div class="px-3 pb-5 pt-3 border-t border-white/10">
+      <div class="flex items-center gap-2.5 px-2 py-2">
+        <div class="w-7 h-7 rounded-full bg-amber-400 flex items-center justify-center text-[11px] font-extrabold text-slate-900 uppercase">{{ request.user.username|first }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-[11px] font-bold truncate">{{ request.user.username }}</div>
+          <div class="text-white/40 text-[9.5px]">Superadmin</div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="nav-link mt-1" style="color:rgba(248,113,113,.8)">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Log Keluar
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
+
+    <!-- Top bar -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <h1 class="text-[15px] font-extrabold text-slate-800">{% block page_title %}Dashboard{% endblock %}</h1>
+      <div class="flex items-center gap-3">
+        <!-- Bell notification -->
+        <a href="{% url 'superadmin:permohonan_penganjur' %}" class="relative p-2 rounded-xl hover:bg-slate-100 transition-colors" title="Permohonan Penganjur">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          {% if pending_permohonan %}
+          <span class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold text-white" style="background:#f59e0b">{{ pending_permohonan }}</span>
+          {% endif %}
+        </a>
+        <span class="text-[11px] text-slate-400">NDHB Superadmin Portal</span>
+      </div>
+    </header>
+
+    <!-- Django messages -->
+    {% if messages %}
+    <div class="px-6 pt-4 space-y-2">
+      {% for msg in messages %}
+      <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-[12.5px] font-semibold
+        {% if msg.tags == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-700
+        {% elif msg.tags == 'error' %}bg-red-50 border border-red-200 text-red-700
+        {% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Content -->
+    <main class="flex-1 overflow-y-auto px-6 py-6">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Peserta Saya — NDHB{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'bengkel:list' %}" class="text-blue-600 hover:underline text-[11.5px]">Bengkel</a> / Peserta Saya
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+
+  <!-- Header -->
+  <div class="rounded-2xl px-7 py-5 mb-5"
+       style="background:linear-gradient(135deg,#0f172a,#1e3a8a,#0d9488)">
+    <div class="text-xs text-blue-300/60 font-semibold uppercase tracking-widest mb-0.5">Pengurusan Peserta</div>
+    <h1 class="text-white text-xl font-extrabold tracking-tight">Peserta Saya</h1>
+    <p class="text-blue-200/50 text-xs mt-1">Semua peserta yang dijemput merentasi bengkel anda</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+    <div class="bg-white rounded-xl border border-slate-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-slate-700">{{ jemputan.count }}</div>
+      <div class="text-[10.5px] font-semibold text-slate-400 uppercase tracking-wide">Jumlah</div>
+    </div>
+    <div class="bg-emerald-50 rounded-xl border border-emerald-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-emerald-600">{{ jemputan|length }}</div>
+      <div class="text-[10.5px] font-semibold text-emerald-400 uppercase tracking-wide">Dipapar</div>
+    </div>
+    <div class="bg-blue-50 rounded-xl border border-blue-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-blue-600">{{ bengkel_list.count }}</div>
+      <div class="text-[10.5px] font-semibold text-blue-400 uppercase tracking-wide">Bengkel</div>
+    </div>
+    <div class="bg-amber-50 rounded-xl border border-amber-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-amber-600">
+        {% with hadir=0 %}{{ jemputan|length }}{% endwith %}
+      </div>
+      <div class="text-[10.5px] font-semibold text-amber-400 uppercase tracking-wide">Berdaftar</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="bg-white rounded-2xl border border-slate-100 shadow-card px-5 py-4 mb-5">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <!-- Search -->
+      <div class="relative">
+        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" name="cari" value="{{ cari }}" placeholder="Cari nama, e-mel, organisasi..."
+               class="w-full pl-9 pr-4 py-2 rounded-xl text-[13px] border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition"/>
+      </div>
+      <!-- Bengkel filter -->
+      <select name="bengkel" class="w-full px-3 py-2 rounded-xl text-[13px] border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition text-slate-700">
+        <option value="">Semua Bengkel</option>
+        {% for b in bengkel_list %}
+          <option value="{{ b.pk }}" {% if bengkel_filter == b.pk|stringformat:"s" %}selected{% endif %}>{{ b.title|truncatechars:40 }}</option>
+        {% endfor %}
+      </select>
+      <!-- Status filter -->
+      <div class="flex gap-2">
+        <select name="status" class="flex-1 px-3 py-2 rounded-xl text-[13px] border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition text-slate-700">
+          <option value="">Semua Status</option>
+          <option value="pending"  {% if status_filter == "pending" %}selected{% endif %}>Menunggu</option>
+          <option value="accepted" {% if status_filter == "accepted" %}selected{% endif %}>Diterima</option>
+          <option value="rejected" {% if status_filter == "rejected" %}selected{% endif %}>Ditolak</option>
+        </select>
+        <button type="submit" class="px-4 py-2 rounded-xl text-[13px] font-semibold text-white transition-all flex-shrink-0"
+                style="background:#1e40af">Tapis</button>
+        {% if cari or bengkel_filter or status_filter %}
+        <a href="{% url 'bengkel:peserta_saya' %}" class="px-3 py-2 rounded-xl text-[13px] font-semibold border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all flex-shrink-0 flex items-center">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <!-- Table -->
+  {% if not jemputan %}
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-card px-8 py-14 text-center">
+      <div class="text-4xl mb-3">👥</div>
+      <p class="text-slate-500 text-sm font-medium mb-1">Tiada peserta ditemui</p>
+      <p class="text-slate-400 text-xs">
+        {% if cari or bengkel_filter or status_filter %}Cuba tukar penapis di atas.{% else %}Anda belum menjemput mana-mana peserta lagi.{% endif %}
+      </p>
+    </div>
+  {% else %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
+      <span class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Senarai Peserta</span>
+      <span class="text-[11px] text-slate-400">{{ jemputan|length }} rekod</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-[13px]">
+        <thead>
+          <tr class="border-b border-slate-100 text-left bg-slate-50/50">
+            <th class="px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">#</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Nama</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden md:table-cell">E-mel</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400 hidden lg:table-cell">Organisasi</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Bengkel</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Status</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Hadir</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          {% for j in jemputan %}
+          <tr class="hover:bg-slate-50/60 transition-colors">
+            <td class="px-5 py-3.5 text-slate-400 font-medium">{{ forloop.counter }}</td>
+
+            <!-- Nama + avatar -->
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
+                     style="background:hsl({{ j.nama|first|lower|slugify|length }}0, 55%, 45%)">
+                  {{ j.nama|first|upper }}
+                </div>
+                <div>
+                  <div class="font-semibold text-slate-700">{{ j.nama }}</div>
+                  {% if j.jawatan %}<div class="text-[10.5px] text-slate-400">{{ j.jawatan }}</div>{% endif %}
+                </div>
+              </div>
+            </td>
+
+            <!-- E-mel -->
+            <td class="px-4 py-3.5 hidden md:table-cell">
+              <a href="mailto:{{ j.email }}" class="text-blue-600 hover:underline text-[12.5px]">{{ j.email }}</a>
+            </td>
+
+            <!-- Organisasi -->
+            <td class="px-4 py-3.5 hidden lg:table-cell">
+              <span class="text-slate-500 text-[12.5px]">{{ j.organisasi|default:"—" }}</span>
+            </td>
+
+            <!-- Bengkel -->
+            <td class="px-4 py-3.5">
+              <a href="{% url 'bengkel:detail' pk=j.bengkel.pk %}"
+                 class="inline-block max-w-[160px] truncate text-[12px] font-medium text-blue-700 hover:underline"
+                 title="{{ j.bengkel.title }}">
+                {{ j.bengkel.title|truncatechars:25 }}
+              </a>
+              <div class="text-[10.5px] text-slate-400 mt-0.5">{{ j.bengkel.tarikh|date:"d M Y" }}</div>
+            </td>
+
+            <!-- Status -->
+            <td class="px-4 py-3.5">
+              {% if j.status == "accepted" %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Diterima
+                </span>
+              {% elif j.status == "rejected" %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-red-50 text-red-600 border border-red-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Ditolak
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Menunggu
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Hadir -->
+            <td class="px-4 py-3.5">
+              {% if j.sudah_hadir %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  Hadir
+                </span>
+              {% else %}
+                <span class="text-slate-300 text-[11px]">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

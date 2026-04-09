@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profil — NDHB</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a}
+    .card{background:#fff;border-radius:1.25rem;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04)}
+    .field label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px;letter-spacing:.02em}
+    .field input,.field select{width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;background:#fff;color:#0f172a;transition:border-color .15s}
+    .field input:focus,.field select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .field .err{font-size:12px;color:#dc2626;margin-top:4px}
+    .field input.has-err{border-color:#dc2626}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1e40af 100%)">
+    <div class="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(255,255,255,.15)">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <div>
+          <div class="text-white font-bold text-sm">{{ user.get_full_name|default:user.username }}</div>
+          <div class="text-blue-300/60 text-[10px]">{{ user.email }}</div>
+        </div>
+      </div>
+      <a href="{{ back_url }}" class="text-blue-200/70 hover:text-white text-[12px] font-semibold transition-colors">← Dashboard</a>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-5 py-8">
+
+    <!-- Page title -->
+    <div class="mb-6">
+      <h1 class="text-lg font-extrabold text-slate-800">Kemaskini Profil</h1>
+      <p class="text-slate-500 text-sm mt-0.5">Kemas kini maklumat peribadi dan organisasi anda.</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-5 space-y-2">
+      {% for m in messages %}
+      <div class="px-4 py-3 rounded-xl text-sm font-medium {% if m.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
+        {{ m }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Personal Info card -->
+      <div class="card p-6 mb-4">
+        <h2 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-5">Maklumat Peribadi</h2>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="field">
+            <label>Nama Pertama <span class="text-red-500">*</span></label>
+            <input type="text" name="first_name" value="{{ form_data.first_name }}"
+                   class="{% if errors.first_name %}has-err{% endif %}" placeholder="cth. Ahmad" />
+            {% if errors.first_name %}<div class="err">{{ errors.first_name }}</div>{% endif %}
+          </div>
+          <div class="field">
+            <label>Nama Akhir</label>
+            <input type="text" name="last_name" value="{{ form_data.last_name }}" placeholder="cth. bin Abdullah" />
+          </div>
+        </div>
+
+        <div class="field mb-4">
+          <label>Alamat E-mel <span class="text-red-500">*</span></label>
+          <input type="email" name="email" value="{{ form_data.email }}"
+                 class="{% if errors.email %}has-err{% endif %}" placeholder="nama@example.com" />
+          {% if errors.email %}<div class="err">{{ errors.email }}</div>{% endif %}
+        </div>
+
+        <div class="field">
+          <label>No. Telefon</label>
+          <input type="tel" name="telefon" value="{{ form_data.telefon }}" placeholder="cth. 0123456789" />
+        </div>
+      </div>
+
+      <!-- Organisation card -->
+      <div class="card p-6 mb-6">
+        <h2 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-5">Maklumat Organisasi</h2>
+
+        <div class="field mb-4">
+          <label>Organisasi / Agensi</label>
+          <input type="text" name="organisasi" value="{{ form_data.organisasi }}" placeholder="cth. Kementerian Kesihatan Malaysia" />
+        </div>
+
+        <div class="field">
+          <label>Jawatan / Gred</label>
+          <input type="text" name="jabatan" value="{{ form_data.jabatan }}" placeholder="cth. Pegawai Kesihatan (U41)" />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-between gap-3">
+        <a href="{{ back_url }}"
+           class="px-5 py-2.5 rounded-xl font-semibold text-sm text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
+          Batal
+        </a>
+        <div class="flex gap-3">
+          <a href="{% url 'bengkel:change_password' %}"
+             class="px-5 py-2.5 rounded-xl font-semibold text-sm border transition-colors"
+             style="border-color:#e2e8f0;color:#475569;background:#f8fafc">
+            Tukar Kata Laluan
+          </a>
+          <button type="submit"
+                  class="px-6 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
+                  style="background:linear-gradient(135deg,#1e40af,#2563eb)">
+            Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <footer class="text-center py-6 text-slate-400 text-[11px]">
+    © 2026 Kementerian Kesihatan Malaysia · Nasional Digital Healthcare Blueprint
+  </footer>
+
+</body>
+</html>

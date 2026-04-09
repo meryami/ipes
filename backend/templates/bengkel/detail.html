@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}{{ bengkel.title }} — Bengkel NDHB{% endblock %}
+{% block breadcrumb %}<a href="{% url 'bengkel:list' %}" class="text-blue-600 hover:underline text-[11.5px]">Bengkel</a> / {{ bengkel.title|truncatechars:40 }}{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in space-y-5">
+
+  {% if messages %}
+    {% for msg in messages %}
+    <div class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold
+      {% if msg.tags == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-700
+      {% elif msg.tags == 'warning' %}bg-amber-50 border border-amber-200 text-amber-700
+      {% else %}bg-red-50 border border-red-200 text-red-700{% endif %}">
+      {{ msg }}
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Header card -->
+  <div class="rounded-2xl overflow-hidden shadow-lift">
+    <div class="px-8 py-6 flex flex-col sm:flex-row sm:items-start gap-5"
+         style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1d4ed8 100%)">
+      <div class="flex-1">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="text-white/40 text-[11px]">Dicipta oleh {{ bengkel.created_by.username|default:"–" }}</span>
+        </div>
+        <h1 class="text-white text-2xl font-extrabold tracking-tight leading-snug mb-2">{{ bengkel.title }}</h1>
+        {% if bengkel.description %}
+          <p class="text-blue-200/60 text-sm leading-relaxed">{{ bengkel.description }}</p>
+        {% endif %}
+      </div>
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-2 flex-shrink-0">
+        <a href="{% url 'bengkel:edit' pk=bengkel.pk %}"
+           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12.5px] font-semibold border border-white/20 text-white/80 hover:bg-white/10 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit
+        </a>
+        <a href="{% url 'bengkel:jemput' pk=bengkel.pk %}"
+           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12.5px] font-bold transition-all"
+           style="background:#f59e0b;color:#0f172a">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Tambah Jemputan
+        </a>
+        <a href="{% url 'bengkel:qr_scan' pk=bengkel.pk %}"
+           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12.5px] font-semibold border border-white/20 text-white/80 hover:bg-white/10 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+          Imbas QR
+        </a>
+        <a href="{% url 'bengkel:tentative' pk=bengkel.pk %}"
+           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12.5px] font-semibold border border-white/20 text-white/80 hover:bg-white/10 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Tentative
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    {% with stats=bengkel %}
+    <div class="bg-white rounded-xl border border-slate-100 shadow-card p-4">
+      <div class="text-2xl font-extrabold text-slate-800">{{ bengkel.jumlah_jemputan }}</div>
+      <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mt-0.5">Dijemput</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-100 shadow-card p-4">
+      <div class="text-2xl font-extrabold text-emerald-600">{{ bengkel.jumlah_diterima }}</div>
+      <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide mt-0.5">Diterima</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-100 shadow-card p-4">
+      <div class="text-2xl font-extrabold text-red-500">{{ bengkel.jumlah_ditolak }}</div>
+      <div class="text-[11px] font-semibold text-red-400 uppercase tracking-wide mt-0.5">Ditolak</div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-100 shadow-card p-4">
+      <div class="text-2xl font-extrabold text-blue-600">{{ bengkel.jumlah_hadir }}</div>
+      <div class="text-[11px] font-semibold text-blue-400 uppercase tracking-wide mt-0.5">Hadir</div>
+    </div>
+    {% endwith %}
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-5">
+
+    <!-- Info -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-card p-6">
+      <h2 class="font-bold text-slate-700 text-sm mb-4 flex items-center gap-2">
+        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Maklumat Bengkel
+      </h2>
+      <dl class="space-y-2.5 text-[13px]">
+        <div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Tarikh Mula</dt><dd class="text-slate-700 font-semibold">{{ bengkel.tarikh|date:"d M Y, H:i" }}</dd></div>
+        {% if bengkel.tarikh_tamat %}<div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Tarikh Tamat</dt><dd class="text-slate-700 font-semibold">{{ bengkel.tarikh_tamat|date:"d M Y, H:i" }}</dd></div>{% endif %}
+        <div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Lokasi</dt><dd class="text-slate-700 font-semibold">{{ bengkel.lokasi_nama }}</dd></div>
+        {% if bengkel.lokasi_alamat %}<div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Alamat</dt><dd class="text-slate-600 leading-relaxed">{{ bengkel.lokasi_alamat|linebreaksbr }}</dd></div>{% endif %}
+        <div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Penganjur</dt><dd class="text-slate-700 font-semibold">{{ bengkel.organizer_nama }}</dd></div>
+        {% if bengkel.organizer_email %}<div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">E-mel</dt><dd class="text-blue-600">{{ bengkel.organizer_email }}</dd></div>{% endif %}
+        {% if bengkel.organizer_telefon %}<div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Telefon</dt><dd class="text-slate-700">{{ bengkel.organizer_telefon }}</dd></div>{% endif %}
+        {% if bengkel.had_peserta %}<div class="flex gap-3"><dt class="w-32 text-slate-400 font-medium flex-shrink-0">Had Peserta</dt><dd class="text-slate-700 font-semibold">{{ bengkel.had_peserta }}</dd></div>{% endif %}
+      </dl>
+    </div>
+
+    <!-- Videos -->
+    <div class="space-y-4">
+      {% if bengkel.video_ucapan_url %}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-card p-5">
+        <h2 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Video Ucapan Alu-aluan
+        </h2>
+        <div class="rounded-xl overflow-hidden aspect-video bg-slate-100">
+          <iframe src="{{ bengkel.video_ucapan_embed }}" class="w-full h-full" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        </div>
+      </div>
+      {% endif %}
+      {% if bengkel.video_arah_url %}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-card p-5">
+        <h2 class="font-bold text-slate-700 text-sm mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+          Video Arah ke Dewan
+        </h2>
+        <div class="rounded-xl overflow-hidden aspect-video bg-slate-100">
+          <iframe src="{{ bengkel.video_arah_embed }}" class="w-full h-full" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        </div>
+      </div>
+      {% endif %}
+      {% if not bengkel.video_ucapan_url and not bengkel.video_arah_url %}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-card p-6 text-center">
+        <div class="text-slate-300 text-3xl mb-2">📹</div>
+        <p class="text-slate-400 text-sm">Tiada video ditambah. <a href="{% url 'bengkel:edit' pk=bengkel.pk %}" class="text-blue-600 hover:underline">Edit bengkel</a> untuk tambah video.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Tentative -->
+  {% with items=bengkel.tentative.all %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h3.75M3.75 6.75h.008v.008H3.75V6.75zm0 5.25h.008v.008H3.75V12zm0 5.25h.008v.008H3.75v-.008z"/>
+        </svg>
+        <h2 class="font-bold text-slate-700 text-sm">Aturcara / Tentative</h2>
+        {% if items %}<span class="text-[10.5px] font-semibold bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full">{{ items|length }} item</span>{% endif %}
+      </div>
+      <a href="{% url 'bengkel:tentative' pk=bengkel.pk %}"
+         class="text-indigo-600 text-xs font-semibold hover:underline flex items-center gap-1">
+        {% if items %}Urus Tentative{% else %}+ Tambah{% endif %} →
+      </a>
+    </div>
+    {% if items %}
+    <div class="divide-y divide-slate-50">
+      {% for item in items %}
+      <div class="px-6 py-3 flex items-start gap-4">
+        <span class="mt-0.5 flex-shrink-0 text-[11.5px] font-mono font-semibold text-indigo-500 bg-indigo-50 rounded-lg px-2.5 py-1 whitespace-nowrap">{{ item.masa }}</span>
+        <div class="min-w-0">
+          <div class="text-[13px] font-semibold text-slate-700 leading-snug">{{ item.aktiviti }}</div>
+          {% if item.penerangan %}<div class="text-[11.5px] text-slate-400 mt-0.5 leading-relaxed">{{ item.penerangan }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-6 py-8 text-center">
+      <div class="text-slate-300 text-3xl mb-2">📋</div>
+      <p class="text-slate-400 text-sm">Tiada aturcara lagi.
+        <a href="{% url 'bengkel:tentative' pk=bengkel.pk %}" class="text-indigo-500 hover:underline font-medium">Tambah tentative</a>.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+  {% endwith %}
+
+  <!-- Recent invitations preview -->
+  {% if jemputan %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="font-bold text-slate-700 text-sm">Jemputan Terkini</h2>
+      <a href="{% url 'bengkel:jemputan_list' pk=bengkel.pk %}" class="text-blue-600 text-xs font-semibold hover:underline">Lihat Semua →</a>
+    </div>
+    <div class="divide-y divide-slate-50">
+      {% for j in jemputan|slice:":5" %}
+      <div class="px-6 py-3 flex items-center justify-between gap-3">
+        <div>
+          <div class="font-semibold text-slate-700 text-[13px]">{{ j.nama }}</div>
+          <div class="text-slate-400 text-[11.5px]">{{ j.email }}{% if j.organisasi %} · {{ j.organisasi }}{% endif %}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10.5px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full
+            {% if j.status == 'accepted' %}bg-emerald-50 text-emerald-600
+            {% elif j.status == 'rejected' %}bg-red-50 text-red-500
+            {% else %}bg-amber-50 text-amber-600{% endif %}">
+            {{ j.get_status_display }}
+          </span>
+          {% if j.sudah_hadir %}<span class="text-[10px] font-bold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full uppercase">Hadir</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Delete zone -->
+  <div class="bg-red-50 border border-red-100 rounded-2xl p-5">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <div class="font-semibold text-red-600 text-sm">Padam Bengkel</div>
+        <div class="text-red-400 text-xs mt-0.5">Tindakan ini tidak boleh dibatalkan. Semua jemputan dan rekod kehadiran akan turut dipadam.</div>
+      </div>
+      <form method="post" action="{% url 'bengkel:delete' pk=bengkel.pk %}"
+            onsubmit="return confirm('Padam bengkel ini? Tindakan tidak boleh dibatalkan.')">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-all">
+          Padam
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

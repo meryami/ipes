@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Laporan AI &mdash; {{ bengkel.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0f172a; }
+    .card { background: #fff; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  </style>
+  {% if not semua_submitted %}
+  <!-- Auto-refresh every 15s while still waiting for submissions / processing -->
+  <meta http-equiv="refresh" content="15" />
+  {% endif %}
+  {% for l in laporan %}{% if l.status == 'processing' %}
+  <meta http-equiv="refresh" content="10" />
+  {% endif %}{% endfor %}
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header style="background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%)">
+    <div class="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
+      <div>
+        <div class="text-blue-300/50 text-[10px] font-bold uppercase tracking-widest">Laporan AI</div>
+        <div class="text-white font-bold text-sm mt-0.5">{{ bengkel.title }}</div>
+      </div>
+      <a href="{% if is_organizer %}{% url 'bengkel:detail' bengkel.pk %}{% else %}{% url 'bengkel:dashboard' %}{% endif %}"
+         class="px-3 py-1.5 rounded-lg text-blue-200/60 hover:text-white hover:bg-white/10 text-[12px] font-medium transition-all">
+        &larr; Kembali
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-5 py-7">
+
+    {% if messages %}
+    <div class="mb-5 space-y-2">
+      {% for m in messages %}
+      <div class="px-4 py-3 rounded-xl text-sm font-medium bg-red-50 text-red-800 border border-red-200">{{ m }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Progress bar -->
+    <div class="card px-6 py-5 mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-bold text-slate-700 text-[14px]">Status Sumbangan</h2>
+        <span class="text-[12px] font-bold {% if semua_submitted %}text-emerald-600{% else %}text-amber-600{% endif %}">
+          {{ jumlah_submitted }} / {{ jumlah_hadir }} peserta telah hantar
+        </span>
+      </div>
+      <div class="w-full bg-slate-100 rounded-full h-2.5">
+        {% if jumlah_hadir %}
+        <div class="h-2.5 rounded-full transition-all"
+             style="width:{% widthratio jumlah_submitted jumlah_hadir 100 %}%;background:{% if semua_submitted %}#059669{% else %}#f59e0b{% endif %}">
+        </div>
+        {% else %}
+        <div class="h-2.5 rounded-full bg-slate-200" style="width:0%"></div>
+        {% endif %}
+      </div>
+      {% if not semua_submitted %}
+      <p class="text-slate-400 text-[11px] mt-2">Laporan akan dijana automatik apabila semua peserta selesai menghantar sumbangan. Halaman ini akan refresh setiap 15 saat.</p>
+      {% else %}
+      <p class="text-emerald-600 text-[11px] mt-2 font-semibold">&#10003; Semua peserta sudah hantar &mdash; AI sedang/telah memproses sumbangan.</p>
+      {% endif %}
+    </div>
+
+    <!-- Laporan list -->
+    <h2 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">Fail Laporan Dijana</h2>
+
+    {% if laporan %}
+    <div class="space-y-3">
+      {% for l in laporan %}
+      <div class="card p-5 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4 flex-1 min-w-0">
+          <!-- Status icon -->
+          {% if l.status == 'done' %}
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#f0fdf4">
+            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          {% elif l.status == 'processing' %}
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 animate-pulse" style="background:#fef3c7">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          {% else %}
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fee2e2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          {% endif %}
+
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-slate-800 text-[14px] truncate">{{ l.tajuk }}</div>
+            <div class="flex items-center gap-3 mt-0.5">
+              {% if l.status == 'done' %}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#166534">&#10003; Selesai</span>
+              {% elif l.status == 'processing' %}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#fef3c7;color:#92400e">&#9203; Memproses&hellip;</span>
+              {% elif l.status == 'failed' %}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#fee2e2;color:#991b1b">&#10007; Gagal</span>
+              {% else %}
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#f1f5f9;color:#475569">Menunggu</span>
+              {% endif %}
+              <span class="text-[11px] text-slate-400">{{ l.generated_at|date:"d M Y, H:i" }}</span>
+            </div>
+            {% if l.status == 'failed' and l.ralat %}
+            <div class="mt-1.5 text-[11px] text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">{{ l.ralat|truncatechars:120 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Download button -->
+        {% if l.status == 'done' and l.pdf_file %}
+        <a href="{{ l.pdf_file.url }}" download
+           class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-[12px] text-white transition-all"
+           style="background:linear-gradient(135deg,#065f46,#059669)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Muat Turun
+        </a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- No laporan yet -->
+    <div class="card p-14 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+      </div>
+      <h3 class="font-bold text-slate-600 text-base mb-1">Tiada Laporan Lagi</h3>
+      <p class="text-slate-400 text-sm">Laporan akan dijana secara automatik apabila semua {{ jumlah_hadir }} peserta telah menghantar sumbangan mereka.</p>
+    </div>
+    {% endif %}
+
+  </main>
+
+  <footer class="text-center py-6 text-slate-400 text-[11px]">
+    &copy; 2026 Kementerian Kesihatan Malaysia &middot; Nasional Digital Healthcare Blueprint
+  </footer>
+</body>
+</html>

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Imbas QR — {{ bengkel.title }}{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'bengkel:list' %}" class="text-blue-600 hover:underline text-[11.5px]">Bengkel</a> /
+  <a href="{% url 'bengkel:detail' pk=bengkel.pk %}" class="text-blue-600 hover:underline text-[11.5px]">{{ bengkel.title|truncatechars:30 }}</a> /
+  Imbas QR
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+
+  <!-- Header -->
+  <div class="rounded-2xl px-7 py-5 mb-5"
+       style="background:linear-gradient(135deg,#0f172a 0%,#134e4a 60%,#0d9488 100%)">
+    <div class="text-teal-300/50 text-xs font-bold uppercase tracking-widest mb-0.5">{{ bengkel.tarikh|date:"d M Y" }} · {{ bengkel.lokasi_nama }}</div>
+    <h1 class="text-white text-xl font-extrabold tracking-tight">Pengimbas QR — {{ bengkel.title }}</h1>
+    <p class="text-teal-200/45 text-xs mt-1">Imbas kad QR peserta untuk daftar kehadiran</p>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-5">
+
+    <!-- Scanner panel -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></div>
+        <h2 class="font-bold text-slate-700 text-sm">Pengimbas Kamera</h2>
+      </div>
+      <div class="p-5">
+        <!-- QR reader viewport -->
+        <div id="reader" class="rounded-xl overflow-hidden bg-slate-900 w-full" style="min-height:280px"></div>
+
+        <!-- Result toast -->
+        <div id="scanResult" class="mt-4 rounded-xl px-4 py-3 hidden"></div>
+
+        <!-- Manual entry fallback -->
+        <details class="mt-4">
+          <summary class="text-[12px] text-slate-400 cursor-pointer select-none hover:text-slate-600 transition-colors font-medium">
+            Masukkan QR token secara manual…
+          </summary>
+          <div class="mt-3 flex gap-2">
+            <input id="manualToken" type="text" placeholder="Tampal UUID token di sini..."
+                   class="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/10 transition-all" />
+            <button onclick="processToken(document.getElementById('manualToken').value)"
+                    class="px-4 py-2 rounded-xl font-bold text-sm text-white transition-all"
+                    style="background:#0d9488">Daftar</button>
+          </div>
+        </details>
+
+        <!-- CSRF token (hidden) -->
+        {% csrf_token %}
+      </div>
+    </div>
+
+    <!-- Recent check-ins -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 class="font-bold text-slate-700 text-sm">Rekod Kehadiran</h2>
+        <span class="text-[11px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full">{{ kehadiran_list.count }} hadir</span>
+      </div>
+      <div id="checkinList" class="divide-y divide-slate-50 max-h-[420px] overflow-y-auto">
+        {% if not kehadiran_list %}
+          <div class="px-5 py-10 text-center text-slate-400 text-sm" id="emptyState">
+            Tiada rekod kehadiran lagi. Mula imbas QR peserta.
+          </div>
+        {% else %}
+          {% for k in kehadiran_list %}
+          <div class="px-5 py-3 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-slate-700 text-[13px] truncate">{{ k.jemputan.nama }}</div>
+              <div class="text-slate-400 text-[11px]">{{ k.jemputan.organisasi|default:"–" }} · {{ k.checked_in_at|date:"H:i" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+(function(){
+  var csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  var resultBox = document.getElementById('scanResult');
+  var processingToken = null;
+
+  function showResult(success, msg, already){
+    resultBox.className = 'mt-4 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2';
+    if(success){
+      resultBox.style.cssText = 'background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.25);color:#065f46;margin-top:1rem;border-radius:.75rem;padding:.75rem 1rem;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:.5rem';
+    } else if(already){
+      resultBox.style.cssText = 'background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#78350f;margin-top:1rem;border-radius:.75rem;padding:.75rem 1rem;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:.5rem';
+    } else {
+      resultBox.style.cssText = 'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#991b1b;margin-top:1rem;border-radius:.75rem;padding:.75rem 1rem;font-size:.875rem;font-weight:600;display:flex;align-items:center;gap:.5rem';
+    }
+    resultBox.textContent = msg;
+    resultBox.style.display = 'flex';
+    setTimeout(function(){ resultBox.style.display = 'none'; }, 5000);
+  }
+
+  function prependCheckIn(nama, organisasi){
+    var list = document.getElementById('checkinList');
+    var empty = document.getElementById('emptyState');
+    if(empty) empty.remove();
+    var now = new Date();
+    var timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    var div = document.createElement('div');
+    div.className = 'px-5 py-3 flex items-center gap-3 bg-teal-50/50';
+    div.innerHTML = '<div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div><div class="flex-1 min-w-0"><div class="font-semibold text-slate-700 text-[13px] truncate">'+nama+'</div><div class="text-slate-400 text-[11px]">'+(organisasi||'–')+' · '+timeStr+'</div></div>';
+    list.prepend(div);
+    // update counter
+    var badge = document.querySelector('.text-teal-600.bg-teal-50');
+    if(badge){ var c = parseInt(badge.textContent)||0; badge.textContent = (c+1)+' hadir'; }
+  }
+
+  window.processToken = function(token){
+    token = token.trim();
+    if(!token || token === processingToken) return;
+    processingToken = token;
+
+    // Extract UUID from URL if scanner reads full URL
+    var m = token.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    var uuid = m ? m[1] : token;
+
+    fetch('/bengkel/api/check-in/'+uuid+'/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrf }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.success){
+        showResult(true, '✓ ' + data.nama + ' (' + data.organisasi + ') berjaya daftar masuk!', false);
+        prependCheckIn(data.nama, data.organisasi);
+      } else if(data.already){
+        showResult(false, '⚠ ' + data.error, true);
+      } else {
+        showResult(false, '✗ ' + data.error, false);
+      }
+      setTimeout(function(){ processingToken = null; }, 3000);
+    })
+    .catch(function(){
+      showResult(false, '✗ Ralat rangkaian. Cuba semula.', false);
+      setTimeout(function(){ processingToken = null; }, 2000);
+    });
+  };
+
+  // Start camera scanner
+  var html5QrCode = new Html5Qrcode("reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 8, qrbox: { width: 240, height: 240 } },
+    function(decodedText){ window.processToken(decodedText); },
+    function(){}
+  ).catch(function(err){
+    document.getElementById('reader').innerHTML = '<div style="padding:2rem;text-align:center;color:#94a3b8;font-size:13px;">Kamera tidak dapat diakses.<br>Gunakan input manual di bawah.<br><small>'+err+'</small></div>';
+  });
+})();
+</script>
+{% endblock %}

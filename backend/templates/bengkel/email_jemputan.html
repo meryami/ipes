@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body{margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;color:#0f172a}
+    .wrap{max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+    .hdr{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1e40af 100%);padding:32px 36px}
+    .hdr-brand{color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .hdr-title{color:#fff;font-size:22px;font-weight:800;line-height:1.3}
+    .body{padding:32px 36px}
+    .greeting{font-size:15px;color:#334155;margin-bottom:20px}
+    .info-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin-bottom:24px}
+    .info-row{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+    .info-row:last-child{margin-bottom:0}
+    .info-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;min-width:80px;padding-top:1px}
+    .info-val{font-size:13px;font-weight:600;color:#1e293b;line-height:1.4}
+    .cta-wrap{text-align:center;margin:28px 0}
+    .cta{display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff;font-size:14px;font-weight:800;border-radius:12px;text-decoration:none;letter-spacing:-.01em}
+    .qr-section{text-align:center;margin:28px 0;padding:24px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px}
+    .qr-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:12px}
+    .qr-img{display:block;margin:0 auto;width:160px;height:160px}
+    .qr-hint{font-size:11px;color:#94a3b8;margin-top:10px}
+    .note{font-size:11.5px;color:#94a3b8;line-height:1.6;margin-top:20px;padding-top:20px;border-top:1px solid #f1f5f9}
+    .note a{color:#3b82f6;word-break:break-all}
+    .footer{background:#f8fafc;padding:16px 36px;text-align:center;font-size:10.5px;color:#94a3b8;border-top:1px solid #f1f5f9}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-brand">Nasional Digital Healthcare Blueprint · 2026–2055</div>
+    <div class="hdr-title">Anda Dijemput ke Bengkel NDHB</div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+    <p class="greeting">
+      Salam sejahtera <strong>{{ jemputan.nama }}</strong>{% if jemputan.jawatan %} ({{ jemputan.jawatan }}){% endif %},<br><br>
+      Anda telah dijemput untuk menghadiri bengkel berikut:
+    </p>
+
+    <!-- Bengkel info -->
+    <div class="info-box">
+      <div class="info-row">
+        <div class="info-label">Tajuk</div>
+        <div class="info-val">{{ bengkel.title }}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Tarikh</div>
+        <div class="info-val">{{ bengkel.tarikh|date:"d F Y, H:i" }}{% if bengkel.tarikh_tamat %} — {{ bengkel.tarikh_tamat|date:"H:i" }}{% endif %}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Lokasi</div>
+        <div class="info-val">{{ bengkel.lokasi_nama }}{% if bengkel.lokasi_alamat %}<br><span style="font-weight:400;color:#64748b;font-size:12px">{{ bengkel.lokasi_alamat }}</span>{% endif %}</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Penganjur</div>
+        <div class="info-val">{{ bengkel.organizer_nama }}</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a href="{{ inv_url }}" class="cta">Sahkan Kehadiran Saya →</a>
+    </div>
+
+    <p style="font-size:13px;color:#475569;text-align:center;margin-top:8px">
+      Klik butang di atas untuk <strong>terima</strong> atau <strong>tolak</strong> jemputan ini.
+    </p>
+
+    <!-- QR Code for door check-in -->
+    <div class="qr-section">
+      <div class="qr-label">QR Kod Daftar Masuk</div>
+      <img src="cid:jemputan_qr" alt="QR Kod" class="qr-img" />
+      <div class="qr-hint">Tunjukkan QR kod ini kepada pengawal pintu semasa hari majlis</div>
+    </div>
+
+    <div class="note">
+      Jika butang di atas tidak berfungsi, salin dan tampal pautan berikut ke pelayar anda:<br>
+      <a href="{{ inv_url }}">{{ inv_url }}</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    E-mel ini dihantar secara automatik oleh sistem NDHB. Sila jangan balas e-mel ini.<br>
+    © 2026 Kementerian Kesihatan Malaysia
+  </div>
+</div>
+</body>
+</html>

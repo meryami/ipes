@@ -1,0 +1,240 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{{ b.title }} — Detail Bengkel{% endblock %}
+{% block nav_bengkel %}active{% endblock %}
+{% block page_title %}Detail Bengkel{% endblock %}
+
+{% block content %}
+
+<!-- Back + title -->
+<div class="mb-5 flex items-center gap-3">
+  <a href="{% url 'superadmin:semua_bengkel' %}"
+     class="inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    Kembali
+  </a>
+  <span class="text-slate-300">/</span>
+  <span class="text-[13px] font-bold text-slate-700">{{ b.title }}</span>
+</div>
+
+<!-- Info bengkel -->
+<div class="card p-5 mb-5">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-3 text-[13px]">
+    <!-- Tajuk & status -->
+    <div class="md:col-span-2 flex items-center gap-3 mb-1">
+      <h2 class="text-[17px] font-extrabold text-slate-800">{{ b.title }}</h2>
+      {% with today=b.tarikh %}
+      {% endwith %}
+    </div>
+
+    <div>
+      <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Penganjur (Akaun)</span>
+      <div class="mt-0.5 font-semibold text-slate-700">
+        {% if b.created_by %}
+          {{ b.created_by.get_full_name|default:b.created_by.username }}
+          <span class="text-slate-400 font-normal">({{ b.created_by.email }})</span>
+        {% else %}
+          <span class="text-slate-400">—</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Penganjur (Nama Program)</span>
+      <div class="mt-0.5 font-semibold text-slate-700">
+        {{ b.organizer_nama|default:"—" }}
+        {% if b.organizer_email %}<span class="text-slate-400 font-normal"> · {{ b.organizer_email }}</span>{% endif %}
+        {% if b.organizer_telefon %}<span class="text-slate-400 font-normal"> · {{ b.organizer_telefon }}</span>{% endif %}
+      </div>
+    </div>
+
+    <div>
+      <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Tarikh</span>
+      <div class="mt-0.5 text-slate-700">{{ b.tarikh|date:"d M Y, H:i" }}{% if b.tarikh_tamat %} — {{ b.tarikh_tamat|date:"d M Y, H:i" }}{% endif %}</div>
+    </div>
+
+    <div>
+      <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Lokasi</span>
+      <div class="mt-0.5 text-slate-700">{{ b.lokasi_nama }}{% if b.lokasi_alamat %}<span class="text-slate-400">, {{ b.lokasi_alamat }}</span>{% endif %}</div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="md:col-span-2 flex flex-wrap gap-3 mt-2 pt-3 border-t border-slate-100">
+      {% with total=b.jumlah_jemputan diterima=b.jumlah_diterima hadir=b.jumlah_hadir %}
+      <span class="px-3 py-1.5 rounded-lg text-[12px] font-semibold" style="background:#eff6ff;color:#1d4ed8">
+        &#128101; {{ total }} jemputan
+      </span>
+      <span class="px-3 py-1.5 rounded-lg text-[12px] font-semibold" style="background:#f0fdf4;color:#166534">
+        &#10003;  {{ diterima }} terima
+      </span>
+      <span class="px-3 py-1.5 rounded-lg text-[12px] font-semibold" style="background:#fefce8;color:#713f12">
+        &#128197; {{ hadir }} hadir
+      </span>
+      <span class="px-3 py-1.5 rounded-lg text-[12px] font-semibold" style="background:#faf5ff;color:#6b21a8">
+        &#128196; {{ b.contributions.count }} sumbangan
+      </span>
+      <a href="{% url 'bengkel:tentative' pk=b.pk %}" class="px-3 py-1.5 rounded-lg text-[12px] font-semibold" style="background:#ecfdf5;color:#065f46;text-decoration:none">
+        &#128203; Urus Tentative ({{ b.tentative.count }})
+      </a>
+      {% endwith %}
+    </div>
+  </div>
+</div>
+
+<!-- Senarai Peserta -->
+<div class="card overflow-hidden">
+  <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <h3 class="font-bold text-[13px] text-slate-700">Senarai Peserta &amp; Sumbangan</h3>
+    <span class="text-[11px] text-slate-400">{{ jemputan_list|length }} peserta</span>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-[12.5px]">
+      <thead>
+        <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider font-bold">
+          <th class="text-left px-5 py-3">#</th>
+          <th class="text-left px-5 py-3">Nama</th>
+          <th class="text-left px-5 py-3">Organisasi / Jawatan</th>
+          <th class="text-left px-5 py-3">Status</th>
+          <th class="text-left px-5 py-3">Hadir</th>
+          <th class="text-left px-5 py-3">Komen Umum</th>
+          <th class="text-left px-5 py-3">Fail Rujukan</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for j in jemputan_list %}
+        <tr class="hover:bg-slate-50/60 transition-colors align-top">
+          <td class="px-5 py-3.5 text-slate-400">{{ forloop.counter }}</td>
+
+          <!-- Nama + emel -->
+          <td class="px-5 py-3.5">
+            <div class="font-semibold text-slate-800">{{ j.nama|default:"—" }}</div>
+            <div class="text-[11px] text-slate-400">{{ j.email|default:"" }}</div>
+            {% if j.user %}
+            <div class="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full inline-block font-bold" style="background:#eff6ff;color:#1d4ed8">akun: {{ j.user.username }}</div>
+            {% endif %}
+          </td>
+
+          <!-- Org / Jawatan -->
+          <td class="px-5 py-3.5">
+            <div class="text-slate-700">{{ j.organisasi|default:"—" }}</div>
+            <div class="text-[11px] text-slate-400">{{ j.jawatan|default:"" }}</div>
+          </td>
+
+          <!-- Jemputan status -->
+          <td class="px-5 py-3.5">
+            {% if j.status == "accepted" %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background:#dcfce7;color:#166534">Diterima</span>
+            {% elif j.status == "rejected" %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background:#fef2f2;color:#b91c1c">Ditolak</span>
+            {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background:#fef9c3;color:#713f12">Menunggu</span>
+            {% endif %}
+          </td>
+
+          <!-- Hadir -->
+          <td class="px-5 py-3.5">
+            {% if j.sudah_hadir %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background:#dcfce7;color:#166534">&#10003; Hadir</span>
+            <div class="text-[10px] text-slate-400 mt-0.5">{{ j.kehadiran.checked_in_at|date:"d/m H:i" }}</div>
+            {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background:#f1f5f9;color:#64748b">Tidak Hadir</span>
+            {% endif %}
+          </td>
+
+          <!-- Komen Umum -->
+          <td class="px-5 py-3.5" style="min-width:200px;max-width:280px;vertical-align:top">
+            {% if j.contribution and j.contribution.comment %}
+              {% with c=j.contribution %}
+              <div style="display:flex;flex-direction:column;gap:4px">
+                {% for line in c.comment.splitlines %}
+                {% if line.strip %}
+                <div style="display:flex;align-items:flex-start;gap:6px">
+                  <span style="width:5px;height:5px;border-radius:50%;background:#38bdf8;flex-shrink:0;margin-top:5px;display:inline-block"></span>
+                  <span style="flex:1;font-size:12px;color:#0c4a6e;line-height:1.5">{{ line }}</span>
+                  <form method="post" action="{% url 'superadmin:delete_contribution_comment' c.pk %}" onsubmit="return confirm('Padam komen ini?')" style="display:inline;flex-shrink:0">
+                    {% csrf_token %}
+                    <input type="hidden" name="line_idx" value="{{ forloop.counter0 }}" />
+                    <button type="submit" style="color:#fca5a5;background:none;border:none;cursor:pointer;font-size:15px;line-height:1;padding:0" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#fca5a5'">&times;</button>
+                  </form>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+              {% endwith %}
+            {% else %}
+              <span style="font-size:11px;color:#cbd5e1">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Fail Rujukan -->
+          <td class="px-5 py-3.5" style="min-width:220px;max-width:300px;vertical-align:top">
+            {% if j.contribution %}
+              {% with c=j.contribution %}
+              {% if c.files.all %}
+              <div style="display:flex;flex-direction:column;gap:6px">
+                {% for f in c.files.all %}
+                <div style="background:#fff;border:1px solid #e0e7ff;border-radius:8px;padding:7px 10px">
+                  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                    <a href="{{ f.file.url }}" target="_blank" rel="noopener"
+                       style="font-size:11.5px;font-weight:700;color:#2563eb;text-decoration:none;word-break:break-all"
+                       onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                      &#128196; {{ f.original_name|truncatechars:30 }}
+                    </a>
+                    <form method="post" action="{% url 'superadmin:delete_contribution_file' f.pk %}"
+                          onsubmit="return confirm('Padam fail ini?')" style="display:inline;margin-left:auto">
+                      {% csrf_token %}
+                      <button type="submit"
+                        style="color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;cursor:pointer;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap">&times; Padam</button>
+                    </form>
+                  </div>
+                  {% if f.summary %}
+                  <div style="font-size:11px;color:#64748b;margin-top:4px;padding-top:4px;border-top:1px dashed #e2e8f0;font-style:italic">{{ f.summary }}</div>
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <span style="font-size:11px;color:#cbd5e1">—</span>
+              {% endif %}
+              {% endwith %}
+            {% else %}
+              <span style="font-size:11px;color:#cbd5e1">—</span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="px-5 py-10 text-center text-slate-400">Tiada jemputan untuk bengkel ini.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tentative preview -->
+{% if b.tentative.all %}
+<div class="card overflow-hidden mt-5">
+  <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <h3 class="font-bold text-[13px] text-slate-700">&#128203; Tentative / Jadual Program</h3>
+    <a href="{% url 'bengkel:tentative' pk=b.pk %}" class="text-[12px] font-semibold text-blue-600 hover:underline">Edit Tentative &rarr;</a>
+  </div>
+  <div class="px-5 py-4">
+    {% for item in b.tentative.all %}
+    <div class="flex gap-4 items-start py-2.5 {% if not forloop.last %}border-b border-dashed border-slate-100{% endif %}">
+      <div class="flex-shrink-0 w-32 text-[12px] font-extrabold text-blue-600">{{ item.masa }}</div>
+      <div class="flex-1">
+        <div class="text-[13px] font-semibold text-slate-800">{{ item.aktiviti }}</div>
+        {% if item.penerangan %}<div class="text-[12px] text-slate-400 mt-0.5">{{ item.penerangan }}</div>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="card mt-5 px-5 py-4 flex items-center justify-between">
+  <span class="text-[13px] text-slate-400">Tiada tentative untuk bengkel ini.</span>
+  <a href="{% url 'bengkel:tentative' pk=b.pk %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold" style="background:#ecfdf5;color:#065f46;text-decoration:none">&#128203; Tambah Tentative</a>
+</div>
+{% endif %}
+
+{% endblock %}

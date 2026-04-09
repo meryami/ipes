@@ -1,0 +1,93 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Semua Pengguna — Superadmin{% endblock %}
+{% block nav_pengguna %}active{% endblock %}
+{% block page_title %}Semua Pengguna{% endblock %}
+
+{% block content %}
+<div class="card overflow-hidden">
+  <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <h2 class="font-bold text-sm text-slate-700">Senarai Pengguna Berdaftar</h2>
+    <div class="flex items-center gap-3">
+      <span class="text-[12px] text-slate-400">{{ pengguna|length }} pengguna</span>
+      <a href="{% url 'superadmin:tambah_penganjur' %}"
+         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold text-white transition-all hover:opacity-90"
+         style="background:#1d4ed8">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Tambah Penganjur
+      </a>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-[13px]">
+      <thead>
+        <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider font-bold">
+          <th class="text-left px-5 py-3">#</th>
+          <th class="text-left px-5 py-3">Pengguna</th>
+          <th class="text-left px-5 py-3">E-mel</th>
+          <th class="text-left px-5 py-3">Peranan</th>
+          <th class="text-left px-5 py-3">Tarikh Daftar</th>
+          <th class="text-left px-5 py-3">Status</th>
+          <th class="text-left px-5 py-3">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        {% for u in pengguna %}
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-5 py-3 text-slate-400">{{ forloop.counter }}</td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold uppercase flex-shrink-0"
+                   style="background:{% if u.is_staff %}#1d4ed8{% else %}#0d9488{% endif %}">{{ u.username|first }}</div>
+              <div>
+                <div class="font-semibold text-slate-800">{{ u.username }}</div>
+                {% if u.get_full_name %}<div class="text-[11px] text-slate-400">{{ u.get_full_name }}</div>{% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-3 text-slate-600">{{ u.email|default:"—" }}</td>
+          <td class="px-5 py-3">
+            {% if u.is_staff %}
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background:#dbeafe;color:#1e40af">Penganjur</span>
+            {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background:#f1f5f9;color:#475569">Peserta</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3 text-slate-400 whitespace-nowrap">{{ u.date_joined|date:"d M Y" }}</td>
+          <td class="px-5 py-3">
+            {% if u.is_active %}
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background:#dcfce7;color:#166534">Aktif</span>
+            {% else %}
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background:#fef2f2;color:#b91c1c">Disekat</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-2 flex-wrap">
+              <form method="post" action="{% url 'superadmin:toggle_penganjur' u.pk %}">
+                {% csrf_token %}
+                <button type="submit"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+                  style="{% if u.is_staff %}background:#fef2f2;color:#b91c1c{% else %}background:#eff6ff;color:#1d4ed8{% endif %}">
+                  {% if u.is_staff %}&rarr; Peserta{% else %}&rarr; Penganjur{% endif %}
+                </button>
+              </form>
+              <a href="{% url 'superadmin:edit_pengguna' u.pk %}"
+                 class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+                 style="background:#f1f5f9;color:#475569">Edit</a>
+              <form method="post" action="{% url 'superadmin:delete_pengguna' u.pk %}"
+                    onsubmit="return confirm('Padam akaun ini? Tindakan tidak boleh dibatalkan.')">
+                {% csrf_token %}
+                <button type="submit"
+                  class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all hover:opacity-90"
+                  style="background:#fef2f2;color:#b91c1c">Padam</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="px-5 py-10 text-center text-slate-400">Tiada pengguna dijumpai.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "bengkel/analisis/_base.html" %}
+{% block title %}VMOST Analysis{% endblock %}
+{% block tool_name %}VMOST Analysis{% endblock %}
+{% block tool_tag %}STRATEGIK{% endblock %}
+{% block accent_bg %}#7c3aed{% endblock %}
+{% block accent_color %}#7c3aed{% endblock %}
+{% block accent_light %}#ede9fe{% endblock %}
+{% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>{% endblock %}
+
+{% block content %}
+<style>:root{--accent:#7c3aed}</style>
+
+<div style="background:#7c3aed;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
+  <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">Alat Analitik Situasi</div>
+  <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">VMOST Analysis</h1>
+  <p style="font-size:12.5px;opacity:.75;margin:0">Visi · Misi · Objektif · Strategi · Taktik</p>
+</div>
+
+<div class="two-col">
+
+  <div class="card" style="padding:28px">
+    <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Analisis VMOST</div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="field-group"><div class="field-label" style="color:#7c3aed"><span style="width:22px;height:22px;border-radius:6px;background:#ede9fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🎯</span>V — Visi (Vision)</div><div class="field-hint">Gambaran masa depan yang jelas — di mana organisasi ingin berada dalam jangka panjang.</div><textarea name="visi" placeholder="Contoh: Menjadi penyedia perkhidmatan kesihatan digital terkemuka di Asia Tenggara menjelang 2030..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#a855f7"><span style="width:22px;height:22px;border-radius:6px;background:#f3e8ff;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🚀</span>M — Misi (Mission)</div><div class="field-hint">Tujuan utama organisasi — kenapa ia wujud dan siapa yang dilayani.</div><textarea name="misi" placeholder="Contoh: Menyediakan akses rawatan berkualiti kepada semua lapisan masyarakat melalui teknologi..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#6d28d9"><span style="width:22px;height:22px;border-radius:6px;background:#e4d4fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📌</span>O — Objektif (Objectives)</div><div class="field-hint">Matlamat yang boleh diukur dan dicapai dalam tempoh tertentu (SMART).</div><textarea name="objektif" placeholder="Contoh: Meningkatkan bilangan pengguna aktif sebanyak 40% menjelang Q4 2025..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#5b21b6"><span style="width:22px;height:22px;border-radius:6px;background:#ddd6fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🗺️</span>S — Strategi (Strategies)</div><div class="field-hint">Pendekatan atau kaedah utama untuk mencapai objektif yang ditetapkan.</div><textarea name="strategi" placeholder="Contoh: Perkongsian strategik dengan hospital kerajaan, pembangunan platform mudah alih..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#4c1d95"><span style="width:22px;height:22px;border-radius:6px;background:#e0d7ff;display:inline-flex;align-items:center;justify-content:center;font-size:12px">⚡</span>T — Taktik (Tactics)</div><div class="field-hint">Tindakan spesifik jangka pendek untuk melaksanakan strategi.</div><textarea name="taktik" placeholder="Contoh: Kempen media sosial bulanan, webinar percuma setiap bulan, promosi langganan..." required></textarea></div>
+
+      <div class="field-group"><div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div><textarea name="catatan" placeholder="Sebarang catatan tambahan..." style="min-height:60px"></textarea></div>
+
+      <button type="submit" class="tbtn" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;width:100%;justify-content:center">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Simpan Analisis VMOST
+      </button>
+    </form>
+  </div>
+
+  <div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Rekod Analisis ({{ existing|length }})</div>
+    {% if existing %}
+      {% for e in existing %}
+      <div class="rec-card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border-radius:99px;padding:2px 10px">VMOST</span>
+          <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px">
+          <div><div class="rec-label">🎯 Visi</div><div class="rec-value">{{ e.visi|truncatechars:120 }}</div></div>
+          <div><div class="rec-label">🚀 Misi</div><div class="rec-value">{{ e.misi|truncatechars:120 }}</div></div>
+          <div><div class="rec-label">📌 Objektif</div><div class="rec-value">{{ e.objektif|truncatechars:120 }}</div></div>
+          <div><div class="rec-label">🗺️ Strategi</div><div class="rec-value">{{ e.strategi|truncatechars:120 }}</div></div>
+          <div><div class="rec-label">⚡ Taktik</div><div class="rec-value">{{ e.taktik|truncatechars:120 }}</div></div>
+        </div>
+        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan|truncatechars:150 }}</div>{% endif %}
+        <form method="post" action="{% url 'bengkel:analisis_vmost_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">
+          {% csrf_token %}<button type="submit" style="font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:0">Padam ✕</button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:32px;margin-bottom:8px">🗺️</div><div style="font-size:13px;color:#94a3b8">Belum ada analisis VMOST disimpan.</div></div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

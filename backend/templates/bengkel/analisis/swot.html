@@ -1,0 +1,108 @@
+{% extends "bengkel/analisis/_base.html" %}
+{% block title %}SWOT Analysis{% endblock %}
+{% block tool_name %}SWOT Analysis{% endblock %}
+{% block tool_tag %}DALAMAN · LUARAN{% endblock %}
+{% block accent_bg %}#2563eb{% endblock %}
+{% block accent_color %}#2563eb{% endblock %}
+{% block accent_light %}#dbeafe{% endblock %}
+{% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>{% endblock %}
+
+{% block content %}
+<style>:root{--accent:#2563eb}</style>
+
+<!-- Hero -->
+<div style="background:#2563eb;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
+  <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">Alat Analitik Situasi</div>
+  <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">SWOT Analysis</h1>
+  <p style="font-size:12.5px;opacity:.75;margin:0">Kekuatan · Kelemahan · Peluang · Ancaman</p>
+</div>
+
+<div class="two-col">
+
+  <!-- Form -->
+  <div class="card" style="padding:28px">
+    <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Analisis SWOT</div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="field-group" style="--accent:#2563eb">
+        <div class="field-label" style="color:#2563eb">
+          <span style="width:22px;height:22px;border-radius:6px;background:#dbeafe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">💪</span>
+          S — Kekuatan (Strengths)
+        </div>
+        <div class="field-hint">Apa kelebihan dalaman organisasi? Sumber, kemahiran, atau kelebihan berbanding pesaing.</div>
+        <textarea name="kekuatan" placeholder="Contoh: Kakitangan yang berpengalaman, teknologi terkini, reputasi yang kukuh..." required></textarea>
+      </div>
+
+      <div class="field-group" style="--accent:#ef4444">
+        <div class="field-label" style="color:#ef4444">
+          <span style="width:22px;height:22px;border-radius:6px;background:#fee2e2;display:inline-flex;align-items:center;justify-content:center;font-size:12px">⚠️</span>
+          W — Kelemahan (Weaknesses)
+        </div>
+        <div class="field-hint">Apa kelemahan dalaman yang perlu diperbaiki? Faktor yang menghalang prestasi.</div>
+        <textarea name="kelemahan" placeholder="Contoh: Kekurangan bajet, infrastruktur lapuk, proses yang tidak cekap..." required></textarea>
+      </div>
+
+      <div class="field-group" style="--accent:#059669">
+        <div class="field-label" style="color:#059669">
+          <span style="width:22px;height:22px;border-radius:6px;background:#d1fae5;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>
+          O — Peluang (Opportunities)
+        </div>
+        <div class="field-hint">Peluang luaran yang boleh dimanfaatkan? Trend, perubahan pasaran, atau dasar baharu.</div>
+        <textarea name="peluang" placeholder="Contoh: Pertumbuhan digital kesihatan, sokongan kerajaan, kerjasama baharu..." required></textarea>
+      </div>
+
+      <div class="field-group" style="--accent:#d97706">
+        <div class="field-label" style="color:#d97706">
+          <span style="width:22px;height:22px;border-radius:6px;background:#fef3c7;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🔥</span>
+          T — Ancaman (Threats)
+        </div>
+        <div class="field-hint">Ancaman luaran yang perlu diwaspadai? Cabaran, persaingan, atau risiko.</div>
+        <textarea name="ancaman" placeholder="Contoh: Persaingan sengit, perubahan regulasi, ketidakpastian ekonomi..." required></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div>
+        <textarea name="catatan" placeholder="Sebarang catatan, konteks atau pemerhatian tambahan..." style="min-height:60px"></textarea>
+      </div>
+
+      <button type="submit" class="tbtn" style="background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;width:100%;justify-content:center">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Simpan Analisis SWOT
+      </button>
+    </form>
+  </div>
+
+  <!-- History -->
+  <div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Rekod Analisis ({{ existing|length }})</div>
+    {% if existing %}
+      {% for e in existing %}
+      <div class="rec-card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:11px;font-weight:700;color:#2563eb;background:#dbeafe;border-radius:99px;padding:2px 10px">SWOT</span>
+          <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><div class="rec-label" style="color:#2563eb">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan|truncatechars:120 }}</div></div>
+          <div><div class="rec-label" style="color:#ef4444">⚠️ Kelemahan</div><div class="rec-value">{{ e.kelemahan|truncatechars:120 }}</div></div>
+          <div><div class="rec-label" style="color:#059669">🌱 Peluang</div><div class="rec-value">{{ e.peluang|truncatechars:120 }}</div></div>
+          <div><div class="rec-label" style="color:#d97706">🔥 Ancaman</div><div class="rec-value">{{ e.ancaman|truncatechars:120 }}</div></div>
+        </div>
+        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan|truncatechars:150 }}</div>{% endif %}
+        <form method="post" action="{% url 'bengkel:analisis_swot_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">
+          {% csrf_token %}
+          <button type="submit" style="font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:0">Padam ✕</button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="card" style="padding:40px 20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">📊</div>
+      <div style="font-size:13px;color:#94a3b8">Belum ada analisis SWOT disimpan.</div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

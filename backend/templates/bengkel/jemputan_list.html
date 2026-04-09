@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Senarai Jemputan — {{ bengkel.title }}{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'bengkel:list' %}" class="text-blue-600 hover:underline text-[11.5px]">Bengkel</a> /
+  <a href="{% url 'bengkel:detail' pk=bengkel.pk %}" class="text-blue-600 hover:underline text-[11.5px]">{{ bengkel.title|truncatechars:30 }}</a> /
+  Jemputan
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+
+  <!-- Header -->
+  <div class="rounded-2xl px-7 py-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4"
+       style="background:linear-gradient(135deg,#0f172a,#1e3a8a,#0d9488)">
+    <div class="flex-1">
+      <div class="text-xs text-blue-300/60 font-semibold uppercase tracking-widest mb-0.5">{{ bengkel.title }}</div>
+      <h1 class="text-white text-xl font-extrabold tracking-tight">Senarai Jemputan</h1>
+      <p class="text-blue-200/50 text-xs mt-1">{{ bengkel.tarikh|date:"d M Y" }} · {{ bengkel.lokasi_nama }}</p>
+    </div>
+    <a href="{% url 'bengkel:jemput' pk=bengkel.pk %}"
+       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-[12.5px] flex-shrink-0 transition-all"
+       style="background:#f59e0b;color:#0f172a">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      Tambah Jemputan
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+    <div class="flex items-start gap-3 rounded-xl px-4 py-3 mb-4 text-sm font-semibold {% if msg.tags == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-700{% elif msg.tags == 'warning' %}bg-amber-50 border border-amber-200 text-amber-700{% else %}bg-red-50 border border-red-200 text-red-700{% endif %}">
+      <div class="break-all">{{ msg }}</div>
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+    <div class="bg-white rounded-xl border border-slate-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-slate-700">{{ bengkel.jumlah_jemputan }}</div>
+      <div class="text-[10.5px] font-semibold text-slate-400 uppercase tracking-wide">Dijemput</div>
+    </div>
+    <div class="bg-emerald-50 rounded-xl border border-emerald-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-emerald-600">{{ bengkel.jumlah_diterima }}</div>
+      <div class="text-[10.5px] font-semibold text-emerald-400 uppercase tracking-wide">Diterima</div>
+    </div>
+    <div class="bg-red-50 rounded-xl border border-red-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-red-500">{{ bengkel.jumlah_ditolak }}</div>
+      <div class="text-[10.5px] font-semibold text-red-400 uppercase tracking-wide">Ditolak</div>
+    </div>
+    <div class="bg-blue-50 rounded-xl border border-blue-100 shadow-card px-4 py-3 text-center">
+      <div class="text-2xl font-extrabold text-blue-600">{{ bengkel.jumlah_hadir }}</div>
+      <div class="text-[10.5px] font-semibold text-blue-400 uppercase tracking-wide">Hadir</div>
+    </div>
+  </div>
+
+  <!-- Open Registration Panel -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-4 mb-5 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Link Pendaftaran Terbuka</span>
+        {% if bengkel.reg_enabled %}
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600">AKTIF</span>
+        {% else %}
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-400">TIDAK AKTIF</span>
+        {% endif %}
+      </div>
+      {% if bengkel.reg_enabled %}
+        <div class="flex items-center gap-2">
+          <input id="regLinkInput" type="text" readonly
+                 value="{{ request.scheme }}://{{ request.get_host }}{% url 'bengkel:open_reg' reg_token=bengkel.reg_token %}"
+                 class="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-[12px] text-slate-600 font-mono bg-slate-50 truncate min-w-0 focus:outline-none" />
+          <button onclick="copyRegLink()"
+                  class="px-3 py-1.5 rounded-lg border border-slate-200 text-[11.5px] font-semibold text-slate-500 hover:bg-slate-50 flex-shrink-0 transition-all">Salin</button>
+        </div>
+        {% if bengkel.reg_had > 0 %}
+          <div class="text-[11px] text-slate-400 mt-1">Had: {{ bengkel.reg_had }} pendaftar</div>
+        {% endif %}
+      {% else %}
+        <p class="text-[12px] text-slate-400">Aktifkan untuk janakan satu link yang boleh dikongsi kepada semua orang.</p>
+      {% endif %}
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <!-- Toggle enable/disable -->
+      <form method="post" action="{% url 'bengkel:reg_toggle' pk=bengkel.pk %}">
+        {% csrf_token %}
+        {% if bengkel.reg_enabled %}
+          <input type="hidden" name="reg_had" value="{{ bengkel.reg_had }}" />
+          <button type="submit"
+                  class="px-3 py-1.5 rounded-lg text-[12px] font-semibold border border-red-200 text-red-600 hover:bg-red-50 transition-all">Nyahaktif</button>
+        {% else %}
+          <button type="submit"
+                  class="px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white transition-all"
+                  style="background:linear-gradient(135deg,#059669,#0d9488)">Aktifkan</button>
+        {% endif %}
+      </form>
+      <!-- Reset token -->
+      {% if bengkel.reg_enabled %}
+      <form method="post" action="{% url 'bengkel:reg_reset' pk=bengkel.pk %}"
+            onsubmit="return confirm('Reset link? Link lama tidak lagi sah.')">
+        {% csrf_token %}
+        <button type="submit"
+                class="px-3 py-1.5 rounded-lg text-[12px] font-semibold border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all">Reset Link</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Table -->
+  {% if not jemputan %}
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-card px-8 py-14 text-center">
+      <div class="text-slate-300 text-4xl mb-3">✉️</div>
+      <p class="text-slate-400 text-sm">Tiada jemputan lagi. Tambah jemputan pertama sekarang.</p>
+    </div>
+  {% else %}
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-[13px]">
+        <thead>
+          <tr class="border-b border-slate-100 text-left">
+            <th class="px-5 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">#</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Nama</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">E-mel</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Organisasi</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Status</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Hadir</th>
+            <th class="px-4 py-3 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">Tindakan</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50">
+          {% for j in jemputan %}
+          <tr class="hover:bg-slate-50/60 transition-colors">
+            <td class="px-5 py-3 text-slate-400 font-medium">{{ forloop.counter }}</td>
+            <td class="px-4 py-3">
+              <div class="font-semibold text-slate-700">{{ j.nama }}</div>
+              {% if j.jawatan %}<div class="text-slate-400 text-[11px]">{{ j.jawatan }}</div>{% endif %}
+            </td>
+            <td class="px-4 py-3 text-slate-500">{{ j.email }}</td>
+            <td class="px-4 py-3 text-slate-500">{{ j.organisasi|default:"–" }}</td>
+            <td class="px-4 py-3">
+              <span class="text-[10.5px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full
+                {% if j.status == 'accepted' %}bg-emerald-50 text-emerald-600
+                {% elif j.status == 'rejected' %}bg-red-50 text-red-500
+                {% else %}bg-amber-50 text-amber-600{% endif %}">
+                {{ j.get_status_display }}
+              </span>
+            </td>
+            <td class="px-4 py-3">
+              {% if j.sudah_hadir %}
+                <span class="text-[10.5px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full uppercase">✓ Hadir</span>
+              {% else %}
+                <span class="text-slate-300 text-xs">–</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <!-- Copy link -->
+                <button onclick="copyLink('{{ base_url }}/bengkel/i/{{ j.token }}/')"
+                        title="Salin link jemputan"
+                        class="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                </button>
+                <!-- View QR -->
+                <button onclick="showQR({{ j.pk }}, '{{ j.nama|escapejs }}', '{{ base_url }}/bengkel/i/{{ j.token }}/')"
+                        title="Lihat QR Kod"
+                        class="p-1.5 rounded-lg border border-blue-200 text-blue-500 hover:bg-blue-50 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4-2h2v4h-2z"/>
+                  </svg>
+                </button>
+                <!-- Send Email -->
+                <form method="post" action="{% url 'bengkel:jemputan_send_email' jid=j.pk %}"
+                      onsubmit="return confirm('Hantar e-mel jemputan kepada {{ j.nama }}?')">
+                  {% csrf_token %}
+                  <button type="submit" title="Hantar e-mel jemputan"
+                          class="p-1.5 rounded-lg border border-emerald-200 text-emerald-500 hover:bg-emerald-50 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                  </button>
+                </form>
+                <!-- Open invitation -->
+                <a href="{{ base_url }}/bengkel/i/{{ j.token }}/" target="_blank"
+                   title="Buka halaman jemputan"
+                   class="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </a>
+                <!-- Delete -->
+                <form method="post" action="{% url 'bengkel:jemputan_delete' jid=j.pk %}"
+                      onsubmit="return confirm('Buang jemputan untuk {{ j.nama }}?')">
+                  {% csrf_token %}
+                  <button type="submit" title="Buang jemputan"
+                          class="p-1.5 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Copy toast -->
+<div id="copyToast" class="fixed bottom-6 right-6 bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xl hidden z-50">
+  ✓ Link disalin!
+</div>
+
+<!-- QR Modal -->
+<div id="qrModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+    <!-- Modal header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">QR Kod Daftar Masuk</div>
+        <div id="qrName" class="font-bold text-slate-800 text-[15px]"></div>
+      </div>
+      <button onclick="closeQR()" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <!-- QR image -->
+    <div class="px-6 py-5 flex flex-col items-center gap-4">
+      <img id="qrImage" src="" alt="QR Kod" class="w-48 h-48 rounded-xl border border-slate-100 shadow-sm" />
+      <!-- Invitation link -->
+      <div class="w-full bg-slate-50 rounded-xl border border-slate-200 px-4 py-3">
+        <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Link Jemputan</div>
+        <div id="qrLink" class="text-[11.5px] text-slate-600 break-all font-mono leading-relaxed"></div>
+      </div>
+      <!-- Actions -->
+      <div class="flex gap-2 w-full">
+        <button onclick="copyQrLink()" class="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-all">
+          Salin Link
+        </button>
+        <a id="qrDownload" href="#" download="tiket_qr.png"
+           class="flex-1 py-2 rounded-xl text-center text-sm font-semibold transition-all"
+           style="background:#0f172a;color:#fff">
+          Muat Turun QR
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _currentQrLink = '';
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(function() {
+    var t = document.getElementById('copyToast');
+    t.classList.remove('hidden');
+    setTimeout(function(){ t.classList.add('hidden'); }, 2500);
+  });
+}
+
+function copyRegLink() {
+  var inp = document.getElementById('regLinkInput');
+  if (!inp) return;
+  navigator.clipboard.writeText(inp.value).then(function() {
+    var t = document.getElementById('copyToast');
+    t.classList.remove('hidden');
+    setTimeout(function(){ t.classList.add('hidden'); }, 2500);
+  });
+}
+
+function showQR(jid, nama, invLink) {
+  _currentQrLink = invLink;
+  document.getElementById('qrName').textContent = nama;
+  document.getElementById('qrLink').textContent = invLink;
+  var imgUrl = '/bengkel/jemputan/' + jid + '/qr/';
+  document.getElementById('qrImage').src = imgUrl;
+  document.getElementById('qrDownload').href = imgUrl;
+  document.getElementById('qrModal').classList.remove('hidden');
+  document.getElementById('qrModal').classList.add('flex');
+}
+
+function closeQR() {
+  document.getElementById('qrModal').classList.add('hidden');
+  document.getElementById('qrModal').classList.remove('flex');
+}
+
+function copyQrLink() {
+  navigator.clipboard.writeText(_currentQrLink).then(function() {
+    var t = document.getElementById('copyToast');
+    t.textContent = '✓ Link disalin!';
+    t.classList.remove('hidden');
+    setTimeout(function(){ t.classList.add('hidden'); }, 2500);
+  });
+}
+
+// Close modal when clicking backdrop
+document.getElementById('qrModal').addEventListener('click', function(e) {
+  if (e.target === this) closeQR();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Dashboard Superadmin — NDHB{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard Keseluruhan{% endblock %}
+
+{% block content %}
+
+<!-- Pending permohonan alert -->
+{% if pending_permohonan %}
+<a href="{% url 'superadmin:permohonan_penganjur' %}"
+   class="flex items-center gap-4 px-5 py-4 rounded-xl mb-5 border transition-all hover:shadow-md"
+   style="background:#fffbeb;border-color:#fcd34d">
+  <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fef3c7">
+    <svg class="w-5 h-5" style="color:#d97706" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+  </div>
+  <div class="flex-1">
+    <div class="text-[13px] font-extrabold" style="color:#92400e">
+      {{ pending_permohonan }} Permohonan Penganjur Menunggu Semakan
+    </div>
+    <div class="text-[11.5px] mt-0.5" style="color:#b45309">Klik untuk semak dan luluskan / tolak permohonan.</div>
+  </div>
+  <svg class="w-4 h-4 flex-shrink-0" style="color:#d97706" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+</a>
+{% endif %}
+
+<!-- Stats grid -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+  <div class="card px-5 py-5">
+    <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Jumlah Bengkel</div>
+    <div class="text-3xl font-extrabold text-slate-800">{{ stats.total_bengkel }}</div>
+    <div class="text-[11px] text-slate-400 mt-1">{{ stats.bengkel_aktif }} akan datang</div>
+  </div>
+  <div class="card px-5 py-5">
+    <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Penganjur</div>
+    <div class="text-3xl font-extrabold" style="color:#2563eb">{{ stats.total_penganjur }}</div>
+    <div class="text-[11px] text-slate-400 mt-1">akaun penganjur</div>
+  </div>
+  <div class="card px-5 py-5">
+    <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Peserta Daftar</div>
+    <div class="text-3xl font-extrabold" style="color:#0d9488">{{ stats.total_peserta }}</div>
+    <div class="text-[11px] text-slate-400 mt-1">{{ stats.total_hadir }} sudah hadir</div>
+  </div>
+  <div class="card px-5 py-5">
+    <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">Pernyataan</div>
+    <div class="text-3xl font-extrabold" style="color:#f59e0b">{{ stats.total_pernyataan }}</div>
+    <div class="text-[11px] text-slate-400 mt-1">masalah dihantar</div>
+  </div>
+</div>
+
+<!-- Quick links -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+  <a href="{% url 'superadmin:semua_bengkel' %}" class="card px-5 py-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#eff6ff">
+      <svg class="w-5 h-5" style="color:#2563eb" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+    <div>
+      <div class="text-[13px] font-bold text-slate-700 group-hover:text-blue-700">Urus Bengkel</div>
+      <div class="text-[11px] text-slate-400">Lihat semua bengkel</div>
+    </div>
+  </a>
+  <a href="{% url 'superadmin:semua_pengguna' %}" class="card px-5 py-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#f0fdf4">
+      <svg class="w-5 h-5" style="color:#059669" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div>
+      <div class="text-[13px] font-bold text-slate-700 group-hover:text-emerald-700">Urus Pengguna</div>
+      <div class="text-[11px] text-slate-400">Naik / turun taraf peranan</div>
+    </div>
+  </a>
+  <a href="{% url 'superadmin:semua_pernyataan' %}" class="card px-5 py-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#fefce8">
+      <svg class="w-5 h-5" style="color:#d97706" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    </div>
+    <div>
+      <div class="text-[13px] font-bold text-slate-700 group-hover:text-amber-700">Pernyataan Masalah</div>
+      <div class="text-[11px] text-slate-400">Semua pernyataan peserta</div>
+    </div>
+  </a>
+</div>
+
+<!-- Recent bengkels -->
+<div class="card overflow-hidden">
+  <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <h2 class="font-bold text-sm text-slate-700">Bengkel Terkini</h2>
+    <a href="{% url 'superadmin:semua_bengkel' %}" class="text-[12px] text-blue-600 font-semibold hover:underline">Lihat semua →</a>
+  </div>
+  <div class="divide-y divide-slate-50">
+    {% for b in bengkels_terkini %}
+    <div class="px-5 py-3 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-[13px] text-slate-800 truncate">{{ b.title }}</div>
+        <div class="text-[11px] text-slate-400">{{ b.lokasi_nama }} · {{ b.tarikh|date:"d M Y" }}</div>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0 text-[11px] text-slate-400">
+        <span>Oleh: <span class="font-semibold text-slate-600">{{ b.created_by.username|default:"—" }}</span></span>
+        <span class="px-2 py-0.5 rounded-full font-bold" style="background:#eff6ff;color:#1d4ed8">{{ b.jumlah_jemputan }} jemputan</span>
+      </div>
+    </div>
+    {% empty %}
+    <div class="px-5 py-8 text-center text-slate-400 text-sm">Tiada bengkel lagi.</div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}QR Pendaftaran — {{ bengkel.title }}{% endblock %}
+{% block breadcrumb %}
+  <a href="{% url 'bengkel:list' %}" class="text-blue-600 hover:underline text-[11.5px]">Bengkel</a> /
+  <a href="{% url 'bengkel:detail' pk=bengkel.pk %}" class="text-blue-600 hover:underline text-[11.5px]">{{ bengkel.title|truncatechars:30 }}</a> /
+  <a href="{% url 'bengkel:jemputan_list' pk=bengkel.pk %}" class="text-blue-600 hover:underline text-[11.5px]">Jemputan</a> / QR Terbuka
+{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in max-w-lg mx-auto">
+
+  <!-- Header -->
+  <div class="rounded-2xl px-7 py-5 mb-6 flex items-center gap-4"
+       style="background:linear-gradient(135deg,#0f172a,#0d9488)">
+    <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="text-teal-300/50 text-xs font-semibold uppercase tracking-widest mb-0.5">{{ bengkel.title|truncatechars:40 }}</div>
+      <h1 class="text-white text-lg font-extrabold tracking-tight">QR Pendaftaran Terbuka</h1>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+    <div class="rounded-xl px-4 py-3 mb-4 text-sm font-semibold
+      {% if msg.tags == 'success' %}bg-emerald-50 border border-emerald-200 text-emerald-700
+      {% else %}bg-red-50 border border-red-200 text-red-700{% endif %}">
+      {{ msg }}
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Active badge -->
+  <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 mb-5 flex items-center gap-2 text-[12.5px] text-emerald-700">
+    <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span>Link aktif — <strong>sesiapa yang ada link/QR ini boleh daftar</strong> dan terus dapat tiket QR mereka.</span>
+  </div>
+
+  <!-- QR Code card -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-6 mb-4 flex flex-col items-center gap-4">
+    <!-- QR image -->
+    <div class="p-4 rounded-2xl border-2 border-slate-100 bg-white">
+      <img id="qrImg" src="{% url 'bengkel:open_reg_qr' pk=bengkel.pk %}" alt="QR Pendaftaran"
+           class="w-56 h-56 object-contain" />
+    </div>
+    <p class="text-[11.5px] text-slate-400 text-center">Print QR ini dan tampal di papan notis, atau hantar melalui WhatsApp/email.</p>
+
+    <!-- Download button -->
+    <a href="{% url 'bengkel:open_reg_qr' pk=bengkel.pk %}" download="qr_pendaftaran_{{ bengkel.pk }}.png"
+       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
+       style="background:linear-gradient(135deg,#0f172a,#1e3a8a);color:white">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>
+      Muat Turun QR (PNG)
+    </a>
+  </div>
+
+  <!-- Link copy card -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-5 mb-4">
+    <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-2">Link Pendaftaran</div>
+    <div class="flex items-center gap-2">
+      <input id="regLinkInput" type="text" readonly value="{{ reg_url }}"
+             class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-[12.5px] font-mono text-slate-600 bg-slate-50 focus:outline-none truncate min-w-0" />
+      <button onclick="copyLink()"
+              class="px-4 py-2 rounded-xl border border-slate-200 text-[12px] font-semibold text-slate-600 hover:bg-slate-50 flex-shrink-0 transition-all">
+        Salin
+      </button>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-2">Paste link ini dalam email/WhatsApp. Setiap pendaftar akan dapat tiket QR unik masing-masing.</p>
+  </div>
+
+  <!-- Safety controls -->
+  <div class="bg-slate-50 rounded-2xl border border-slate-200 px-5 py-4 mb-5">
+    <div class="text-[10.5px] font-bold uppercase tracking-widest text-slate-400 mb-3">Kawalan Keselamatan</div>
+    <div class="flex flex-wrap gap-2">
+
+      <!-- Disable -->
+      <form method="post" action="{% url 'bengkel:reg_toggle' pk=bengkel.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="reg_had" value="{{ bengkel.reg_had }}" />
+        <button type="submit"
+                class="px-3 py-1.5 rounded-lg text-[12px] font-semibold border border-red-200 text-red-600 hover:bg-red-50 transition-all">
+          ✕ Nyahaktif Link
+        </button>
+      </form>
+
+      <!-- Reset token -->
+      <form method="post" action="{% url 'bengkel:reg_reset' pk=bengkel.pk %}"
+            onsubmit="return confirm('Reset link? QR dan link lama tidak lagi sah. Anda perlu kongsikan QR/link baru.')">
+        {% csrf_token %}
+        <button type="submit"
+                class="px-3 py-1.5 rounded-lg text-[12px] font-semibold border border-amber-200 text-amber-600 hover:bg-amber-50 transition-all">
+          ↺ Reset (Jana Link Baru)
+        </button>
+      </form>
+
+    </div>
+    <p class="text-[11px] text-slate-400 mt-2">
+      <strong>Nyahaktif</strong> — tutup pendaftaran sepenuhnya. 
+      <strong>Reset</strong> — jana link baru (gunakan bila link bocor/disalahgunakan).
+    </p>
+  </div>
+
+  <!-- Nav -->
+  <div class="flex gap-3">
+    <a href="{% url 'bengkel:jemputan_list' pk=bengkel.pk %}"
+       class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+      ← Senarai Jemputan
+    </a>
+    <a href="{% url 'bengkel:jemput' pk=bengkel.pk %}"
+       class="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+      + Jana Link Individu
+    </a>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="copyToast" class="fixed bottom-6 right-6 bg-slate-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xl hidden z-50">
+  ✓ Disalin!
+</div>
+
+<script>
+function copyLink() {
+  var inp = document.getElementById('regLinkInput');
+  navigator.clipboard.writeText(inp.value).then(function() {
+    var t = document.getElementById('copyToast');
+    t.classList.remove('hidden');
+    setTimeout(function() { t.classList.add('hidden'); }, 2500);
+  });
+}
+</script>
+{% endblock %}

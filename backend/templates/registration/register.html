@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ms" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daftar Akaun — NDHB</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{-webkit-font-smoothing:antialiased;}
+    body { font-family:"Inter",system-ui,sans-serif; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+    .card-in { animation: fadeUp .45s cubic-bezier(.16,1,.3,1) both; }
+    .bg-mesh {
+      background-color: #0f172a;
+      background-image:
+        radial-gradient(circle at 15% 50%, rgba(13,148,136,.18) 0%, transparent 55%),
+        radial-gradient(circle at 85% 20%, rgba(245,158,11,.1) 0%, transparent 45%),
+        radial-gradient(circle at 60% 90%, rgba(30,64,175,.35) 0%, transparent 50%);
+    }
+    .bg-dots {
+      background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+    .strength-bar { transition: width .3s ease, background .3s ease; }
+    .input-field {
+      width:100%;padding:.625rem .875rem;border:1.5px solid #CBD5E1;border-radius:.625rem;background:#fff;
+      font-size:.875rem;color:#1e293b;outline:none;transition:border-color .15s,box-shadow .15s;
+    }
+    .input-field:focus { border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+    .input-field.valid { border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1); }
+    .input-field.invalid { border-color:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.12); }
+    .eye-btn { position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px; }
+    .eye-btn:hover { color:#475569; }
+  </style>
+</head>
+<body class="min-h-screen bg-mesh bg-dots flex flex-col items-center justify-center px-4 py-10">
+
+  <!-- Brand bar -->
+  <div class="flex items-center gap-3 mb-8 card-in" style="animation-delay:.05s">
+    <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-lg border-2 border-[#f59e0b]">🏥</div>
+    <div>
+      <div class="text-white text-[13px] font-bold leading-none">Kementerian Kesihatan Malaysia</div>
+      <div class="text-white/50 text-[10.5px] mt-0.5 tracking-wide">Nasional Digital Healthcare Blueprint (2026–2055)</div>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden card-in" style="animation-delay:.12s">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-[#1e3a8a] to-[#0d9488] px-8 py-6 text-center">
+      <div class="w-12 h-12 rounded-xl bg-white/15 border border-white/25 flex items-center justify-center mx-auto mb-3">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+      </div>
+      <h1 class="text-white text-[18px] font-extrabold leading-tight tracking-tight">Daftar Akaun Baharu</h1>
+      <p class="text-white/65 text-[12px] mt-1">Cipta akaun untuk mengakses SME Engagement Portal</p>
+    </div>
+
+    <!-- Role tabs -->
+    <div class="flex border-b border-slate-100">
+      <button type="button" id="tabPeserta" onclick="switchRole('peserta')"
+        class="flex-1 py-3 text-[12.5px] font-bold transition-colors border-b-2 border-blue-600 text-blue-700 bg-blue-50/60">
+        👤 Peserta
+      </button>
+      <button type="button" id="tabPenganjur" onclick="switchRole('penganjur')"
+        class="flex-1 py-3 text-[12.5px] font-bold transition-colors border-b-2 border-transparent text-slate-400 hover:text-slate-600 bg-white">
+        🏢 Penganjur
+      </button>
+    </div>
+
+    <!-- Form body -->
+    <div class="px-8 py-7">
+
+      {% if error %}
+      <div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5 text-[12.5px] text-red-700 font-semibold">
+        <svg class="w-4 h-4 mt-px flex-shrink-0 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="post" id="regForm" novalidate autocomplete="off">
+        {% csrf_token %}
+        <input type="hidden" name="role" id="roleInput" value="{{ form_data.role|default:'peserta' }}"/>
+
+        <!-- Role info banners -->
+        <div id="infoPeserta" class="mb-4 px-3.5 py-2.5 rounded-xl text-[11.5px] font-semibold" style="background:#eff6ff;color:#1d4ed8">
+          👤 Akaun <strong>Peserta</strong> — untuk menyertai bengkel yang diadakan oleh organisasi.
+        </div>
+        <div id="infoPenganjur" class="mb-4 px-3.5 py-2.5 rounded-xl text-[11.5px] font-semibold hidden" style="background:#fef3c7;color:#92400e">
+          🏢 Akaun <strong>Penganjur</strong> — permohonan akan disemak dan diluluskan oleh admin sebelum anda boleh mengurus bengkel.
+        </div>
+
+        <!-- Username (hidden for penganjur) -->
+        <div class="mb-4" id="usernameDiv">
+          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Pengguna <span class="text-red-500">*</span></label>
+          <input type="text" name="username" id="fUsername" required minlength="3" maxlength="30"
+                 value="{{ form_data.username|default:'' }}"
+                 placeholder="cth: ahmad_kkm"
+                 class="input-field" autocomplete="username"/>
+          <div id="usernameMsg" class="text-[11px] mt-1 hidden"></div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Alamat E-mel <span class="text-red-500">*</span></label>
+          <input type="email" name="email" id="fEmail" required
+                 value="{{ form_data.email|default:'' }}"
+                 placeholder="nama@kkm.gov.my"
+                 class="input-field" autocomplete="email"/>
+          <div id="emailMsg" class="text-[11px] mt-1 hidden"></div>
+        </div>
+
+        <!-- Full name -->
+        <div class="mb-4">
+          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Penuh <span class="text-slate-400 font-normal">(Pilihan)</span></label>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" name="first_name" placeholder="Nama pertama"
+                   value="{{ form_data.first_name|default:'' }}"
+                   class="input-field"/>
+            <input type="text" name="last_name" placeholder="Nama akhir"
+                   value="{{ form_data.last_name|default:'' }}"
+                   class="input-field"/>
+          </div>
+        </div>
+
+        <!-- === Penganjur-only fields === -->
+        <div id="penganjurFields" class="hidden space-y-4 mb-4">
+          <div class="border-t border-dashed border-amber-200 pt-4">
+            <p class="text-[10.5px] text-amber-600 font-bold uppercase tracking-widest mb-3">Maklumat Organisasi</p>
+          </div>
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              Nama Organisasi <span class="text-red-500" id="orgRequired">*</span>
+            </label>
+            <input type="text" name="organisasi" id="fOrganisasi" maxlength="200"
+                   value="{{ form_data.organisasi|default:'' }}"
+                   placeholder="cth: Kementerian Kesihatan Malaysia"
+                   class="input-field"/>
+          </div>
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              Jawatan / Jabatan <span class="text-slate-400 font-normal">(Pilihan)</span>
+            </label>
+            <input type="text" name="jabatan" maxlength="200"
+                   value="{{ form_data.jabatan|default:'' }}"
+                   placeholder="cth: Pegawai Tadbir, Ketua Unit HR"
+                   class="input-field"/>
+          </div>
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              No. Telefon <span class="text-slate-400 font-normal">(Pilihan)</span>
+            </label>
+            <input type="tel" name="telefon" maxlength="30"
+                   value="{{ form_data.telefon|default:'' }}"
+                   placeholder="cth: 0123456789"
+                   class="input-field"/>
+          </div>
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              Sebab Permohonan <span class="text-slate-400 font-normal">(Pilihan)</span>
+            </label>
+            <textarea name="sebab" rows="2" maxlength="500"
+                      placeholder="Nyatakan sebab anda ingin menjadi penganjur..."
+                      class="input-field resize-none">{{ form_data.sebab|default:'' }}</textarea>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4" id="pw1Div">
+          <label id="pw1Label" class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Kata Laluan <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input type="password" name="password1" id="fPw1" required minlength="8"
+                   placeholder="Minimum 8 aksara"
+                   class="input-field pr-10" autocomplete="new-password"/>
+            <button type="button" class="eye-btn" id="eyeBtn1" onclick="toggleEye('fPw1','eyeBtn1')">
+              <svg id="eyeIcon1" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+          </div>
+          <!-- Strength meter -->
+          <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="strengthBar" class="strength-bar h-full rounded-full bg-slate-200" style="width:0%"></div>
+          </div>
+          <div id="strengthLbl" class="text-[11px] text-slate-400 mt-1">Masukkan kata laluan</div>
+        </div>
+
+        <!-- Confirm password (hidden for penganjur) -->
+        <div class="mb-5" id="confirmPwDiv">
+          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Sahkan Kata Laluan <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input type="password" name="password2" id="fPw2" required
+                   placeholder="Ulang kata laluan"
+                   class="input-field pr-10" autocomplete="new-password"/>
+            <button type="button" class="eye-btn" id="eyeBtn2" onclick="toggleEye('fPw2','eyeBtn2')">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+          </div>
+          <div id="matchMsg" class="text-[11px] mt-1 hidden"></div>
+        </div>
+
+        <!-- Terms -->
+        <div class="flex items-start gap-2.5 mb-6">
+          <input type="checkbox" id="terms" name="terms" required class="mt-0.5 w-4 h-4 rounded border-slate-300 accent-[#2563eb] cursor-pointer"/>
+          <label for="terms" class="text-[11.5px] text-slate-500 leading-relaxed cursor-pointer">
+            Saya bersetuju dengan <strong class="text-[#2563eb]">Dasar Privasi</strong> dan
+            penggunaan maklumat adalah tertakluk kepada <strong class="text-[#2563eb]">PDPA 2010</strong>.
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="regBtn"
+                class="relative w-full py-3 text-white text-[13.5px] font-extrabold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 overflow-hidden"
+                style="background:linear-gradient(135deg,#1e40af,#2563eb)" id="regBtn">
+          <span id="regBtnText" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            <span id="btnLabel">Daftar Akaun</span>
+          </span>
+          <span id="regSpinner" class="hidden">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+            Memproses…
+          </span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer links -->
+    <div class="border-t border-slate-100 px-8 py-4 flex flex-col gap-2 text-center">
+      <span class="text-[12.5px] text-slate-500">Sudah ada akaun?
+        <a href="{% url 'login' %}" class="text-[#2563eb] font-bold hover:underline ml-1">Log Masuk</a>
+      </span>
+      <a href="{% url 'home' %}" class="text-[11.5px] text-slate-400 hover:text-slate-600 transition-colors">
+        ← Kembali ke Laman Utama
+      </a>
+    </div>
+  </div>
+
+  <p class="text-white/30 text-[11px] mt-6 text-center card-in" style="animation-delay:.2s">
+    &copy; 2026 Kementerian Kesihatan Malaysia &bull; NDHB v1.0
+  </p>
+
+<script>
+(function(){
+  /* ── Role switcher ─────────────────────────────────────────── */
+  window.switchRole = function(role) {
+    var isPenganjur = role === 'penganjur';
+    document.getElementById('roleInput').value = role;
+
+    // tabs
+    var tP = document.getElementById('tabPeserta');
+    var tG = document.getElementById('tabPenganjur');
+    if (isPenganjur) {
+      tP.className = 'flex-1 py-3 text-[12.5px] font-bold transition-colors border-b-2 border-transparent text-slate-400 hover:text-slate-600 bg-white';
+      tG.className = 'flex-1 py-3 text-[12.5px] font-bold transition-colors border-b-2 border-amber-500 text-amber-700 bg-amber-50/60';
+    } else {
+      tP.className = 'flex-1 py-3 text-[12.5px] font-bold transition-colors border-b-2 border-blue-600 text-blue-700 bg-blue-50/60';
+      tG.className = 'flex-1 py-3 text-[12.5px] font-bold transition-colors border-b-2 border-transparent text-slate-400 hover:text-slate-600 bg-white';
+    }
+
+    // info banners
+    document.getElementById('infoPeserta').classList.toggle('hidden', isPenganjur);
+    document.getElementById('infoPenganjur').classList.toggle('hidden', !isPenganjur);
+
+    // reset button state when switching tabs
+    document.getElementById('regBtn').disabled = false;
+    document.getElementById('regBtn').style.opacity = '1';
+
+    // username field — not needed for penganjur (auto-generated from email)
+    var usernameDiv = document.getElementById('usernameDiv');
+    var fUsername   = document.getElementById('fUsername');
+    usernameDiv.classList.toggle('hidden', isPenganjur);
+    fUsername.required = !isPenganjur;
+
+    // extra org fields
+    var fields = document.getElementById('penganjurFields');
+    fields.classList.toggle('hidden', !isPenganjur);
+    document.getElementById('fOrganisasi').required = isPenganjur;
+
+    // confirm password — not needed for penganjur
+    var confirmDiv = document.getElementById('confirmPwDiv');
+    var fPw2       = document.getElementById('fPw2');
+    confirmDiv.classList.toggle('hidden', isPenganjur);
+    fPw2.required = !isPenganjur;
+
+    // password field — hidden entirely for penganjur (no password needed until approval)
+    var pw1Div  = document.getElementById('pw1Div');
+    var pw1     = document.getElementById('fPw1');
+    var strBar  = document.getElementById('strengthBar').parentElement;
+    var strLbl  = document.getElementById('strengthLbl');
+    pw1Div.classList.toggle('hidden', isPenganjur);
+    pw1.required = !isPenganjur;
+    if (isPenganjur) {
+      pw1.value = '';
+      pw1.removeAttribute('minlength');
+    } else {
+      pw1.setAttribute('minlength', '8');
+    }
+
+    // button label + colour
+    var btn    = document.getElementById('regBtn');
+    var btnLbl = document.getElementById('btnLabel');
+    if (isPenganjur) {
+      btn.style.background = 'linear-gradient(135deg,#92400e,#d97706)';
+      btnLbl.textContent   = 'Hantar Permohonan Penganjur';
+    } else {
+      btn.style.background = 'linear-gradient(135deg,#1e40af,#2563eb)';
+      btnLbl.textContent   = 'Daftar Akaun';
+    }
+  };
+
+  /* Restore role on page reload (validation error) */
+  var savedRole = document.getElementById('roleInput').value;
+  if (savedRole === 'penganjur') { switchRole('penganjur'); }
+
+
+
+  /* Password toggle */
+  window.toggleEye = function(inputId, btnId) {
+    var inp = document.getElementById(inputId);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  };
+
+  /* Password strength */
+  var pw1 = document.getElementById('fPw1');
+  var bar = document.getElementById('strengthBar');
+  var lbl = document.getElementById('strengthLbl');
+  var levels = [
+    {min:0,  w:'0%',  bg:'bg-slate-200', text:'Masukkan kata laluan', cls:'text-slate-400'},
+    {min:1,  w:'25%', bg:'bg-red-400',   text:'Lemah',                cls:'text-red-500'},
+    {min:2,  w:'50%', bg:'bg-amber-400', text:'Sederhana',            cls:'text-amber-500'},
+    {min:3,  w:'75%', bg:'bg-blue-400',  text:'Baik',                 cls:'text-blue-500'},
+    {min:4,  w:'100%',bg:'bg-emerald-500',text:'Kuat',                cls:'text-emerald-600'},
+  ];
+  pw1.addEventListener('input', function(){
+    var v = this.value, score = 0;
+    if(v.length >= 8) score++;
+    if(/[A-Z]/.test(v)) score++;
+    if(/[0-9]/.test(v)) score++;
+    if(/[^A-Za-z0-9]/.test(v)) score++;
+    var lvl = levels[Math.min(v.length ? score+1 : 0, 4)];
+    bar.style.width = lvl.w;
+    bar.className = 'strength-bar h-full rounded-full ' + lvl.bg;
+    lbl.textContent = lvl.text; lbl.className = 'text-[11px] mt-1 ' + lvl.cls;
+    checkMatch();
+  });
+
+  /* Match check */
+  var pw2 = document.getElementById('fPw2');
+  var matchMsg = document.getElementById('matchMsg');
+  function checkMatch(){
+    if(!pw2.value) return;
+    var ok = pw1.value === pw2.value;
+    matchMsg.className = 'text-[11px] mt-1 font-semibold ' + (ok ? 'text-emerald-600' : 'text-red-500');
+    matchMsg.textContent = ok ? '✓ Kata laluan sepadan' : '✗ Kata laluan tidak sepadan';
+    matchMsg.classList.remove('hidden');
+    pw2.className = 'input-field pr-10 ' + (ok ? 'valid' : 'invalid');
+  }
+  pw2.addEventListener('input', checkMatch);
+
+  /* Username validation feedback */
+  var uField = document.getElementById('fUsername');
+  var uMsg   = document.getElementById('usernameMsg');
+  uField.addEventListener('input', function(){
+    var v = this.value.trim();
+    if(v.length === 0){ uMsg.classList.add('hidden'); this.className='input-field'; return; }
+    if(v.length < 3) { uMsg.textContent='Minimum 3 aksara'; uMsg.className='text-[11px] mt-1 text-red-500 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field invalid'; }
+    else if(/[^a-zA-Z0-9_]/.test(v)) { uMsg.textContent='Hanya huruf, nombor, dan garis bawah (_) dibenarkan'; uMsg.className='text-[11px] mt-1 text-amber-600 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field invalid'; }
+    else { uMsg.textContent='✓ Format nama pengguna sah'; uMsg.className='text-[11px] mt-1 text-emerald-600 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field valid'; }
+  });
+
+  /* Email validation */
+  var eField = document.getElementById('fEmail');
+  var eMsg   = document.getElementById('emailMsg');
+  eField.addEventListener('blur', function(){
+    var v = this.value.trim();
+    if(!v){ eMsg.classList.add('hidden'); return; }
+    var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    eMsg.textContent = ok ? '✓ Format e-mel sah' : '✗ Format e-mel tidak sah';
+    eMsg.className = 'text-[11px] mt-1 font-semibold ' + (ok?'text-emerald-600':'text-red-500');
+    eMsg.classList.remove('hidden');
+    this.className = 'input-field ' + (ok?'valid':'invalid');
+  });
+
+  /* Submit loading */
+  document.getElementById('regForm').addEventListener('submit', function(){
+    document.getElementById('regBtnText').classList.add('hidden');
+    document.getElementById('regSpinner').classList.remove('hidden');
+    document.getElementById('regBtn').disabled = true;
+  });
+})();
+</script>
+</body>
+</html>

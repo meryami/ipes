@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Tentative — {{ bengkel.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:"Inter",sans-serif;background:#f1f5f9;margin:0}
+    .card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:opacity .15s}
+    .btn:hover{opacity:.82}
+    input,textarea,select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;font-family:inherit;outline:none;transition:border .15s}
+    input:focus,textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+    label{font-size:12px;font-weight:700;color:#475569;display:block;margin-bottom:5px;letter-spacing:.03em}
+  </style>
+</head>
+<body class="pb-16">
+
+<!-- Topbar -->
+<div style="background:#0f172a;height:52px;display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:50;gap:12px">
+  <a href="{{ back_url }}" style="color:rgba(255,255,255,.35);font-size:12px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:5px">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    Kembali
+  </a>
+  <span style="color:rgba(255,255,255,.12)">|</span>
+  <span style="color:#fff;font-size:13px;font-weight:700">Tentative Program</span>
+  <span style="margin-left:4px;font-size:12px;color:rgba(255,255,255,.3)">— {{ bengkel.title }}</span>
+</div>
+
+<div style="max-width:760px;margin:0 auto;padding:28px 20px">
+
+  {% if messages %}
+  {% for m in messages %}
+  <div style="margin-bottom:14px;padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;{% if m.tags == 'success' %}background:#f0fdf4;color:#166534;border:1px solid #bbf7d0{% else %}background:#fef2f2;color:#991b1b;border:1px solid #fecaca{% endif %}">{{ m }}</div>
+  {% endfor %}
+  {% endif %}
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+
+    <!-- ── Add form ── -->
+    <div class="card" style="padding:22px">
+      <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:18px">+ Tambah Item</div>
+      <form method="post" id="add-tentative-form">
+        {% csrf_token %}
+        <div style="margin-bottom:13px">
+          <label>Masa <span style="color:#ef4444">*</span></label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="time" id="masa-mula" style="width:auto" required>
+            <span style="color:#94a3b8;font-size:12px;font-weight:700;flex-shrink:0">–</span>
+            <input type="time" id="masa-tamat" style="width:auto">
+          </div>
+          <input type="hidden" name="masa" id="masa-hidden">
+        </div>
+        <div style="margin-bottom:13px">
+          <label>Aktiviti <span style="color:#ef4444">*</span></label>
+          <input type="text" name="aktiviti" placeholder="cth: Pendaftaran Peserta" required/>
+        </div>
+        <div style="margin-bottom:13px">
+          <label>Penerangan (pilihan)</label>
+          <textarea name="penerangan" rows="2" placeholder="Butiran lanjut jika perlu..." style="resize:vertical"></textarea>
+        </div>
+        <div style="margin-bottom:18px">
+          <label>Urutan (nombor)</label>
+          <input type="number" name="urutan" value="0" min="0" style="width:100px"/>
+        </div>
+        <button type="submit" class="btn" style="background:#2563eb;color:#fff;width:100%;justify-content:center">Tambah Item</button>
+      </form>
+    </div>
+
+    <!-- ── Item list ── -->
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#94a3b8;margin-bottom:12px">Senarai Tentative</div>
+      {% if items %}
+      <div style="display:flex;flex-direction:column;gap:8px">
+        {% for item in items %}
+        <div class="card" style="overflow:hidden">
+          <!-- View row -->
+          <div style="display:flex;overflow:hidden" id="view-{{ item.pk }}">
+            <div style="width:4px;flex-shrink:0;background:#2563eb"></div>
+            <div style="padding:13px 15px;flex:1">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:11.5px;font-weight:800;color:#2563eb;margin-bottom:3px">{{ item.masa }}</div>
+                  <div style="font-size:13.5px;font-weight:700;color:#0f172a">{{ item.aktiviti }}</div>
+                  {% if item.penerangan %}<p style="font-size:12px;color:#64748b;margin:5px 0 0;line-height:1.5">{{ item.penerangan }}</p>{% endif %}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                  <button type="button" onclick="toggleEdit({{ item.pk }})" style="border:none;background:none;cursor:pointer;padding:4px 7px;border-radius:5px;color:#94a3b8;transition:.15s" title="Edit" onmouseover="this.style.background='#eff6ff';this.style.color='#2563eb'" onmouseout="this.style.background='none';this.style.color='#94a3b8'">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  </button>
+                  <form method="post" action="{% url 'bengkel:tentative_delete' bengkel.pk item.pk %}" onsubmit="return confirm('Padam item ini?')" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" style="border:none;background:none;cursor:pointer;padding:4px 7px;border-radius:5px;color:#94a3b8;transition:.15s" title="Padam" onmouseover="this.style.background='#fee2e2';this.style.color='#ef4444'" onmouseout="this.style.background='none';this.style.color='#94a3b8'">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Edit row (hidden by default) -->
+          <div id="edit-{{ item.pk }}" style="display:none;background:#f8fafc;border-top:1px solid #e2e8f0;padding:14px 15px">
+            <form method="post" action="{% url 'bengkel:tentative_edit' bengkel.pk item.pk %}" class="edit-form" data-id="{{ item.pk }}">
+              {% csrf_token %}
+              <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+                <div>
+                  <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">Masa</label>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <input type="time" class="edit-masa-mula" value="{{ item.masa|slice:':5' }}" style="width:auto;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none">
+                    <span style="color:#94a3b8;font-size:12px;font-weight:700">–</span>
+                    <input type="time" class="edit-masa-tamat" value="{{ item.masa|slice:'8:13' }}" style="width:auto;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none">
+                  </div>
+                  <input type="hidden" name="masa" class="edit-masa-hidden" value="{{ item.masa }}">
+                </div>
+                <div style="flex:1;min-width:150px">
+                  <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">Aktiviti</label>
+                  <input type="text" name="aktiviti" value="{{ item.aktiviti }}" required style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none">
+                </div>
+                <div style="flex:1;min-width:150px">
+                  <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">Penerangan</label>
+                  <input type="text" name="penerangan" value="{{ item.penerangan }}" style="width:100%;padding:7px 10px;border-radius:7px;border:1px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none" placeholder="Pilihan...">
+                </div>
+                <div style="display:flex;gap:6px">
+                  <button type="submit" style="padding:7px 14px;background:#2563eb;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer">Simpan</button>
+                  <button type="button" onclick="toggleEdit({{ item.pk }})" style="padding:7px 12px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">Batal</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card" style="padding:36px 20px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">📋</div>
+        <div style="font-size:13px;font-weight:600;color:#64748b">Belum ada item tentative.<br>Tambah dari borang sebelah.</div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+<script>
+function updateAddMasa() {
+  var mula  = document.getElementById('masa-mula').value;
+  var tamat = document.getElementById('masa-tamat').value;
+  document.getElementById('masa-hidden').value = mula && tamat ? mula + ' - ' + tamat : (mula || tamat || '');
+}
+document.getElementById('masa-mula').addEventListener('change', updateAddMasa);
+document.getElementById('masa-tamat').addEventListener('change', updateAddMasa);
+
+// Also combine on submit as fallback
+document.getElementById('add-tentative-form').addEventListener('submit', function() {
+  updateAddMasa();
+});
+
+// Toggle inline edit panel
+function toggleEdit(id) {
+  var view = document.getElementById('view-' + id);
+  var edit = document.getElementById('edit-' + id);
+  if (edit.style.display === 'none') {
+    edit.style.display = 'block';
+    view.style.opacity = '0.4';
+  } else {
+    edit.style.display = 'none';
+    view.style.opacity = '1';
+  }
+}
+
+// Edit forms: combine time inputs before submit
+document.querySelectorAll('.edit-form').forEach(function(form) {
+  var mulaEl  = form.querySelector('.edit-masa-mula');
+  var tamatEl = form.querySelector('.edit-masa-tamat');
+  var hidden  = form.querySelector('.edit-masa-hidden');
+  function updateEdit() {
+    hidden.value = mulaEl.value && tamatEl.value ? mulaEl.value + ' - ' + tamatEl.value : (mulaEl.value || tamatEl.value || hidden.value);
+  }
+  mulaEl.addEventListener('change', updateEdit);
+  tamatEl.addEventListener('change', updateEdit);
+  form.addEventListener('submit', updateEdit);
+});
+</script>
+</body>
+</html>
