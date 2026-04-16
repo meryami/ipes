@@ -8,7 +8,20 @@
 {% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>{% endblock %}
 
 {% block content %}
-<style>:root{--accent:#0891b2}</style>
+<style>:root{--accent:#0891b2}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+</style>
+
+<!-- AI Loading Overlay -->
+<div id="ai-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);z-index:999;flex-direction:column;align-items:center;justify-content:center">
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="width:10px;height:10px;border-radius:50%;background:#0891b2;animation:bounce .8s infinite"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:#0891b2;animation:bounce .8s .15s infinite"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:#0891b2;animation:bounce .8s .3s infinite"></div>
+  </div>
+  <div style="font-size:14px;font-weight:700;color:#1e293b">AI sedang menganalisis...</div>
+  <div style="font-size:12px;color:#64748b;margin-top:4px">Sila tunggu sebentar</div>
+</div>
 
 <div style="background:#0891b2;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
   <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">Alat Analitik Situasi</div>
@@ -20,16 +33,38 @@
 
   <div class="card" style="padding:28px">
     <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Analisis SOAR</div>
+
+    {% if ps %}
+    <div style="background:#ecfeff;border:1.5px solid #67e8f9;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Problem Statement Tersedia</div>
+        <div style="font-size:12px;color:#0c4a6e;line-height:1.4">{{ ps.masalah_utama|truncatechars:90 }}</div>
+      </div>
+      <form method="post" onsubmit="document.getElementById('ai-overlay').style.display='flex'">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="jana_ai">
+        <button type="submit" style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">✦ Jana AI</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if ai_error %}
+    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#b91c1c">⚠️ Ralat AI: {{ ai_error }}</div>
+    {% endif %}
+    {% if ai_result %}
+    <div style="background:#ecfeff;border:1.5px solid #67e8f9;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0c4a6e;font-weight:600">✦ AI telah mengisi borang di bawah. Semak dan simpan.</div>
+    {% endif %}
+
     <form method="post">
       {% csrf_token %}
 
-      <div class="field-group"><div class="field-label" style="color:#0891b2"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">💪</span>S — Kekuatan (Strengths)</div><div class="field-hint">Apakah yang paling kukuh dalam organisasi anda? Aset unik, keupayaan terbaik dan kejayaan sedia ada.</div><textarea name="kekuatan" placeholder="Contoh: Pasukan pakar berpengalaman, teknologi proprietari, kepercayaan pelanggan setia..." required></textarea></div>
+      <div class="field-group"><div class="field-label" style="color:#0891b2"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">💪</span>S — Kekuatan (Strengths)</div><div class="field-hint">Apakah yang paling kukuh dalam organisasi anda? Aset unik, keupayaan terbaik dan kejayaan sedia ada.</div><textarea name="kekuatan" placeholder="Contoh: Pasukan pakar berpengalaman, teknologi proprietari, kepercayaan pelanggan setia..." required>{% if ai_result %}{{ ai_result.kekuatan }}{% endif %}</textarea></div>
 
-      <div class="field-group"><div class="field-label" style="color:#0e7490"><span style="width:22px;height:22px;border-radius:6px;background:#a5f3fc;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>O — Peluang (Opportunities)</div><div class="field-hint">Potensi luar yang boleh dimanfaatkan — trend baru, keperluan pasaran, ruang untuk berkembang.</div><textarea name="peluang" placeholder="Contoh: Pertumbuhan pasaran telehealth 30% setahun, permintaan AI diagnostik meningkat..." required></textarea></div>
+      <div class="field-group"><div class="field-label" style="color:#0e7490"><span style="width:22px;height:22px;border-radius:6px;background:#a5f3fc;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>O — Peluang (Opportunities)</div><div class="field-hint">Potensi luar yang boleh dimanfaatkan — trend baru, keperluan pasaran, ruang untuk berkembang.</div><textarea name="peluang" placeholder="Contoh: Pertumbuhan pasaran telehealth 30% setahun, permintaan AI diagnostik meningkat..." required>{% if ai_result %}{{ ai_result.peluang }}{% endif %}</textarea></div>
 
-      <div class="field-group"><div class="field-label" style="color:#155e75"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;border:1px solid #22d3ee;display:inline-flex;align-items:center;justify-content:center;font-size:12px">✨</span>A — Aspirasi (Aspirations)</div><div class="field-hint">Impian dan visi ideal — masa depan yang diinginkan jika semua berjalan dengan baik.</div><textarea name="aspirasi" placeholder="Contoh: Menjadi platform kesihatan #1 di Malaysia, memberi akses rawatan kepada 1 juta rakyat..." required></textarea></div>
+      <div class="field-group"><div class="field-label" style="color:#155e75"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;border:1px solid #22d3ee;display:inline-flex;align-items:center;justify-content:center;font-size:12px">✨</span>A — Aspirasi (Aspirations)</div><div class="field-hint">Impian dan visi ideal — masa depan yang diinginkan jika semua berjalan dengan baik.</div><textarea name="aspirasi" placeholder="Contoh: Menjadi platform kesihatan #1 di Malaysia, memberi akses rawatan kepada 1 juta rakyat..." required>{% if ai_result %}{{ ai_result.aspirasi }}{% endif %}</textarea></div>
 
-      <div class="field-group"><div class="field-label" style="color:#0c4a6e"><span style="width:22px;height:22px;border-radius:6px;background:#bae6fd;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🏆</span>R — Keputusan (Results)</div><div class="field-hint">Apakah hasil atau petunjuk kejayaan yang boleh diukur bagi membuktikan aspirasi tercapai?</div><textarea name="keputusan" placeholder="Contoh: 500,000 pengguna aktif dalam 2 tahun, pendapatan RM10 juta, NPS skor >70..." required></textarea></div>
+      <div class="field-group"><div class="field-label" style="color:#0c4a6e"><span style="width:22px;height:22px;border-radius:6px;background:#bae6fd;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🏆</span>R — Keputusan (Results)</div><div class="field-hint">Apakah hasil atau petunjuk kejayaan yang boleh diukur bagi membuktikan aspirasi tercapai?</div><textarea name="keputusan" placeholder="Contoh: 500,000 pengguna aktif dalam 2 tahun, pendapatan RM10 juta, NPS skor >70..." required>{% if ai_result %}{{ ai_result.keputusan }}{% endif %}</textarea></div>
 
       <div class="field-group"><div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div><textarea name="catatan" placeholder="Sebarang catatan tambahan..." style="min-height:60px"></textarea></div>
 
@@ -50,12 +85,12 @@
           <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y, H:i" }}</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div><div class="rec-label">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan|truncatechars:80 }}</div></div>
-          <div><div class="rec-label">🌱 Peluang</div><div class="rec-value">{{ e.peluang|truncatechars:80 }}</div></div>
-          <div><div class="rec-label">✨ Aspirasi</div><div class="rec-value">{{ e.aspirasi|truncatechars:80 }}</div></div>
-          <div><div class="rec-label">🏆 Keputusan</div><div class="rec-value">{{ e.keputusan|truncatechars:80 }}</div></div>
+          <div><div class="rec-label">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan }}</div></div>
+          <div><div class="rec-label">🌱 Peluang</div><div class="rec-value">{{ e.peluang }}</div></div>
+          <div><div class="rec-label">✨ Aspirasi</div><div class="rec-value">{{ e.aspirasi }}</div></div>
+          <div><div class="rec-label">🏆 Keputusan</div><div class="rec-value">{{ e.keputusan }}</div></div>
         </div>
-        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan|truncatechars:150 }}</div>{% endif %}
+        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan }}</div>{% endif %}
         <form method="post" action="{% url 'bengkel:analisis_soar_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">
           {% csrf_token %}<button type="submit" style="font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:0">Padam ✕</button>
         </form>

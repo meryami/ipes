@@ -1,0 +1,129 @@
+{% extends "bengkel/analisis/_base.html" %}
+{% block title %}Root Cause Validation{% endblock %}
+{% block tool_name %}Root Cause Validation{% endblock %}
+{% block tool_tag %}LANGKAH 5 — SPAF{% endblock %}
+{% block accent_bg %}#059669{% endblock %}
+{% block accent_color %}#059669{% endblock %}
+{% block accent_light %}#d1fae5{% endblock %}
+{% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{% endblock %}
+
+{% block content %}
+<style>:root{--accent:#059669}</style>
+
+<!-- Breadcrumb -->
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+  <a href="{% url 'bengkel:spaf_hub' %}" style="font-size:12px;color:#4f46e5;font-weight:600;text-decoration:none">← SPAF Framework</a>
+  <span style="color:#cbd5e1;font-size:12px">/</span>
+  <span style="font-size:12px;color:#64748b;font-weight:600">Root Cause Validation</span>
+</div>
+
+<!-- Hero -->
+<div style="background:#059669;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
+  <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">SPAF · Langkah 5</div>
+  <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">Root Cause Validation</h1>
+  <p style="font-size:12.5px;opacity:.75;margin:0">Sahkan punca akar melalui kaedah pengesahan dan dokumentasikan dapatan</p>
+</div>
+
+<!-- Idea Box -->
+<div style="max-width:640px;margin-bottom:16px;background:linear-gradient(135deg,#fffbeb,#fefce8);border:1.5px solid #fde68a;border-radius:16px;padding:20px 22px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:32px;height:32px;border-radius:9px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">💡</div>
+      <div>
+        <div style="font-size:12.5px;font-weight:800;color:#92400e">Idea &amp; Nota Anda</div>
+        <div style="font-size:11px;color:#b45309;margin-top:1px">Bagaimana anda ingin sahkan punca? Data apa yang ada? Tulis dulu sebelum isi borang</div>
+      </div>
+    </div>
+    <span id="idea-status-rcv" style="font-size:11px;font-weight:700;color:#059669;opacity:0;transition:opacity .4s">✓ Tersimpan</span>
+  </div>
+  <textarea id="idea-box-rcv" placeholder="Punca yang saya nak sahkan ialah... Saya boleh gunakan kaedah... Data yang ada ialah..." style="width:100%;min-height:96px;border:none;background:transparent;font-size:13px;color:#78350f;font-family:inherit;outline:none;resize:vertical;line-height:1.7"></textarea>
+</div>
+<script>
+(function(){
+  var KEY='spaf_idea_rcv', ta=document.getElementById('idea-box-rcv'), st=document.getElementById('idea-status-rcv'), t;
+  ta.value=localStorage.getItem(KEY)||'';
+  ta.addEventListener('input',function(){clearTimeout(t);t=setTimeout(function(){localStorage.setItem(KEY,ta.value);st.style.opacity='1';setTimeout(function(){st.style.opacity='0';},2000);},600);});
+})();
+</script>
+
+<div class="card" style="padding:28px;max-width:640px">
+    <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Root Cause Validation</div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="field-group" style="--accent:#059669">
+        <div class="field-label" style="color:#059669">
+          <span style="width:22px;height:22px;border-radius:6px;background:#d1fae5;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>
+          Punca yang Disahkan
+        </div>
+        <div class="field-hint">Nyatakan punca akar yang akan disahkan kebenarannya dalam validasi ini.</div>
+        <textarea name="punca" placeholder="Punca akar yang diperolehi daripada Root Cause Analysis..." required style="min-height:60px"></textarea>
+      </div>
+
+      <div class="field-group" style="--accent:#059669">
+        <div class="field-label" style="color:#059669">
+          <span style="width:22px;height:22px;border-radius:6px;background:#d1fae5;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🔬</span>
+          Kaedah Pengesahan
+        </div>
+        <div class="field-hint">Bagaimana punca ini disahkan? Temubual, pemerhatian, audit, ujian data, dll.</div>
+        <textarea name="kaedah" placeholder="Kaedah yang digunakan untuk mengesahkan punca akar ini..." required></textarea>
+      </div>
+
+      <div class="field-group" style="--accent:#059669">
+        <div class="field-label" style="color:#059669">
+          <span style="width:22px;height:22px;border-radius:6px;background:#d1fae5;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📋</span>
+          Dapatan Pengesahan
+        </div>
+        <div class="field-hint">Apa yang ditemui semasa proses pengesahan? Nyatakan fakta dan penemuan konkrit.</div>
+        <textarea name="dapatan" placeholder="Hasil dapatan semasa proses pengesahan dijalankan..." required></textarea>
+      </div>
+
+      <div class="field-group" style="--accent:#059669">
+        <div class="field-label" style="color:#059669">
+          <span style="width:22px;height:22px;border-radius:6px;background:#d1fae5;display:inline-flex;align-items:center;justify-content:center;font-size:12px">✅</span>
+          Kesimpulan
+        </div>
+        <div class="field-hint">Adakah punca akar ini disahkan? Nyatakan DISAHKAN / TIDAK DISAHKAN / SEBAHAGIAN dan alasannya.</div>
+        <textarea name="kesimpulan" placeholder="Contoh: DISAHKAN — Dapatan menunjukkan punca ini benar-benar menyebabkan masalah kerana..." required></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div>
+        <textarea name="catatan" placeholder="Pemerhatian lanjut, cadangan tindakan, atau maklumat tambahan..." style="min-height:60px"></textarea>
+      </div>
+
+      <button type="submit" class="tbtn" style="background:linear-gradient(135deg,#059669,#047857);color:#fff;width:100%;justify-content:center">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Simpan Root Cause Validation
+      </button>
+    </form>
+</div>
+
+{% if existing %}
+<div style="max-width:640px;margin-top:32px">
+  <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+    <span style="width:7px;height:7px;border-radius:50%;background:#059669;display:inline-block"></span>
+    Rekod Root Cause Validation ({{ existing|length }})
+  </div>
+  {% for obj in existing %}
+  <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:10px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">{{ obj.created_at|date:"d/m/Y H:i" }}</div>
+        <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:3px">Punca</div>
+        <div style="font-size:13px;color:#1e293b;line-height:1.6;margin-bottom:8px">{{ obj.punca }}</div>
+        <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:3px">Kaedah Pengesahan</div>
+        <div style="font-size:12.5px;color:#475569;line-height:1.5;margin-bottom:8px">{{ obj.kaedah }}</div>
+        <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:3px">Kesimpulan</div>
+        <div style="font-size:12.5px;color:#475569;line-height:1.5">{{ obj.kesimpulan }}</div>
+      </div>
+      <form method="post" action="{% url 'bengkel:spaf_rcv_delete' obj.pk %}" onsubmit="return confirm('Padam rekod ini?')" style="flex-shrink:0">
+        {% csrf_token %}
+        <button type="submit" style="background:none;border:1.5px solid #fca5a5;color:#ef4444;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer">Padam</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

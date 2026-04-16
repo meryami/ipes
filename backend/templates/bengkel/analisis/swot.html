@@ -8,7 +8,20 @@
 {% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>{% endblock %}
 
 {% block content %}
-<style>:root{--accent:#2563eb}</style>
+<style>:root{--accent:#2563eb}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+</style>
+
+<!-- AI Loading Overlay -->
+<div id="ai-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);z-index:999;flex-direction:column;align-items:center;justify-content:center">
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="width:10px;height:10px;border-radius:50%;background:#2563eb;animation:bounce .8s infinite"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:#2563eb;animation:bounce .8s .15s infinite"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:#2563eb;animation:bounce .8s .3s infinite"></div>
+  </div>
+  <div style="font-size:14px;font-weight:700;color:#1e293b">AI sedang menganalisis...</div>
+  <div style="font-size:12px;color:#64748b;margin-top:4px">Sila tunggu sebentar</div>
+</div>
 
 <!-- Hero -->
 <div style="background:#2563eb;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
@@ -22,6 +35,28 @@
   <!-- Form -->
   <div class="card" style="padding:28px">
     <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Analisis SWOT</div>
+
+    {% if ps %}
+    <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Problem Statement Tersedia</div>
+        <div style="font-size:12px;color:#1e40af;line-height:1.4">{{ ps.masalah_utama|truncatechars:90 }}</div>
+      </div>
+      <form method="post" onsubmit="document.getElementById('ai-overlay').style.display='flex'">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="jana_ai">
+        <button type="submit" style="background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">✦ Jana AI</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if ai_error %}
+    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#b91c1c">⚠️ Ralat AI: {{ ai_error }}</div>
+    {% endif %}
+    {% if ai_result %}
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#166534;font-weight:600">✦ AI telah mengisi borang di bawah. Semak dan simpan.</div>
+    {% endif %}
+
     <form method="post">
       {% csrf_token %}
 
@@ -31,7 +66,7 @@
           S — Kekuatan (Strengths)
         </div>
         <div class="field-hint">Apa kelebihan dalaman organisasi? Sumber, kemahiran, atau kelebihan berbanding pesaing.</div>
-        <textarea name="kekuatan" placeholder="Contoh: Kakitangan yang berpengalaman, teknologi terkini, reputasi yang kukuh..." required></textarea>
+        <textarea name="kekuatan" placeholder="Contoh: Kakitangan yang berpengalaman, teknologi terkini, reputasi yang kukuh..." required>{% if ai_result %}{{ ai_result.kekuatan }}{% endif %}</textarea>
       </div>
 
       <div class="field-group" style="--accent:#ef4444">
@@ -40,7 +75,7 @@
           W — Kelemahan (Weaknesses)
         </div>
         <div class="field-hint">Apa kelemahan dalaman yang perlu diperbaiki? Faktor yang menghalang prestasi.</div>
-        <textarea name="kelemahan" placeholder="Contoh: Kekurangan bajet, infrastruktur lapuk, proses yang tidak cekap..." required></textarea>
+        <textarea name="kelemahan" placeholder="Contoh: Kekurangan bajet, infrastruktur lapuk, proses yang tidak cekap..." required>{% if ai_result %}{{ ai_result.kelemahan }}{% endif %}</textarea>
       </div>
 
       <div class="field-group" style="--accent:#059669">
@@ -49,7 +84,7 @@
           O — Peluang (Opportunities)
         </div>
         <div class="field-hint">Peluang luaran yang boleh dimanfaatkan? Trend, perubahan pasaran, atau dasar baharu.</div>
-        <textarea name="peluang" placeholder="Contoh: Pertumbuhan digital kesihatan, sokongan kerajaan, kerjasama baharu..." required></textarea>
+        <textarea name="peluang" placeholder="Contoh: Pertumbuhan digital kesihatan, sokongan kerajaan, kerjasama baharu..." required>{% if ai_result %}{{ ai_result.peluang }}{% endif %}</textarea>
       </div>
 
       <div class="field-group" style="--accent:#d97706">
@@ -58,7 +93,7 @@
           T — Ancaman (Threats)
         </div>
         <div class="field-hint">Ancaman luaran yang perlu diwaspadai? Cabaran, persaingan, atau risiko.</div>
-        <textarea name="ancaman" placeholder="Contoh: Persaingan sengit, perubahan regulasi, ketidakpastian ekonomi..." required></textarea>
+        <textarea name="ancaman" placeholder="Contoh: Persaingan sengit, perubahan regulasi, ketidakpastian ekonomi..." required>{% if ai_result %}{{ ai_result.ancaman }}{% endif %}</textarea>
       </div>
 
       <div class="field-group">
@@ -84,12 +119,12 @@
           <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y, H:i" }}</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div><div class="rec-label" style="color:#2563eb">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan|truncatechars:120 }}</div></div>
-          <div><div class="rec-label" style="color:#ef4444">⚠️ Kelemahan</div><div class="rec-value">{{ e.kelemahan|truncatechars:120 }}</div></div>
-          <div><div class="rec-label" style="color:#059669">🌱 Peluang</div><div class="rec-value">{{ e.peluang|truncatechars:120 }}</div></div>
-          <div><div class="rec-label" style="color:#d97706">🔥 Ancaman</div><div class="rec-value">{{ e.ancaman|truncatechars:120 }}</div></div>
+          <div><div class="rec-label" style="color:#2563eb">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan }}</div></div>
+          <div><div class="rec-label" style="color:#ef4444">⚠️ Kelemahan</div><div class="rec-value">{{ e.kelemahan }}</div></div>
+          <div><div class="rec-label" style="color:#059669">🌱 Peluang</div><div class="rec-value">{{ e.peluang }}</div></div>
+          <div><div class="rec-label" style="color:#d97706">🔥 Ancaman</div><div class="rec-value">{{ e.ancaman }}</div></div>
         </div>
-        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan|truncatechars:150 }}</div>{% endif %}
+        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan }}</div>{% endif %}
         <form method="post" action="{% url 'bengkel:analisis_swot_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">
           {% csrf_token %}
           <button type="submit" style="font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:0">Padam ✕</button>

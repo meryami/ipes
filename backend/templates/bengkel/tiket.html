@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
 <head>
@@ -26,9 +27,11 @@
 
   <!-- Brand bar -->
   <div class="max-w-sm w-full mb-5 fade-up no-print flex items-center gap-3">
-    <div class="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-         style="background:linear-gradient(135deg,#1e40af,#2563eb)">&#127981;</div>
-    <div class="text-white/40 text-[11px] font-semibold">Nasional Digital Healthcare Blueprint (2026–2055)</div>
+    <div class="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0"
+         style="background:linear-gradient(135deg,#1e40af,#2563eb)">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:32px;height:32px;object-fit:cover">
+    </div>
+    <div class="text-white/40 text-[11px] font-semibold">Integrated Planning and Evaluation System (IPES)</div>
   </div>
 
   <!-- Ticket card -->
@@ -112,7 +115,7 @@
   </div>
 
   <p class="text-white/10 text-[10px] mt-6 fade-up no-print" style="animation-delay:.2s">
-    &copy; 2026 Kementerian Kesihatan Malaysia • NDHB
+    &copy; 2026 Kementerian Kesihatan Malaysia • IPES
   </p>
 
   <script>

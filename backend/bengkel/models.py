@@ -35,6 +35,21 @@ class Bengkel(models.Model):
         return self.title
 
     @property
+    def status_display(self):
+        """Return 'akan_datang', 'berlangsung', atau 'selesai'."""
+        from django.utils import timezone
+        now = timezone.now()
+        if self.tarikh > now:
+            return 'akan_datang'
+        if self.tarikh_tamat and self.tarikh_tamat >= now:
+            return 'berlangsung'
+        return 'selesai'
+
+    @property
+    def is_active(self):
+        return self.status_display != 'selesai'
+
+    @property
     def jumlah_jemputan(self):
         return self.jemputan.count()
 
@@ -348,3 +363,121 @@ class AnalisisSOAR(models.Model):
 
     def __str__(self):
         return f"SOAR — {self.user.get_full_name() or self.user.username} ({self.created_at:%d/%m/%Y})"
+
+
+# ── SPAF — Situational Problem Analysis Framework ────────────────────────────
+
+class SpafPainPoint(models.Model):
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="spaf_pain_points")
+    tajuk       = models.TextField(verbose_name="Tajuk / Nama Masalah")
+    keterangan  = models.TextField(verbose_name="Huraian Masalah")
+    kesan       = models.TextField(verbose_name="Kesan / Impak yang Dirasai")
+    keutamaan   = models.CharField(
+        max_length=20,
+        choices=[("tinggi", "Tinggi"), ("sederhana", "Sederhana"), ("rendah", "Rendah")],
+        default="sederhana",
+    )
+    catatan     = models.TextField(blank=True, verbose_name="Catatan Tambahan")
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "SPAF — Pain Point"
+        verbose_name_plural = "SPAF — Pain Point"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"PainPoint — {self.user.username} ({self.created_at:%d/%m/%Y})"
+
+
+class SpafProblemStatement(models.Model):
+    user          = models.ForeignKey(User, on_delete=models.CASCADE, related_name="spaf_problem_statements")
+    masalah_utama = models.TextField(verbose_name="Pernyataan Masalah Utama")
+    skop          = models.TextField(verbose_name="Skop & Batasan")
+    sasaran       = models.TextField(verbose_name="Pihak yang Terjejas")
+    matlamat      = models.TextField(verbose_name="Matlamat Penyelesaian")
+    catatan       = models.TextField(blank=True, verbose_name="Catatan Tambahan")
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "SPAF — Problem Statement"
+        verbose_name_plural = "SPAF — Problem Statement"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"ProbStatement — {self.user.username} ({self.created_at:%d/%m/%Y})"
+
+
+class SpafRootCauseAnalysis(models.Model):
+    user             = models.ForeignKey(User, on_delete=models.CASCADE, related_name="spaf_rca")
+    masalah          = models.TextField(verbose_name="Masalah yang Dianalisis")
+    punca_utama      = models.TextField(verbose_name="Punca Akar (Root Cause)")
+    punca_penyumbang = models.TextField(verbose_name="Faktor Penyumbang")
+    bukti            = models.TextField(verbose_name="Bukti / Data Sokongan")
+    catatan          = models.TextField(blank=True, verbose_name="Catatan Tambahan")
+    created_at       = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "SPAF — Root Cause Analysis"
+        verbose_name_plural = "SPAF — Root Cause Analysis"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"RCA — {self.user.username} ({self.created_at:%d/%m/%Y})"
+
+
+class SpafRootCauseValidation(models.Model):
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="spaf_rcv")
+    punca       = models.TextField(verbose_name="Punca yang Disahkan")
+    kaedah      = models.TextField(verbose_name="Kaedah Pengesahan")
+    dapatan     = models.TextField(verbose_name="Dapatan Pengesahan")
+    kesimpulan  = models.TextField(verbose_name="Kesimpulan")
+    catatan     = models.TextField(blank=True, verbose_name="Catatan Tambahan")
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "SPAF — Root Cause Validation"
+        verbose_name_plural = "SPAF — Root Cause Validation"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"RCV — {self.user.username} ({self.created_at:%d/%m/%Y})"
+
+
+class SpafRiskAnalysis(models.Model):
+    LEVEL = [("tinggi", "Tinggi"), ("sederhana", "Sederhana"), ("rendah", "Rendah")]
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="spaf_risks")
+    risiko      = models.TextField(verbose_name="Kenyataan Risiko")
+    kemungkinan = models.CharField(max_length=20, choices=LEVEL, default="sederhana")
+    impak       = models.CharField(max_length=20, choices=LEVEL, default="sederhana")
+    mitigasi    = models.TextField(verbose_name="Strategi Mitigasi")
+    pemilik     = models.CharField(max_length=200, blank=True, verbose_name="Pemilik Risiko")
+    catatan     = models.TextField(blank=True, verbose_name="Catatan Tambahan")
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "SPAF — Risk Analysis"
+        verbose_name_plural = "SPAF — Risk Analysis"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"Risk — {self.user.username} ({self.created_at:%d/%m/%Y})"
+
+
+# ── Blueprint — Themes (Step 3 synthesis) ────────────────────────────────────
+
+class BlueprintTheme(models.Model):
+    bengkel      = models.ForeignKey(Bengkel, on_delete=models.CASCADE, related_name="blueprint_themes")
+    urutan       = models.PositiveIntegerField(default=0)
+    tema         = models.CharField(max_length=300)
+    penerangan   = models.TextField()
+    kata_kunci   = models.TextField(blank=True)
+    frequency    = models.PositiveIntegerField(default=1)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering            = ["urutan", "id"]
+        verbose_name        = "Blueprint — Tema"
+        verbose_name_plural = "Blueprint — Tema"
+
+    def __str__(self):
+        return f"Tema: {self.tema} [{self.bengkel.title}]"

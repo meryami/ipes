@@ -78,4 +78,20 @@ urlpatterns = [
     path("analisis/5c/<int:pk>/del/", views.analisis_5c_delete,     name="analisis_5c_delete"),
     path("analisis/soar/",              views.analisis_soar,          name="analisis_soar"),
     path("analisis/soar/<int:pk>/del/", views.analisis_soar_delete,   name="analisis_soar_delete"),
+
+    # SPAF — Situational Problem Analysis Framework
+    path("analisis/spaf/",                              views.spaf_hub,                      name="spaf_hub"),
+    path("analisis/spaf/pain-point/",                   views.spaf_pain_point,               name="spaf_pain_point"),
+    path("analisis/spaf/pain-point/<int:pk>/del/",      views.spaf_pain_point_delete,        name="spaf_pain_point_delete"),
+    path("analisis/spaf/problem-statement/",            views.spaf_problem_statement,        name="spaf_problem_statement"),
+    path("analisis/spaf/problem-statement/<int:pk>/del/", views.spaf_problem_statement_delete, name="spaf_problem_statement_delete"),
+    path("analisis/spaf/rca/",                          views.spaf_rca,                      name="spaf_rca"),
+    path("analisis/spaf/rca/<int:pk>/del/",             views.spaf_rca_delete,               name="spaf_rca_delete"),
+    path("analisis/spaf/rcv/",                          views.spaf_rcv,                      name="spaf_rcv"),
+    path("analisis/spaf/rcv/<int:pk>/del/",             views.spaf_rcv_delete,               name="spaf_rcv_delete"),
+    path("analisis/spaf/risk/",                         views.spaf_risk,                     name="spaf_risk"),
+    path("analisis/spaf/risk/<int:pk>/del/",            views.spaf_risk_delete,              name="spaf_risk_delete"),
+
+    # ── Blueprint Peserta ─────────────────────────────────────────────────────
+    path("<int:pk>/blueprint/",       views.blueprint_peserta,   name="blueprint_peserta"),
 ]

@@ -199,6 +199,209 @@
   </div>
   {% endif %}
 
+  <!-- Blueprint Process -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-card overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between"
+         style="background:linear-gradient(135deg,#1e1b4b,#312e81)">
+      <div class="flex items-center gap-3">
+        <div style="width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:15px">📋</div>
+        <div>
+          <div class="font-bold text-white text-[13.5px]">Blueprint Perancangan</div>
+          <div class="text-[10.5px]" style="color:rgba(255,255,255,.5)">8 langkah proses kolektif dari input peserta → output blueprint</div>
+        </div>
+      </div>
+      {% if themes %}
+      <span style="background:rgba(34,197,94,.2);color:#4ade80;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(74,222,128,.3)">
+        {{ themes.count }} tema dijana
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Tab nav -->
+    <div style="display:flex;gap:3px;background:#f1f5f9;padding:5px;overflow-x:auto">
+      <button onclick="bpTab('bp-rujukan',this)" class="bp-tab bp-active" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 1</span>Rujukan
+      </button>
+      <button onclick="bpTab('bp-spaf',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 2</span>Analisis SPAF
+      </button>
+      <button onclick="bpTab('bp-tema',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 3</span>✦ Jana Tema
+      </button>
+      <button onclick="bpTab('bp-teras',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 4</span>Teras
+      </button>
+      <button onclick="bpTab('bp-strategi',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 5</span>Strategi
+      </button>
+      <button onclick="bpTab('bp-pelan',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 6</span>Pelan Tindakan
+      </button>
+      <button onclick="bpTab('bp-indikator',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 7</span>Indikator
+      </button>
+      <button onclick="bpTab('bp-peruntukan',this)" class="bp-tab" type="button">
+        <span style="font-size:9px;font-weight:800;opacity:.6;display:block">LANGKAH 8</span>Peruntukan
+      </button>
+    </div>
+
+    <div class="px-6 py-5">
+
+      <!-- TAB 1: Rujukan -->
+      <div id="bp-rujukan" class="bp-panel">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 1 — Rujukan</h3>
+        <p class="text-[12px] text-slate-400 mb-4">Fail rujukan yang dimuat naik oleh peserta bengkel ini.</p>
+        {% with kontrib_list=bengkel.contributions.all %}
+        {% if kontrib_list %}
+        <div style="display:flex;flex-direction:column;gap:8px">
+          {% for c in kontrib_list %}
+          {% if c.files.all or c.comment %}
+          <div class="rounded-xl border border-slate-100 p-3" style="background:#f8fafc">
+            <div class="font-semibold text-[12px] text-slate-700 mb-2">{{ c.jemputan.nama|default:c.jemputan.email }}</div>
+            {% for f in c.files.all %}
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+              <a href="{{ f.file.url }}" target="_blank" rel="noopener"
+                 class="text-[12px] font-semibold text-blue-600 hover:underline truncate">📄 {{ f.original_name }}</a>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-slate-400 text-[12.5px]">Belum ada fail rujukan dimuat naik.</div>
+        {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- TAB 2: SPAF -->
+      <div id="bp-spaf" class="bp-panel" style="display:none">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 2 — Analisis SPAF</h3>
+        <p class="text-[12px] text-slate-400 mb-4">Input individu peserta dalam Situational Problem Analysis Framework (dikumpul dari portal peserta).</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:12px;padding:18px;text-align:center">
+            <div style="font-size:30px;font-weight:900;color:#1d4ed8">{{ spaf_pain_count }}</div>
+            <div style="font-size:11.5px;font-weight:600;color:#1e40af;margin-top:4px">Pain Point dikumpul</div>
+          </div>
+          <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:18px;text-align:center">
+            <div style="font-size:30px;font-weight:900;color:#166534">{{ spaf_ps_count }}</div>
+            <div style="font-size:11.5px;font-weight:600;color:#15803d;margin-top:4px">Problem Statement dikumpul</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:#fefce8;border:1px solid #fef08a;border-radius:10px;padding:12px 16px;font-size:12px;color:#713f12">
+          💡 Teruskan ke <strong>Langkah 3 (Jana Tema)</strong> apabila peserta sudah selesai mengisi SPAF.
+        </div>
+      </div>
+
+      <!-- TAB 3: JANA TEMA -->
+      <div id="bp-tema" class="bp-panel" style="display:none">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap">
+          <div>
+            <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 3 — Jana Tema Utama (AI)</h3>
+            <p class="text-[12px] text-slate-400">AI akan menganalisis <strong>semua input SPAF</strong> peserta dan mengenal pasti tema berulang untuk dijadikan asas Blueprint.</p>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+              <span style="background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px">{{ spaf_pain_count }} pain point</span>
+              <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px">{{ spaf_ps_count }} problem statement</span>
+            </div>
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="jana_tema">
+            <button type="submit"
+              style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;cursor:pointer;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;white-space:nowrap;transition:opacity .2s"
+              onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"
+              onclick="this.disabled=true;this.textContent='Menjana…';this.form.submit()">
+              ✦ Jana Tema AI
+            </button>
+          </form>
+        </div>
+
+        {% if messages %}
+        {% for msg in messages %}
+        <div style="margin-bottom:12px;padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:600;
+          {% if msg.tags == 'error' %}background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;
+          {% else %}background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;{% endif %}">{{ msg }}</div>
+        {% endfor %}
+        {% endif %}
+
+        {% if themes %}
+        <div style="display:flex;flex-direction:column;gap:10px">
+          {% for t in themes %}
+          <div style="background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:12px;padding:14px 16px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap">
+              <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:800;padding:2px 9px;border-radius:20px">TEMA {{ t.urutan }}</span>
+              <span style="background:#ede9fe;color:#5b21b6;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px">{{ t.frequency }} peserta</span>
+              <span class="font-bold text-[13px] text-slate-800">{{ t.tema }}</span>
+            </div>
+            <p style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:7px">{{ t.penerangan }}</p>
+            {% if t.kata_kunci %}
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              {% for kw in t.kata_kunci.split %}<span style="background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px">{{ kw|cut:"," }}</span>{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#94a3b8;text-align:right">
+          Dijana: {{ themes.0.generated_at|date:"d M Y, H:i" }} &nbsp;·&nbsp; Peserta dapat melihat tema ini dalam portal Blueprint mereka.
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:40px;background:#faf5ff;border:2px dashed #e9d5ff;border-radius:12px">
+          <div style="font-size:30px;margin-bottom:10px">🧩</div>
+          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:6px">Belum ada tema dijana</div>
+          <div style="font-size:12px;color:#a78bfa">Klik "✦ Jana Tema AI" apabila peserta selesai mengisi SPAF.</div>
+          {% if spaf_pain_count == 0 and spaf_ps_count == 0 %}
+          <div style="margin-top:10px;font-size:12px;color:#f59e0b;font-weight:600">⚠ Belum ada data SPAF daripada peserta.</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div id="bp-teras" class="bp-panel" style="display:none">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 4 — Teras Utama</h3>
+        <p class="text-[12px] text-slate-400 mb-5">Peserta mengundi dan mengesahkan teras (pillars) berdasarkan tema yang dikenal pasti.</p>
+        <div class="text-center py-10 text-slate-400 text-[12.5px]" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px">🔒 Akan diaktifkan selepas tema (Langkah 3) dijana.</div>
+      </div>
+      <div id="bp-strategi" class="bp-panel" style="display:none">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 5 — Strategi</h3>
+        <p class="text-[12px] text-slate-400 mb-5">Pembangunan strategi berdasarkan teras yang dipersetujui.</p>
+        <div class="text-center py-10 text-slate-400 text-[12.5px]" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px">🔒 Akan diaktifkan selepas Langkah 4 (Teras) selesai.</div>
+      </div>
+      <div id="bp-pelan" class="bp-panel" style="display:none">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 6 — Pelan Tindakan</h3>
+        <p class="text-[12px] text-slate-400 mb-5">Pelan tindakan terperinci bagi setiap strategi.</p>
+        <div class="text-center py-10 text-slate-400 text-[12.5px]" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px">🔒 Akan diaktifkan selepas Langkah 5 (Strategi) selesai.</div>
+      </div>
+      <div id="bp-indikator" class="bp-panel" style="display:none">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 7 — Indikator (M&amp;E)</h3>
+        <p class="text-[12px] text-slate-400 mb-5">KPI dan rangka pemantauan &amp; penilaian blueprint.</p>
+        <div class="text-center py-10 text-slate-400 text-[12.5px]" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px">🔒 Akan diaktifkan selepas Langkah 6 (Pelan Tindakan) selesai.</div>
+      </div>
+      <div id="bp-peruntukan" class="bp-panel" style="display:none">
+        <h3 class="font-bold text-slate-800 text-[13.5px] mb-1">Langkah 8 — Peruntukan</h3>
+        <p class="text-[12px] text-slate-400 mb-5">Pemetaan sumber kewangan dan peruntukan makro-fiskal.</p>
+        <div class="text-center py-10 text-slate-400 text-[12.5px]" style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px">🔒 Akan diaktifkan selepas Langkah 7 (Indikator) selesai.</div>
+      </div>
+
+    </div><!-- /panel container -->
+  </div><!-- /Blueprint card -->
+
+  <style>
+  .bp-tab{flex-shrink:0;padding:7px 13px;border-radius:8px;border:none;cursor:pointer;font-size:11.5px;font-weight:700;color:#64748b;background:transparent;text-align:center;transition:all .15s;line-height:1.7;white-space:nowrap}
+  .bp-tab:hover{background:#fff;color:#334155}
+  .bp-tab.bp-active{background:#fff;color:#7c3aed;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  </style>
+  <script>
+  function bpTab(id,btn){
+    document.querySelectorAll('.bp-panel').forEach(p=>p.style.display='none');
+    document.querySelectorAll('.bp-tab').forEach(b=>b.classList.remove('bp-active'));
+    document.getElementById(id).style.display='block';
+    btn.classList.add('bp-active');
+  }
+  </script>
+
   <!-- Delete zone -->
   <div class="bg-red-50 border border-red-100 rounded-2xl p-5">
     <div class="flex items-center justify-between gap-4">

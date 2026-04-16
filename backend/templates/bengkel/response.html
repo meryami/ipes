@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
 <head>
@@ -20,11 +21,13 @@
 
   <!-- Brand -->
   <div class="max-w-lg mx-auto mb-6 fade-up flex items-center gap-3">
-    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-         style="background:linear-gradient(135deg,#1e40af,#2563eb);border:1px solid rgba(255,255,255,.1)">&#127981;</div>
+    <div class="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
+         style="background:linear-gradient(135deg,#1e40af,#2563eb);border:1px solid rgba(255,255,255,.1)">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:36px;height:36px;object-fit:cover">
+    </div>
     <div>
       <div class="text-white/35 text-[10px] font-bold uppercase tracking-widest">Kementerian Kesihatan Malaysia</div>
-      <div class="text-white/70 text-[12px] font-semibold">Nasional Digital Healthcare Blueprint (2026–2055)</div>
+      <div class="text-white/70 text-[12px] font-semibold">Integrated Planning and Evaluation System (IPES)</div>
     </div>
   </div>
 
@@ -181,8 +184,8 @@
   </div>
 
   <p class="text-center text-white/15 text-[10.5px] mt-6 fade-up" style="animation-delay:.2s">
-    &copy; 2026 Kementerian Kesihatan Malaysia &bull; NDHB SME Engagement Portal
-  </p>
+    © 2026 Kementerian Kesihatan Malaysia · Integrated Planning and Evaluation System (IPES)
+<br>  </p>
 
 </body>
 </html>

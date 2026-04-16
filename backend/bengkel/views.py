@@ -916,11 +916,11 @@ def user_dashboard(request):
         "total_pernyataan": ProblemStatement.objects.filter(jemputan__user=request.user).count(),
     }
 
-    # Dashboard only shows upcoming/ongoing bengkel
+    # Dashboard shows upcoming + recently past bengkel (within 30 days)
     jemputan_qs = (
         Jemputan.objects
         .filter(user=request.user)
-        .filter(bengkel__tarikh__gte=now)
+        .filter(bengkel__tarikh__gte=now - timezone.timedelta(days=30))
         .select_related("bengkel")
         .prefetch_related("kehadiran", "pernyataan", "bengkel__tentative")
         .order_by("bengkel__tarikh")
@@ -1804,3 +1804,267 @@ def analisis_soar_delete(request, pk):
         obj.delete()
         messages.success(request, 'Analisis SOAR dipadam.')
     return redirect('bengkel:analisis_soar')
+
+
+@login_required
+def blueprint_peserta(request, pk):
+    """User-facing blueprint progress page — main activity hub for participants."""
+    from .models import BengkelContribution, ContributionFile, SpafPainPoint, SpafProblemStatement, BlueprintTheme
+
+    bengkel   = get_object_or_404(Bengkel, pk=pk)
+    jemputan  = get_object_or_404(Jemputan, bengkel=bengkel, user=request.user, status="accepted")
+    bp_url    = reverse("bengkel:blueprint_peserta", kwargs={"pk": pk})
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+
+        # ── Upload file rujukan ─────────────────────────────────────────────
+        if action == "upload_file":
+            if not jemputan.sudah_hadir:
+                messages.error(request, "Anda perlu hadir ke bengkel dahulu sebelum boleh muat naik rujukan.")
+            else:
+                contribution, _ = BengkelContribution.objects.get_or_create(
+                    bengkel=bengkel, jemputan=jemputan
+                )
+                files     = request.FILES.getlist("files")
+                summaries = [request.POST.get("file_summary_%d" % i, "").strip() for i in range(len(files))]
+                for f, summary in zip(files, summaries):
+                    ContributionFile.objects.create(
+                        contribution=contribution,
+                        file=f,
+                        original_name=f.name,
+                        summary=summary,
+                    )
+                if files:
+                    messages.success(request, "%d fail berjaya dimuat naik." % len(files))
+            return redirect(bp_url + "?tab=rujukan")
+
+        # ── Delete contribution file ────────────────────────────────────────
+        elif action == "del_file":
+            fid = request.POST.get("file_id")
+            try:
+                cf = ContributionFile.objects.get(pk=fid, contribution__jemputan=jemputan)
+                cf.delete()
+                messages.success(request, "Fail dipadam.")
+            except ContributionFile.DoesNotExist:
+                pass
+            return redirect(bp_url + "?tab=rujukan")
+
+        # ── Save Pain Points + AI generate Problem Statement ───────────────
+        elif action == "pain_point":
+            raw_pps = [p.strip() for p in request.POST.getlist("pain_point") if p.strip()]
+            if not raw_pps:
+                messages.error(request, "Sila isi sekurang-kurangnya satu Pain Point.")
+                return redirect(bp_url + "?tab=spaf")
+            for i, text in enumerate(raw_pps, 1):
+                SpafPainPoint.objects.create(
+                    user=request.user,
+                    tajuk="Pain Point %d" % i,
+                    keterangan=text,
+                    kesan="",
+                    keutamaan="sederhana",
+                    catatan="",
+                )
+            messages.success(request, "%d Pain Point disimpan. AI sedang jana cadangan Problem Statement..." % len(raw_pps))
+            try:
+                import json
+                from google import genai as _genai
+                from django.conf import settings as _cfg
+                _client = _genai.Client(api_key=_cfg.GEMINI_API_KEY)
+                sep = "\n"
+                pp_list = sep.join("%d. %s" % (i, t) for i, t in enumerate(raw_pps, 1))
+                _prompt = (
+                    "Anda adalah pakar analisis masalah dalam konteks organisasi sektor awam Malaysia."
+                    + sep
+                    + sep
+                    + "Berdasarkan senarai Pain Point berikut, jana SATU ayat Pernyataan Masalah Utama dalam BAHASA MELAYU yang jelas, padat, dan tepat."
+                    + sep
+                    + sep
+                    + "Senarai Pain Point:"
+                    + sep
+                    + pp_list
+                    + sep
+                    + sep
+                    + "Jana respons dalam format JSON SAHAJA (tanpa markdown, tanpa ```json), dengan satu medan:"
+                    + sep
+                    + '{"masalah_utama":"..."}'
+                )
+                _MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
+                ai_raw = None
+                for _m in _MODELS:
+                    try:
+                        ai_raw = _client.models.generate_content(model=_m, contents=_prompt).text.strip()
+                        break
+                    except Exception:
+                        continue
+                if ai_raw:
+                    if ai_raw.startswith("```"):
+                        ai_raw = ai_raw.split(sep, 1)[1].rsplit("```", 1)[0].strip()
+                    request.session["spaf_generated_ps"] = json.loads(ai_raw)
+                    request.session["spaf_ai_error"] = None
+            except Exception as _e:
+                request.session["spaf_ai_error"] = str(_e)
+            request.session.modified = True
+            return redirect(bp_url + "?tab=ps")
+
+        # ── Delete Pain Point ───────────────────────────────────────────────
+        elif action == "del_pp":
+            pid = request.POST.get("pp_id")
+            SpafPainPoint.objects.filter(pk=pid, user=request.user).delete()
+            return redirect(bp_url + "?tab=spaf")
+
+        # ── Save Problem Statement (manual or from AI suggestion) ──────────
+        elif action == "save_ps":
+            SpafProblemStatement.objects.create(
+                user=request.user,
+                masalah_utama=request.POST.get("masalah_utama", ""),
+                skop=request.POST.get("skop", ""),
+                sasaran=request.POST.get("sasaran", ""),
+                matlamat=request.POST.get("matlamat", ""),
+                catatan=request.POST.get("catatan", ""),
+            )
+            messages.success(request, "Problem Statement berjaya disimpan.")
+            request.session.pop("spaf_generated_ps", None)
+            request.session.modified = True
+            return redirect(bp_url + "?tab=ps")
+
+        # ── Delete Problem Statement ────────────────────────────────────────
+        elif action == "del_ps":
+            pid = request.POST.get("ps_id")
+            SpafProblemStatement.objects.filter(pk=pid, user=request.user).delete()
+            return redirect(bp_url + "?tab=ps")
+
+        # ── Generate Tema from Problem Statements (AI) — auto-save ────────
+        elif action == "generate_tema":
+            ps_qs = SpafProblemStatement.objects.filter(user=request.user).values_list("masalah_utama", flat=True)
+            if not ps_qs.exists():
+                messages.error(request, "Sila masukkan sekurang-kurangnya satu Problem Statement dahulu.")
+                return redirect(bp_url + "?tab=tema")
+            try:
+                import json
+                from google import genai as _genai
+                from django.conf import settings as _cfg
+                _client = _genai.Client(api_key=_cfg.GEMINI_API_KEY)
+                sep = "\n"
+                ps_list = sep.join("%d. %s" % (i, t) for i, t in enumerate(ps_qs, 1))
+                _prompt = (
+                    "Anda adalah pakar perancangan strategik sektor awam Malaysia."
+                    + sep + sep
+                    + "Berdasarkan senarai Pernyataan Masalah Utama berikut, kenal pasti dan jana TEMA-TEMA UTAMA dalam BAHASA MELAYU."
+                    + sep + sep
+                    + "Senarai Pernyataan Masalah:"
+                    + sep + ps_list
+                    + sep + sep
+                    + "Jana antara 2 hingga 5 tema. Setiap tema mesti merangkumi beberapa masalah yang berkait."
+                    + sep
+                    + "Jana respons dalam format JSON array SAHAJA (tanpa markdown, tanpa ```json), contoh:"
+                    + sep
+                    + '[{"tema":"...","penerangan":"...","kata_kunci":"..."},{"tema":"...","penerangan":"...","kata_kunci":"..."}]'
+                )
+                _MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
+                ai_raw = None
+                for _m in _MODELS:
+                    try:
+                        ai_raw = _client.models.generate_content(model=_m, contents=_prompt).text.strip()
+                        break
+                    except Exception:
+                        continue
+                if ai_raw:
+                    if ai_raw.startswith("```"):
+                        ai_raw = ai_raw.split(sep, 1)[1].rsplit("```", 1)[0].strip()
+                    parsed = json.loads(ai_raw)
+                    # Normalise: single dict → wrap in list
+                    if isinstance(parsed, dict):
+                        parsed = [parsed]
+                    # Save immediately to DB
+                    bengkel.blueprint_themes.all().delete()
+                    for i, t in enumerate(parsed, 1):
+                        BlueprintTheme.objects.create(
+                            bengkel=bengkel,
+                            urutan=i,
+                            tema=t.get("tema", ""),
+                            penerangan=t.get("penerangan", ""),
+                            kata_kunci=t.get("kata_kunci", ""),
+                            frequency=1,
+                        )
+                    messages.success(request, "%d tema berjaya dijana dan disimpan." % len(parsed))
+                else:
+                    messages.error(request, "AI tidak memberikan respons. Cuba lagi.")
+            except Exception as _e:
+                messages.error(request, "AI gagal jana tema: %s" % str(_e))
+            return redirect(bp_url + "?tab=tema")
+
+        # ── Delete a single Tema ────────────────────────────────────────────
+        elif action == "del_tema":
+            tid = request.POST.get("tema_id")
+            BlueprintTheme.objects.filter(pk=tid, bengkel=bengkel).delete()
+            return redirect(bp_url + "?tab=tema")
+
+    pain_points     = SpafPainPoint.objects.filter(user=request.user).order_by("-created_at")
+    prob_stmts      = SpafProblemStatement.objects.filter(user=request.user).order_by("-created_at")
+    contribution    = getattr(jemputan, "contribution", None)
+    themes          = bengkel.blueprint_themes.all()
+    generated       = request.session.pop("spaf_generated_ps", None)
+    ai_error        = request.session.pop("spaf_ai_error", None)
+    request.session.modified = True
+    active_tab      = request.GET.get("tab", "rujukan")
+
+    return render(request, "bengkel/blueprint_peserta.html", {
+        "bengkel":      bengkel,
+        "jemputan":     jemputan,
+        "pain_points":  pain_points,
+        "prob_stmts":   prob_stmts,
+        "contribution": contribution,
+        "themes":       themes,
+        "generated":    generated,
+        "ai_error":     ai_error,
+        "active_tab":   active_tab,
+    })
+
+
+# ── SPAF standalone stubs (consolidated into blueprint page) ──────────────────
+
+@login_required
+def spaf_hub(request):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_pain_point(request):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_pain_point_delete(request, pk):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_problem_statement(request):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_problem_statement_delete(request, pk):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_rca(request):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_rca_delete(request, pk):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_rcv(request):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_rcv_delete(request, pk):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_risk(request):
+    return redirect("bengkel:dashboard")
+
+@login_required
+def spaf_risk_delete(request, pk):
+    return redirect("bengkel:dashboard")
+

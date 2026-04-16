@@ -5,7 +5,12 @@ from django.contrib import messages
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from bengkel.models import Bengkel, Jemputan, Kehadiran, PenganjurRequest, UserProfile, BengkelContribution, ContributionFile
+from bengkel.models import (
+    Bengkel, Jemputan, Kehadiran, PenganjurRequest, UserProfile,
+    BengkelContribution, ContributionFile,
+    SpafPainPoint, SpafProblemStatement,
+    BlueprintTheme,
+)
 from problems.models import ProblemStatement
 
 
@@ -391,6 +396,8 @@ def delete_pengguna(request, uid):
         return redirect("home")
     u = get_object_or_404(User, pk=uid, is_superuser=False)
     username = u.username
+    # Padam semua Jemputan berkaitan supaya rekod peserta turut hilang
+    Jemputan.objects.filter(user=u).delete()
     u.delete()
     messages.success(request, f'Akaun "{username}" telah dipadam.')
     return redirect("superadmin:semua_pengguna")
@@ -518,6 +525,17 @@ def delete_contribution_file(request, fid):
 
 
 @login_required
+@require_POST
+def delete_blueprint_theme(request, bid, tid):
+    if not request.user.is_superuser:
+        return redirect("home")
+    theme = get_object_or_404(BlueprintTheme, pk=tid, bengkel_id=bid)
+    theme.delete()
+    messages.success(request, "Tema telah dipadam.")
+    return redirect("superadmin:detail_bengkel", bid=bid)
+
+
+@login_required
 def detail_bengkel(request, bid):
     if not request.user.is_superuser:
         return redirect("home")
@@ -528,12 +546,29 @@ def detail_bengkel(request, bid):
             "jemputan__kehadiran",
             "jemputan__contribution__files",
             "tentative",
+            "blueprint_themes",
         ),
         pk=bid,
     )
+
     jemputan_list = b.jemputan.select_related("user").prefetch_related("contribution__files").order_by("nama")
+
+    # SPAF counts for this bengkel's accepted participants
+    user_ids = list(
+        b.jemputan.filter(status="accepted", user__isnull=False)
+        .values_list("user_id", flat=True)
+    )
+    spaf_pain_count = SpafPainPoint.objects.filter(user_id__in=user_ids).count()
+    spaf_ps_count = SpafProblemStatement.objects.filter(user_id__in=user_ids).count()
+
     return render(request, "superadmin/detail_bengkel.html", {
         "b": b,
         "jemputan_list": jemputan_list,
         "pending_permohonan": _pending_count(),
+        "spaf_pain_count": spaf_pain_count,
+        "spaf_ps_count": spaf_ps_count,
+        "themes": b.blueprint_themes.all(),
     })
+
+
+

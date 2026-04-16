@@ -80,6 +80,245 @@
   </div>
 </div>
 
+<!-- Blueprint Process Tabs -->
+<div class="mb-5">
+
+  <!-- Tab nav -->
+  <div style="display:flex;gap:4px;background:#f1f5f9;border-radius:12px;padding:5px;overflow-x:auto;flex-wrap:nowrap" class="mb-0">
+    {% for tab in "12345678" %}{% endfor %}
+    <button onclick="showTab('tab-rujukan',this)" id="btn-rujukan" class="blueprint-tab active-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 1</span>
+      Rujukan
+    </button>
+    <button onclick="showTab('tab-spaf',this)" id="btn-spaf" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 2</span>
+      Analisis SPAF
+    </button>
+    <button onclick="showTab('tab-tema',this)" id="btn-tema" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 3</span>
+      &#10024; Tema
+    </button>
+    <button onclick="showTab('tab-teras',this)" id="btn-teras" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 4</span>
+      Teras
+    </button>
+    <button onclick="showTab('tab-strategi',this)" id="btn-strategi" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 5</span>
+      Strategi
+    </button>
+    <button onclick="showTab('tab-pelan',this)" id="btn-pelan" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 6</span>
+      Pelan Tindakan
+    </button>
+    <button onclick="showTab('tab-indikator',this)" id="btn-indikator" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 7</span>
+      Indikator
+    </button>
+    <button onclick="showTab('tab-peruntukan',this)" id="btn-peruntukan" class="blueprint-tab" type="button">
+      <span style="font-size:10px;font-weight:800;opacity:.6;display:block;line-height:1">LANGKAH 8</span>
+      Peruntukan
+    </button>
+  </div>
+
+  <!-- ── TAB 1: RUJUKAN ─────────────────────────────────────────────── -->
+  <div id="tab-rujukan" class="blueprint-panel card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="font-bold text-[14px] text-slate-800">Langkah 1 — Rujukan</h3>
+        <p class="text-[12px] text-slate-400 mt-0.5">Dokumen dan fail rujukan yang dimuat naik oleh peserta bengkel.</p>
+      </div>
+      {% with total_files=0 %}
+      {% endwith %}
+    </div>
+    {% with file_rows=jemputan_list %}
+    {% if file_rows %}
+    <div style="display:flex;flex-direction:column;gap:10px">
+      {% for j in file_rows %}
+      {% if j.contribution and j.contribution.files.all %}
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="font-semibold text-[12.5px] text-slate-700">{{ j.nama|default:j.email }}</span>
+          {% if j.organisasi %}<span class="text-[11px] text-slate-400">— {{ j.organisasi }}</span>{% endif %}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          {% for f in j.contribution.files.all %}
+          <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e0e7ff;border-radius:7px;padding:7px 11px">
+            <a href="{{ f.file.url }}" target="_blank" rel="noopener"
+               style="font-size:12px;font-weight:600;color:#2563eb;text-decoration:none;flex:1;word-break:break-all"
+               onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+              &#128196; {{ f.original_name }}
+            </a>
+            {% if f.summary %}<span style="font-size:11px;color:#64748b;font-style:italic">{{ f.summary }}</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% empty %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-slate-400 text-[13px]">Tiada fail rujukan dimuat naik setakat ini.</div>
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- ── TAB 2: ANALISIS SPAF ───────────────────────────────────────── -->
+  <div id="tab-spaf" class="blueprint-panel card p-5" style="display:none">
+    <div class="mb-4">
+      <h3 class="font-bold text-[14px] text-slate-800">Langkah 2 — Analisis SPAF</h3>
+      <p class="text-[12px] text-slate-400 mt-0.5">Ringkasan input Situational Problem Analysis Framework daripada peserta yang diterima.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px">
+      <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:12px;padding:18px 20px;text-align:center">
+        <div style="font-size:28px;font-weight:900;color:#1d4ed8">{{ spaf_pain_count }}</div>
+        <div style="font-size:11.5px;font-weight:600;color:#1e40af;margin-top:4px">Pain Point</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:18px 20px;text-align:center">
+        <div style="font-size:28px;font-weight:900;color:#166534">{{ spaf_ps_count }}</div>
+        <div style="font-size:11.5px;font-weight:600;color:#15803d;margin-top:4px">Problem Statement</div>
+      </div>
+    </div>
+    <div style="background:#fefce8;border:1px solid #fef08a;border-radius:10px;padding:14px 16px;font-size:12.5px;color:#713f12">
+      &#128161; Data SPAF peserta dikumpulkan melalui portal peserta. Teruskan ke <strong>Langkah 3 (Tema)</strong> untuk menjana tema utama menggunakan AI daripada semua input SPAF ini.
+    </div>
+  </div>
+
+  <!-- ── TAB 3: TEMA ────────────────────────────────────────────────── -->
+  <div id="tab-tema" class="blueprint-panel card p-5" style="display:none">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <h3 class="font-bold text-[14px] text-slate-800">Langkah 3 — Pengenalpastian Tema</h3>
+        <p class="text-[12px] text-slate-400 mt-0.5">Tema dijana oleh penganjur melalui AI daripada semua input SPAF peserta.</p>
+        <div class="flex items-center gap-3 mt-2">
+          <span style="font-size:11.5px;color:#0369a1;background:#e0f2fe;padding:3px 10px;border-radius:20px;font-weight:600">
+            &#128196; {{ spaf_pain_count }} Pain Point
+          </span>
+          <span style="font-size:11.5px;color:#166534;background:#dcfce7;padding:3px 10px;border-radius:20px;font-weight:600">
+            &#128203; {{ spaf_ps_count }} Problem Statement
+          </span>
+        </div>
+      </div>
+      <span style="font-size:11px;background:#fef9c3;color:#713f12;padding:6px 12px;border-radius:8px;font-weight:600;border:1px solid #fef08a;white-space:nowrap">
+        👁 Pandangan Admin (Baca Sahaja)
+      </span>
+    </div>
+
+    <!-- Themes list -->
+    {% if themes %}
+    <div style="display:flex;flex-direction:column;gap:12px">
+      {% for t in themes %}
+      <div style="background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:12px;padding:16px 18px">
+        <div class="flex items-center gap-3 mb-2">
+          <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;flex-shrink:0">
+            TEMA {{ t.urutan }}
+          </span>
+          <span style="background:#ede9fe;color:#5b21b6;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px">
+            {{ t.frequency }} peserta
+          </span>
+          <h4 class="font-bold text-[13.5px] text-slate-800 flex-1">{{ t.tema }}</h4>
+        </div>
+        <p style="font-size:12.5px;color:#374151;line-height:1.6;margin:0 0 8px">{{ t.penerangan }}</p>
+        {% if t.kata_kunci %}
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          {% for kw in t.kata_kunci.split %}
+          <span style="background:#ede9fe;color:#6d28d9;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:20px">{{ kw|cut:"," }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:#94a3b8;text-align:right">
+      Dijana pada: {{ themes.0.generated_at|date:"d M Y, H:i" }}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px 20px;background:#faf5ff;border:2px dashed #ddd6fe;border-radius:12px">
+      <div style="font-size:32px;margin-bottom:12px">⏳</div>
+      <div style="font-size:13.5px;font-weight:700;color:#6d28d9;margin-bottom:6px">Belum ada tema dijana</div>
+      <div style="font-size:12px;color:#8b5cf6">Penganjur perlu menjana tema melalui portal mereka setelah peserta selesai mengisi SPAF.</div>
+      {% if spaf_pain_count == 0 and spaf_ps_count == 0 %}
+      <div style="margin-top:12px;font-size:12px;color:#f59e0b;font-weight:600">
+        ⚠ Tiada data SPAF lagi daripada peserta.
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── TABS 4–8: PLACEHOLDER ─────────────────────────────────────── -->
+  {% for tab_info in "teras,strategi,pelan,indikator,peruntukan"|split:"," %}{% endfor %}
+
+  <div id="tab-teras" class="blueprint-panel card p-5" style="display:none">
+    <h3 class="font-bold text-[14px] text-slate-800 mb-2">Langkah 4 — Teras Utama</h3>
+    <p class="text-[12px] text-slate-400 mb-6">Peserta mengesahkan dan mengundi teras (pillars) berdasarkan tema yang telah dikenal pasti.</p>
+    <div style="text-align:center;padding:40px 20px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;color:#94a3b8;font-size:13px">
+      🔒 Akan diaktifkan selepas Langkah 3 (Tema) diselesaikan.
+    </div>
+  </div>
+
+  <div id="tab-strategi" class="blueprint-panel card p-5" style="display:none">
+    <h3 class="font-bold text-[14px] text-slate-800 mb-2">Langkah 5 — Strategi</h3>
+    <p class="text-[12px] text-slate-400 mb-6">Pembangunan strategi berdasarkan teras yang telah dipersetujui.</p>
+    <div style="text-align:center;padding:40px 20px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;color:#94a3b8;font-size:13px">
+      🔒 Akan diaktifkan selepas Langkah 4 (Teras) diselesaikan.
+    </div>
+  </div>
+
+  <div id="tab-pelan" class="blueprint-panel card p-5" style="display:none">
+    <h3 class="font-bold text-[14px] text-slate-800 mb-2">Langkah 6 — Pelan Tindakan</h3>
+    <p class="text-[12px] text-slate-400 mb-6">Pelan tindakan terperinci untuk setiap strategi yang dibangunkan.</p>
+    <div style="text-align:center;padding:40px 20px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;color:#94a3b8;font-size:13px">
+      🔒 Akan diaktifkan selepas Langkah 5 (Strategi) diselesaikan.
+    </div>
+  </div>
+
+  <div id="tab-indikator" class="blueprint-panel card p-5" style="display:none">
+    <h3 class="font-bold text-[14px] text-slate-800 mb-2">Langkah 7 — Indikator (M&amp;E)</h3>
+    <p class="text-[12px] text-slate-400 mb-6">Petunjuk prestasi utama (KPI) dan rangka M&amp;E untuk pemantauan blueprint.</p>
+    <div style="text-align:center;padding:40px 20px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;color:#94a3b8;font-size:13px">
+      🔒 Akan diaktifkan selepas Langkah 6 (Pelan Tindakan) diselesaikan.
+    </div>
+  </div>
+
+  <div id="tab-peruntukan" class="blueprint-panel card p-5" style="display:none">
+    <h3 class="font-bold text-[14px] text-slate-800 mb-2">Langkah 8 — Peruntukan</h3>
+    <p class="text-[12px] text-slate-400 mb-6">Pemetaan sumber kewangan dan peruntukan makro-fiskal untuk setiap pelan tindakan.</p>
+    <div style="text-align:center;padding:40px 20px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;color:#94a3b8;font-size:13px">
+      🔒 Akan diaktifkan selepas Langkah 7 (Indikator) diselesaikan.
+    </div>
+  </div>
+</div>
+
+<style>
+.blueprint-tab {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  text-align: center;
+  transition: all .15s;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.blueprint-tab:hover { background: #fff; color: #334155; }
+.blueprint-tab.active-tab { background: #fff; color: #7c3aed; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+</style>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.blueprint-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.blueprint-tab').forEach(b => b.classList.remove('active-tab'));
+  document.getElementById(id).style.display = 'block';
+  btn.classList.add('active-tab');
+}
+</script>
+
 <!-- Senarai Peserta -->
 <div class="card overflow-hidden">
   <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">

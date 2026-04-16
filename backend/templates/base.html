@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+﻿{% load static %}
+<!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Nasional Digital Healthcare Blueprint (2026-2055) | SME Engagement Portal{% endblock %}</title>
+  <title>{% block title %}Integrated Planning and Evaluation System (IPES) | NDHB{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -50,7 +51,6 @@
     .nav-link{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;color:rgba(255,255,255,.62);transition:all .15s ease;white-space:nowrap;position:relative;letter-spacing:-.01em}
     .nav-link:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.92)}
     .nav-link.active{background:rgba(255,255,255,.14);color:#fff;font-weight:600}
-    .nav-link.active::after{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:20px;height:2px;border-radius:1px;background:#f59e0b}
     /* ── Scroll to top ───────────────────────────────────────── */
     #scrollTop{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:10px;background:#1e40af;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s,background .15s;z-index:498;box-shadow:0 4px 16px rgba(30,64,175,.35)}
     #scrollTop.vis{opacity:1;transform:none}
@@ -83,6 +83,14 @@
     /* ── Shadow utils ──────────────────────────────────────── */
     .shadow-card{box-shadow:0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.04)}
     .shadow-lift{box-shadow:0 8px 28px rgba(15,23,42,.11),0 2px 8px rgba(15,23,42,.07)}
+    /* ── Scroll reveal ─────────────────────────────────────── */
+    .reveal{opacity:0;transform:translateY(26px);transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1)}
+    .reveal.vis{opacity:1;transform:none}
+    /* ── Nav link smooth underline ─────────────────────────── */
+    .nav-link{position:relative;}
+    .nav-link::before{content:'';position:absolute;bottom:4px;left:12px;right:12px;height:2px;border-radius:2px;background:#f59e0b;transform:scaleX(0);transition:transform .18s cubic-bezier(.4,0,.2,1);transform-origin:center}
+    .nav-link:hover::before{transform:scaleX(.6)}
+    .nav-link.active::before{transform:scaleX(1)}
     /* ── Badges ─────────────────────────────────────────────── */
     .badge-high  {background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
     .badge-medium{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
@@ -114,25 +122,23 @@
     <div class="max-w-[1380px] mx-auto px-6 flex items-center gap-4 h-14">
 
       <!-- Logo mark -->
-      <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-lg" style="background:linear-gradient(135deg,#1e40af,#2563eb)">
-        <span>&#127981;</span>
+      <div class="flex-shrink-0 w-11 h-11 rounded-xl overflow-hidden" style="background:linear-gradient(135deg,#1e40af,#2563eb)">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:44px;height:44px;object-fit:cover">
       </div>
 
       <!-- Portal name -->
       <div class="flex-1 min-w-0">
-        <div class="text-white font-bold text-[14px] leading-tight tracking-tight">Nasional Digital Healthcare Blueprint</div>
-        <div class="text-white/40 text-[10.5px] font-medium mt-px">2026–2055 &nbsp;·&nbsp; SME Engagement Portal &nbsp;·&nbsp; Kementerian Kesihatan Malaysia</div>
+        <div class="text-white font-bold text-[16px] leading-tight tracking-tight">Integrated Planning and Evaluation System</div>
+        <div class="text-white/40 text-[12px] font-medium mt-px">IPES</div>
       </div>
 
-      <!-- NDHB badge -->
-      <div class="hidden sm:flex items-center gap-1.5 text-[10.5px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-md" style="background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.25)">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"></span>NDHB
-      </div>
+      <!-- IPES badge -->
+      <div class="hidden sm:block text-[10px] font-bold tracking-[.18em] uppercase px-3 py-1.5 rounded-full" style="background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.18);letter-spacing:.15em">IPES</div>
 
       <!-- Auth status -->
       {% if user.is_authenticated %}
-        <div class="flex items-center gap-2 text-[11px] font-semibold px-2.5 py-1 rounded-md" style="background:rgba(16,185,129,.10);color:#34d399;border:1px solid rgba(16,185,129,.2)">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+        <div class="flex items-center gap-2 pl-3 pr-3.5 py-1.5 rounded-full text-[11px] font-medium" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.1)">
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#34d399"></span>
           {{ user.username }}
         </div>
       {% endif %}
@@ -220,7 +226,9 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8" style="border-bottom:1px solid rgba(255,255,255,.07)">
       <div>
         <div class="flex items-center gap-2 mb-3">
-          <div class="w-7 h-7 rounded-lg flex items-center justify-center text-sm" style="background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.25)">&#127981;</div>
+          <div class="w-7 h-7 rounded-lg overflow-hidden" style="background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.25)">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:28px;height:28px;object-fit:cover">
+          </div>
           <span class="text-white text-[13px] font-bold tracking-tight">NDHB</span>
         </div>
         <p class="text-[12px] leading-relaxed mb-3" style="color:rgba(255,255,255,.38)">Platform pengumpulan dan analisis pernyataan masalah untuk pembangunan Blueprint Digital Kesihatan Kebangsaan 2026–2055.</p>
@@ -439,6 +447,33 @@
     }
     reqs.forEach(function(el){el.addEventListener('input',_upd);el.addEventListener('change',_upd);});
     _upd();
+  })();
+  /* ── Scroll reveal ──────────────────────────────────────── */
+  (function(){
+    if(!window.IntersectionObserver)return;
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          var el=e.target,delay=el.dataset.delay||0;
+          setTimeout(function(){el.classList.add('vis');},+delay);
+          io.unobserve(el);
+        }
+      });
+    },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el,i){
+      if(!el.dataset.delay)el.dataset.delay=Math.min(i%4*60,180);
+      io.observe(el);
+    });
+  })();
+  /* ── Header scroll shadow depth ─────────────────────────── */
+  (function(){
+    var hdr=document.getElementById('site-header');
+    if(!hdr)return;
+    window.addEventListener('scroll',function(){
+      hdr.style.boxShadow=window.scrollY>20
+        ?'0 1px 0 rgba(255,255,255,.06),0 8px 36px rgba(0,0,0,.48)'
+        :'0 1px 0 rgba(255,255,255,.06),0 4px 24px rgba(0,0,0,.3)';
+    },{passive:true});
   })();
 })();
 </script>

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿{% load static %}
+<!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
@@ -21,10 +22,12 @@
 
   <!-- Branding -->
   <div class="fade-up flex flex-col items-center mb-8 text-center" style="animation-delay:.05s">
-    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5 shadow-lg" style="background:linear-gradient(135deg,#1e40af,#2563eb);border:1px solid rgba(255,255,255,.12)">&#127981;</div>
+    <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 shadow-lg overflow-hidden" style="background:linear-gradient(135deg,#1e40af,#2563eb);border:1px solid rgba(255,255,255,.12)">
+      <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:56px;height:56px;object-fit:cover;border-radius:14px">
+    </div>
     <div class="text-white/45 text-[10.5px] font-semibold uppercase tracking-widest mb-1.5">Kementerian Kesihatan Malaysia</div>
-    <h1 class="text-white text-[20px] font-bold leading-tight tracking-tight">Nasional Digital Healthcare Blueprint</h1>
-    <p class="text-white/35 text-[11.5px] mt-1 font-medium">(2026–2055) &nbsp;&middot;&nbsp; SME Engagement Portal</p>
+    <h1 class="text-white text-[20px] font-bold leading-tight tracking-tight">Integrated Planning and Evaluation System</h1>
+    <p class="text-white/35 text-[11.5px] mt-1 font-medium">IPES &nbsp;&middot;&nbsp; Kementerian Kesihatan Malaysia</p>
   </div>
 
   <!-- Card -->
@@ -135,7 +138,7 @@
   </div>
 
   <p class="text-[10.5px] mt-8 text-center fade-up" style="animation-delay:.25s;color:rgba(255,255,255,.18)">
-    &copy; 2026 Kementerian Kesihatan Malaysia &bull; Nasional Digital Healthcare Blueprint</p>
+    &copy; 2026 Kementerian Kesihatan Malaysia &bull; Integrated Planning and Evaluation System (IPES)</p>
 
   <script>
     var pw=document.getElementById('id_password');

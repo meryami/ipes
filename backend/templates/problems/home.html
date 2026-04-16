@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Laman Utama — Nasional Digital Healthcare Blueprint (2026-2055) | SME Engagement Portal{% endblock %}
+{% block title %}Laman Utama — Integrated Planning and Evaluation System (IPES){% endblock %}
 {% block breadcrumb %}Laman Utama{% endblock %}
 
 {% block content %}
@@ -25,8 +25,23 @@
   .hero-in-l { animation: slideInLeft  .7s cubic-bezier(.4,0,.2,1) .1s both; }
   .hero-in-r { animation: slideInRight .7s cubic-bezier(.4,0,.2,1) .2s both; }
 
-  .domain-card { transition: transform .22s ease, box-shadow .22s ease; }
-  .domain-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,53,128,.14); }
+  .domain-card { 
+    transition: transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s ease, border-color .22s ease; 
+    border: 1.5px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+  }
+  .domain-card::before {
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 60%);
+    opacity:0;transition:opacity .22s ease;pointer-events:none;
+  }
+  .domain-card:hover { 
+    transform: translateY(-6px); 
+    box-shadow: 0 16px 40px rgba(37,99,235,.13), 0 0 0 1.5px rgba(37,99,235,.1);
+    border-color: #bfdbfe;
+  }
+  .domain-card:hover::before { opacity:1; }
 
   .step-card { position:relative; }
   .step-card::before {
@@ -48,18 +63,34 @@
 
   .faq-item summary { cursor:pointer; list-style:none; }
   .faq-item summary::-webkit-details-marker { display:none; }
-  .faq-item[open] .faq-icon { transform:rotate(45deg); }
-  .faq-icon { transition:transform .2s ease; font-size:18px; line-height:1; }
+  .faq-item { border-radius:14px; transition: box-shadow .2s ease, border-color .2s ease; }
+  .faq-item:hover { border-color:#bfdbfe; box-shadow: 0 4px 20px rgba(37,99,235,.08); }
+  .faq-item[open] { border-color:#bfdbfe; box-shadow: 0 4px 20px rgba(37,99,235,.1); }
+  .faq-item[open] .faq-icon { transform:rotate(45deg); color:#2563eb; }
+  .faq-item[open] summary { background:#f0f7ff; color:#1e40af; }
+  .faq-icon { transition:transform .22s cubic-bezier(.4,0,.2,1), color .2s ease; font-size:20px; line-height:1; }
+  .faq-body { display:grid; grid-template-rows:0fr; transition:grid-template-rows .28s cubic-bezier(.4,0,.2,1); }
+  details[open] .faq-body { grid-template-rows:1fr; }
+  .faq-body-inner { overflow:hidden; }
 
   .tl-dot { flex-shrink:0;width:14px;height:14px;border-radius:50%;border:3px solid #003580;background:#fff; }
   .tl-line { width:2px; flex:1; background:linear-gradient(180deg,#003580 60%,transparent); }
 
   .stat-card {
-    transition: transform .2s, box-shadow .2s;
+    transition: transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease;
   }
   .stat-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
     box-shadow: 0 16px 40px rgba(0,53,128,.16);
+  }
+  /* Step card improved hover */
+  .step-card { 
+    transition: transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s ease, border-color .22s ease;
+  }
+  .step-card:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 20px 48px rgba(0,53,128,.14);
+    border-color: #bfdbfe;
   }
 </style>
 
@@ -78,18 +109,17 @@
       <!-- Badge -->
       <div class="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-[#C5A028] text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
         <span class="w-2 h-2 rounded-full bg-[#f59e0b] pulse2 inline-block"></span>
-        Kementerian Kesihatan Malaysia &nbsp;&bull;&nbsp; Digital Health Blueprint 2026–2055
+        Kementerian Kesihatan Malaysia &nbsp;&bull;&nbsp; Integrated Planning and Evaluation System
       </div>
 
       <h1 class="text-[32px] md:text-[42px] leading-[1.15] font-extrabold text-white mb-5" style="font-family:'Noto Serif',Georgia,serif;">
-        Nasional Digital<br>
-        <span class="text-transparent bg-clip-text" style="background-image:linear-gradient(90deg,#C5A028,#FFD95A);">Healthcare Blueprint</span><br>
-        <span class="text-white/80 text-[26px] md:text-[30px]">2026–2055</span>
+        Integrated Planning<br>
+        <span class="text-transparent bg-clip-text" style="background-image:linear-gradient(90deg,#C5A028,#FFD95A);">and Evaluation System</span>
       </h1>
 
       <p class="text-white/65 text-[14.5px] leading-relaxed max-w-xl mb-8">
         Portal ini menyediakan mekanisme pengumpulan dan analisis pernyataan masalah sektor kesihatan digital Malaysia, menyokong pembangunan dasar berasaskan data untuk
-        <strong class="text-white/85">Blueprint Digital Kesihatan 2026–2055</strong>.
+        <strong class="text-white/85">Integrated Planning and Evaluation System (IPES)</strong>.
       </p>
 
       <div class="flex flex-wrap gap-3 justify-center md:justify-start">
@@ -126,30 +156,6 @@
   <svg class="block w-full -mb-px" viewBox="0 0 1440 48" preserveAspectRatio="none" style="height:48px">
     <path d="M0,48 L1440,48 L1440,12 C1200,40 960,52 720,28 C480,4 240,36 0,28 Z" fill="#F1F5F9"/>
   </svg>
-</div>
-
-<!-- ═══════════════════════════ STAT BAR ══════════════════════════ -->
-<div class="bg-white border-b border-slate-200 -mx-8 px-8 py-4 mb-10 shadow-sm reveal">
-  <div class="max-w-[1320px] mx-auto flex flex-wrap gap-6 items-center justify-between">
-    <div class="flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 pulse2 inline-block"></span>
-      <span class="text-[12px] font-semibold text-slate-500">Sistem Aktif — Data Dikemaskini Masa Nyata</span>
-    </div>
-    <div class="flex flex-wrap gap-6">
-      {% for tag in priority_tags %}
-      <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-sm inline-block {{ tag.color }}"></span>
-        <span class="text-[12px] text-slate-600 font-semibold">{{ tag.label }}: <strong class="text-slate-800">{{ tag.count }}</strong></span>
-      </div>
-      {% endfor %}
-      {% if total > 0 %}
-      <div class="flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-        <span class="text-[12px] text-slate-600 font-semibold">Purata: <strong class="text-slate-800">{{ avg_words }} patah perkataan</strong></span>
-      </div>
-      {% endif %}
-    </div>
-  </div>
 </div>
 
 <!-- ═══════════════════════════ HOW IT WORKS ══════════════════════ -->
@@ -200,46 +206,6 @@
       </div>
     </div>
   </div>
-</section>
-
-<!-- ═══════════════════════════ DOMAIN GRID ═══════════════════════ -->
-<section class="mb-14">
-  <div class="text-center mb-10 reveal">
-    <span class="inline-block text-[11px] font-bold tracking-widest uppercase text-[#003580] bg-blue-50 border border-blue-200 px-4 py-1.5 rounded-full mb-3">Skop Liputan</span>
-    <h2 class="text-[26px] font-extrabold text-[#001F4D]" style="font-family:'Noto Serif',Georgia,serif;">18 Domain Kesihatan Digital</h2>
-    <p class="text-slate-500 text-sm mt-2 max-w-lg mx-auto">Meliputi keseluruhan ekosistem kesihatan digital kebangsaan dari penjagaan primer hingga kawalan dasar</p>
-  </div>
-
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-    {% for domain in domains %}
-    <div class="domain-card bg-white border border-slate-200 rounded-xl p-4 text-center cursor-default reveal shadow-card">
-      <div class="w-10 h-10 rounded-xl mx-auto mb-2.5 flex items-center justify-center text-white text-[15px] font-extrabold shadow-sm domain-icon-{{ forloop.counter }}">
-        {{ forloop.counter }}
-      </div>
-      <div class="text-[11px] font-semibold text-slate-700 leading-snug">{{ domain }}</div>
-    </div>
-    {% endfor %}
-  </div>
-  <style>
-    .domain-icon-1  { background: linear-gradient(135deg, #003580, #004DA3); }
-    .domain-icon-2  { background: linear-gradient(135deg, #006B6B, #008888); }
-    .domain-icon-3  { background: linear-gradient(135deg, #9a7a10, #C5A028); }
-    .domain-icon-4  { background: linear-gradient(135deg, #004DA3, #006699); }
-    .domain-icon-5  { background: linear-gradient(135deg, #005577, #007799); }
-    .domain-icon-6  { background: linear-gradient(135deg, #7C3AED, #8B5CF6); }
-    .domain-icon-7  { background: linear-gradient(135deg, #DC2626, #EF4444); }
-    .domain-icon-8  { background: linear-gradient(135deg, #059669, #10B981); }
-    .domain-icon-9  { background: linear-gradient(135deg, #D97706, #F59E0B); }
-    .domain-icon-10 { background: linear-gradient(135deg, #0284C7, #38BDF8); }
-    .domain-icon-11 { background: linear-gradient(135deg, #BE185D, #EC4899); }
-    .domain-icon-12 { background: linear-gradient(135deg, #065F46, #34D399); }
-    .domain-icon-13 { background: linear-gradient(135deg, #92400E, #F59E0B); }
-    .domain-icon-14 { background: linear-gradient(135deg, #1D4ED8, #3B82F6); }
-    .domain-icon-15 { background: linear-gradient(135deg, #9333EA, #A855F7); }
-    .domain-icon-16 { background: linear-gradient(135deg, #B45309, #D97706); }
-    .domain-icon-17 { background: linear-gradient(135deg, #0F766E, #14B8A6); }
-    .domain-icon-18 { background: linear-gradient(135deg, #E11D48, #F43F5E); }
-  </style>
 </section>
 
 <!-- ═══════════════════════════ INFO CARDS ════════════════════════ -->
@@ -296,13 +262,15 @@
   </div>
   <div class="max-w-3xl mx-auto space-y-3">
     {% for faq in faqs %}
-    <details class="faq-item bg-white border border-slate-200 rounded-xl shadow-card overflow-hidden reveal group">
-      <summary class="flex items-center justify-between px-6 py-4 font-semibold text-[13.5px] text-slate-800 hover:bg-slate-50 transition-colors">
+    <details class="faq-item bg-white border border-slate-200 shadow-card overflow-hidden reveal group">
+      <summary class="flex items-center justify-between px-6 py-4 font-semibold text-[13.5px] text-slate-800 transition-colors">
         {{ faq.q }}
         <span class="faq-icon text-[#003580] ml-4 flex-shrink-0">+</span>
       </summary>
-      <div class="px-6 pb-5 pt-1 text-[13px] text-slate-600 leading-relaxed border-t border-slate-100">
-        {{ faq.a }}
+      <div class="faq-body">
+        <div class="faq-body-inner px-6 pb-5 pt-1 text-[13px] text-slate-600 leading-relaxed border-t border-slate-100">
+          {{ faq.a }}
+        </div>
       </div>
     </details>
     {% endfor %}
