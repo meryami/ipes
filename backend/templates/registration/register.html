@@ -95,14 +95,13 @@
           🏢 Akaun <strong>Penganjur</strong> — permohonan akan disemak dan diluluskan oleh admin sebelum anda boleh mengurus bengkel.
         </div>
 
-        <!-- Username (hidden for penganjur) -->
-        <div class="mb-4" id="usernameDiv">
-          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Pengguna <span class="text-red-500">*</span></label>
-          <input type="text" name="username" id="fUsername" required minlength="3" maxlength="30"
-                 value="{{ form_data.username|default:'' }}"
-                 placeholder="cth: ahmad_kkm"
-                 class="input-field" autocomplete="username"/>
-          <div id="usernameMsg" class="text-[11px] mt-1 hidden"></div>
+        <!-- Nama Penuh (hidden for penganjur) -->
+        <div class="mb-4" id="pesertaFields">
+          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Penuh <span class="text-red-500">*</span></label>
+          <input type="text" name="nama" id="fNama" required maxlength="200"
+                 value="{{ form_data.nama|default:'' }}"
+                 placeholder="cth: Dato' Ahmad bin Ismail"
+                 class="input-field"/>
         </div>
 
         <!-- Email -->
@@ -115,16 +114,61 @@
           <div id="emailMsg" class="text-[11px] mt-1 hidden"></div>
         </div>
 
-        <!-- Full name -->
-        <div class="mb-4">
-          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Penuh <span class="text-slate-400 font-normal">(Pilihan)</span></label>
-          <div class="grid grid-cols-2 gap-2">
-            <input type="text" name="first_name" placeholder="Nama pertama"
-                   value="{{ form_data.first_name|default:'' }}"
+        <!-- Username (hidden for penganjur) -->
+        <div class="mb-4" id="usernameDiv">
+          <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nama Pengguna <span class="text-red-500">*</span></label>
+          <input type="text" name="username" id="fUsername" required minlength="3" maxlength="100"
+                 value="{{ form_data.username|default:'' }}"
+                 placeholder="cth: ahmad_kkm"
+                 class="input-field" autocomplete="username"/>
+          <div id="usernameMsg" class="text-[11px] mt-1 hidden"></div>
+        </div>
+
+        <!-- Peserta-only fields -->
+        <div id="pesertaOnlyFields" class="space-y-4 mb-4">
+          <!-- Organisasi -->
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Organisasi / Kementerian</label>
+            <select name="organisasi" id="fOrganisasi" class="input-field">
+              <option value="">-- Pilih Organisasi --</option>
+              <option value="Kementerian Kesihatan Malaysia" {% if form_data.organisasi == 'Kementerian Kesihatan Malaysia' %}selected{% endif %}>Kementerian Kesihatan Malaysia</option>
+              <option value="Jabatan Kesihatan Negeri" {% if form_data.organisasi == 'Jabatan Kesihatan Negeri' %}selected{% endif %}>Jabatan Kesihatan Negeri</option>
+              <option value="Pejabat Kesihatan Daerah" {% if form_data.organisasi == 'Pejabat Kesihatan Daerah' %}selected{% endif %}>Pejabat Kesihatan Daerah</option>
+              <option value="Hospital" {% if form_data.organisasi == 'Hospital' %}selected{% endif %}>Hospital</option>
+              <option value="Kementerian Pengajian Tinggi" {% if form_data.organisasi == 'Kementerian Pengajian Tinggi' %}selected{% endif %}>Kementerian Pengajian Tinggi</option>
+              <option value="Kementerian Pertahanan" {% if form_data.organisasi == 'Kementerian Pertahanan' %}selected{% endif %}>Kementerian Pertahanan</option>
+              <option value="Jabatan Digital Negara" {% if form_data.organisasi == 'Jabatan Digital Negara' %}selected{% endif %}>Jabatan Digital Negara</option>
+              <option value="Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia" {% if form_data.organisasi == 'Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia' %}selected{% endif %}>Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia</option>
+              <option value="Pertubuhan Bukan Kerajaan" {% if form_data.organisasi == 'Pertubuhan Bukan Kerajaan' %}selected{% endif %}>Pertubuhan Bukan Kerajaan</option>
+              <option value="Badan Akademik" {% if form_data.organisasi == 'Badan Akademik' %}selected{% endif %}>Badan Akademik</option>
+              <option value="Badan Berkanun" {% if form_data.organisasi == 'Badan Berkanun' %}selected{% endif %}>Badan Berkanun</option>
+            </select>
+          </div>
+
+          <!-- Jawatan -->
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Jawatan</label>
+            <input type="text" name="jawatan" id="fJawatan" maxlength="200"
+                   value="{{ form_data.jawatan|default:'' }}"
+                   placeholder="cth: Pengurus Besar, Doktor Perubatan"
                    class="input-field"/>
-            <input type="text" name="last_name" placeholder="Nama akhir"
-                   value="{{ form_data.last_name|default:'' }}"
+          </div>
+
+          <!-- Unit / Bahagian -->
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Unit / Bahagian</label>
+            <input type="text" name="unit" id="fUnit" maxlength="200"
+                   value="{{ form_data.unit|default:'' }}"
+                   placeholder="cth: Unit Perancangan Strategik"
                    class="input-field"/>
+          </div>
+
+          <!-- Alamat Penuh -->
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Alamat Penuh</label>
+            <textarea name="alamat" id="fAlamat" rows="2" maxlength="500"
+                      placeholder="cth: No. 1, Jalan Tun Razak, 50400 Kuala Lumpur"
+                      class="input-field resize-none">{{ form_data.alamat|default:'' }}</textarea>
           </div>
         </div>
 
@@ -137,8 +181,8 @@
             <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
               Nama Organisasi <span class="text-red-500" id="orgRequired">*</span>
             </label>
-            <input type="text" name="organisasi" id="fOrganisasi" maxlength="200"
-                   value="{{ form_data.organisasi|default:'' }}"
+            <input type="text" name="organisasi_penganjur" id="fOrgPenganjur" maxlength="200"
+                   value="{{ form_data.organisasi_penganjur|default:'' }}"
                    placeholder="cth: Kementerian Kesihatan Malaysia"
                    class="input-field"/>
           </div>
@@ -146,8 +190,8 @@
             <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
               Jawatan / Jabatan <span class="text-slate-400 font-normal">(Pilihan)</span>
             </label>
-            <input type="text" name="jabatan" maxlength="200"
-                   value="{{ form_data.jabatan|default:'' }}"
+            <input type="text" name="jabatan_penganjur" id="fJabatanPenganjur" maxlength="200"
+                   value="{{ form_data.jabatan_penganjur|default:'' }}"
                    placeholder="cth: Pegawai Tadbir, Ketua Unit HR"
                    class="input-field"/>
           </div>
@@ -274,10 +318,14 @@
     usernameDiv.classList.toggle('hidden', isPenganjur);
     fUsername.required = !isPenganjur;
 
-    // extra org fields
+    // peserta-only fields (organisasi, jawatan, unit, alamat)
+    var pesertaFields = document.getElementById('pesertaOnlyFields');
+    pesertaFields.classList.toggle('hidden', isPenganjur);
+
+    // extra penganjur fields
     var fields = document.getElementById('penganjurFields');
     fields.classList.toggle('hidden', !isPenganjur);
-    document.getElementById('fOrganisasi').required = isPenganjur;
+    document.getElementById('fOrgPenganjur').required = isPenganjur;
 
     // confirm password — not needed for penganjur
     var confirmDiv = document.getElementById('confirmPwDiv');

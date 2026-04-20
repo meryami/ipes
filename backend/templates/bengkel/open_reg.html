@@ -93,14 +93,36 @@
             {% if errors.email %}<p class="text-red-400 text-[11px] mt-1">{{ errors.email }}</p>{% endif %}
           </div>
 
+          <!-- Username -->
+          <div>
+            <label class="block text-[10.5px] font-bold uppercase tracking-widest mb-1" style="color:rgba(255,255,255,.35)">Nama Pengguna (Username) <span style="color:#f87171">*</span></label>
+            <input type="text" name="username" value="{{ post.username|default:'' }}" required minlength="3" maxlength="100"
+                   placeholder="cth: ahmad_kkm"
+                   class="w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400/30 {% if errors.username %}ring-2 ring-red-400{% endif %}"
+                   style="background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.15)" />
+            {% if errors.username %}<p class="text-red-400 text-[11px] mt-1">{{ errors.username }}</p>{% endif %}
+          </div>
+
           <!-- Org + Jawatan -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[10.5px] font-bold uppercase tracking-widest mb-1" style="color:rgba(255,255,255,.35)">Organisasi</label>
-              <input type="text" name="organisasi" value="{{ post.organisasi|default:'' }}"
-                     placeholder="Organisasi anda"
+              <select name="organisasi"
                      class="w-full px-3 py-2.5 rounded-xl text-sm text-slate-800 focus:outline-none"
-                     style="background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.15)" />
+                     style="background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.15)">
+                <option value="">-- Pilih Organisasi --</option>
+                <option value="Kementerian Kesihatan Malaysia" {% if post.organisasi == 'Kementerian Kesihatan Malaysia' %}selected{% endif %}>Kementerian Kesihatan Malaysia</option>
+                <option value="Jabatan Kesihatan Negeri" {% if post.organisasi == 'Jabatan Kesihatan Negeri' %}selected{% endif %}>Jabatan Kesihatan Negeri</option>
+                <option value="Pejabat Kesihatan Daerah" {% if post.organisasi == 'Pejabat Kesihatan Daerah' %}selected{% endif %}>Pejabat Kesihatan Daerah</option>
+                <option value="Hospital" {% if post.organisasi == 'Hospital' %}selected{% endif %}>Hospital</option>
+                <option value="Kementerian Pengajian Tinggi" {% if post.organisasi == 'Kementerian Pengajian Tinggi' %}selected{% endif %}>Kementerian Pengajian Tinggi</option>
+                <option value="Kementerian Pertahanan" {% if post.organisasi == 'Kementerian Pertahanan' %}selected{% endif %}>Kementerian Pertahanan</option>
+                <option value="Jabatan Digital Negara" {% if post.organisasi == 'Jabatan Digital Negara' %}selected{% endif %}>Jabatan Digital Negara</option>
+                <option value="Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia" {% if post.organisasi == 'Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia' %}selected{% endif %}>Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia</option>
+                <option value="Pertubuhan Bukan Kerajaan" {% if post.organisasi == 'Pertubuhan Bukan Kerajaan' %}selected{% endif %}>Pertubuhan Bukan Kerajaan</option>
+                <option value="Badan Akademik" {% if post.organisasi == 'Badan Akademik' %}selected{% endif %}>Badan Akademik</option>
+                <option value="Badan Berkanun" {% if post.organisasi == 'Badan Berkanun' %}selected{% endif %}>Badan Berkanun</option>
+              </select>
             </div>
             <div>
               <label class="block text-[10.5px] font-bold uppercase tracking-widest mb-1" style="color:rgba(255,255,255,.35)">Jawatan</label>
@@ -109,6 +131,25 @@
                      class="w-full px-3 py-2.5 rounded-xl text-sm text-slate-800 focus:outline-none"
                      style="background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.15)" />
             </div>
+          </div>
+
+          <!-- Unit + Alamat -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10.5px] font-bold uppercase tracking-widest mb-1" style="color:rgba(255,255,255,.35)">Unit / Bahagian</label>
+              <input type="text" name="unit" value="{{ post.unit|default:'' }}"
+                     placeholder="Unit anda"
+                     class="w-full px-3 py-2.5 rounded-xl text-sm text-slate-800 focus:outline-none"
+                     style="background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.15)" />
+            </div>
+          </div>
+
+          <!-- Alamat -->
+          <div>
+            <label class="block text-[10.5px] font-bold uppercase tracking-widest mb-1" style="color:rgba(255,255,255,.35)">Alamat Penuh</label>
+            <textarea name="alamat" rows="2" maxlength="500" placeholder="cth: No. 1, Jalan Tun Razak, 50400 Kuala Lumpur"
+                      class="w-full px-3 py-2.5 rounded-xl text-sm text-slate-800 focus:outline-none resize-none"
+                      style="background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.15)">{{ post.alamat|default:'' }}</textarea>
           </div>
 
           <button type="submit"

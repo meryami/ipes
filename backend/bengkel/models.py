@@ -100,8 +100,11 @@ class Jemputan(models.Model):
     bengkel          = models.ForeignKey(Bengkel, on_delete=models.CASCADE, related_name="jemputan")
     nama             = models.CharField(max_length=200, blank=True)
     email            = models.EmailField(blank=True)
+    username         = models.CharField(max_length=100, blank=True)
     organisasi       = models.CharField(max_length=200, blank=True)
     jawatan          = models.CharField(max_length=200, blank=True)
+    unit             = models.CharField(max_length=200, blank=True)
+    alamat           = models.TextField(blank=True)
     # Linked user account (auto-linked when user logs in with same email)
     user             = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="jemputan"
@@ -151,6 +154,8 @@ class UserProfile(models.Model):
     telefon     = models.CharField(max_length=30, blank=True)
     jabatan     = models.CharField(max_length=200, blank=True)
     organisasi  = models.CharField(max_length=200, blank=True)
+    unit        = models.CharField(max_length=200, blank=True)
+    alamat      = models.TextField(blank=True)
     updated_at  = models.DateTimeField(auto_now=True)
 
     class Meta:
