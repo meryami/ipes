@@ -862,6 +862,16 @@ def portal_list(request):
 def portal_detail(request, pk):
     """Public detail + self-registration form for a bengkel."""
     bengkel = get_object_or_404(Bengkel, pk=pk)
+    penuh = bool(bengkel.had_peserta and bengkel.jumlah_diterima >= bengkel.had_peserta)
+    form_data = {
+        "nama": "",
+        "email": "",
+        "username": "",
+        "organisasi": "",
+        "jawatan": "",
+        "unit": "",
+        "alamat": "",
+    }
 
     if request.method == "POST":
         nama        = request.POST.get("nama", "").strip()
@@ -871,7 +881,18 @@ def portal_detail(request, pk):
         jawatan     = request.POST.get("jawatan", "").strip()
         unit        = request.POST.get("unit", "").strip()
         alamat      = request.POST.get("alamat", "").strip()
+        form_data = {
+            "nama": nama,
+            "email": email,
+            "username": username,
+            "organisasi": organisasi,
+            "jawatan": jawatan,
+            "unit": unit,
+            "alamat": alamat,
+        }
         errors = {}
+        if penuh:
+            errors["__all__"] = "Pendaftaran untuk bengkel ini telah penuh."
         if not nama:  errors["nama"]  = "Nama wajib diisi."
         if not email: errors["email"] = "E-mel wajib diisi."
         if not username: errors["username"] = "Nama pengguna wajib diisi."
@@ -881,7 +902,7 @@ def portal_detail(request, pk):
             errors["username"] = "Nama pengguna ini telah digunakan."
 
         if not errors:
-            if Jemputan.objects.filter(bengkel=bengkel, email=email).exists():
+            if Jemputan.objects.filter(bengkel=bengkel, email__iexact=email).exists():
                 errors["email"] = "E-mel ini sudah didaftarkan untuk bengkel ini."
             else:
                 j = Jemputan.objects.create(
@@ -894,11 +915,18 @@ def portal_detail(request, pk):
                 return redirect("bengkel:portal_tiket", token=j.token)
 
         return render(request, "bengkel/portal_detail.html", {
-            "bengkel": bengkel, "errors": errors,
-            "form_data": {"nama": nama, "email": email, "organisasi": organisasi, "jawatan": jawatan},
+            "bengkel": bengkel,
+            "errors": errors,
+            "form_data": form_data,
+            "penuh": penuh,
         })
 
-    return render(request, "bengkel/portal_detail.html", {"bengkel": bengkel})
+    return render(request, "bengkel/portal_detail.html", {
+        "bengkel": bengkel,
+        "errors": {},
+        "form_data": form_data,
+        "penuh": penuh,
+    })
 
 
 def portal_tiket(request, token):
@@ -1929,7 +1957,7 @@ def blueprint_peserta(request, pk):
             except Exception as _e:
                 request.session["spaf_ai_error"] = str(_e)
             request.session.modified = True
-            return redirect(bp_url + "?tab=ps")
+            return redirect(bp_url + "?tab=spaf")
 
         # ── Delete Pain Point ───────────────────────────────────────────────
         elif action == "del_pp":
@@ -1950,13 +1978,13 @@ def blueprint_peserta(request, pk):
             messages.success(request, "Problem Statement berjaya disimpan.")
             request.session.pop("spaf_generated_ps", None)
             request.session.modified = True
-            return redirect(bp_url + "?tab=ps")
+            return redirect(bp_url + "?tab=spaf")
 
         # ── Delete Problem Statement ────────────────────────────────────────
         elif action == "del_ps":
             pid = request.POST.get("ps_id")
             SpafProblemStatement.objects.filter(pk=pid, user=request.user).delete()
-            return redirect(bp_url + "?tab=ps")
+            return redirect(bp_url + "?tab=spaf")
 
         # ── Generate Tema from Problem Statements (AI) — auto-save ────────
         elif action == "generate_tema":

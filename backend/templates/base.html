@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Integrated Planning and Evaluation System (IPES) | NDHB{% endblock %}</title>
+  <title>Sistem Perancangan dan Penilaian Bersepadu (SPPB)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -128,12 +128,12 @@
 
       <!-- Portal name -->
       <div class="flex-1 min-w-0">
-        <div class="text-white font-bold text-[16px] leading-tight tracking-tight">Integrated Planning and Evaluation System</div>
-        <div class="text-white/40 text-[12px] font-medium mt-px">IPES</div>
+        <div class="text-white font-semibold text-[13px] leading-none">Sistem Perancangan dan Penilaian Bersepadu</div>
+        <div class="text-white/40 text-[11px] font-medium mt-px">SPPB</div>
       </div>
 
-      <!-- IPES badge -->
-      <div class="hidden sm:block text-[10px] font-bold tracking-[.18em] uppercase px-3 py-1.5 rounded-full" style="background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.18);letter-spacing:.15em">IPES</div>
+      <!-- Badge -->
+      <div class="px-3 py-1 rounded-full text-[11px] font-bold" style="background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.18);letter-spacing:.15em">SPPB</div>
 
       <!-- Auth status -->
       {% if user.is_authenticated %}

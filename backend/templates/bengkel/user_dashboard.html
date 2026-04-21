@@ -114,13 +114,13 @@
           <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:32px;height:32px;object-fit:cover">
         </div>
         <div>
-          <div style="font-size:13px;color:#fff;font-weight:700;line-height:1.2">Integrated Planning and Evaluation System</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:500">IPES · Kementerian Kesihatan Malaysia</div>
+          <div style="font-size:13px;color:#fff;font-weight:700;line-height:1.2">Sistem Perancangan dan Penilaian Bersepadu</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:500">SPPB · Kementerian Kesihatan Malaysia</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:6px;background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.25)">
-          <span style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block"></span>IPES
+<span style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block"></span>SPPB
         </div>
         <div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:6px;background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2)">
           <span class="pulse-dot" style="width:6px;height:6px;border-radius:50%;background:#34d399;display:inline-block"></span>
@@ -395,7 +395,7 @@
             <a href="{% url 'bengkel:blueprint_peserta' pk=j.bengkel.pk %}"
                class="btn-modern" style="background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff">
               <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>Buka Blueprint</span>
+              <span>AKTIVITI</span>
               {% if j.bengkel.blueprint_themes.exists %}
               <div class="badge-modern" style="background:linear-gradient(135deg,#22c55e,#16a34a);margin-left:8px">
                 {{ j.bengkel.blueprint_themes.count }} tema
