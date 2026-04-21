@@ -26,7 +26,7 @@
           <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         </div>
         <div>
-          <div class="text-white font-bold text-sm">{{ user.username }}</div>
+          <div class="text-white font-bold text-sm">{{ user.get_full_name|default:user.username }}</div>
           <div class="text-blue-300/60 text-[10px]">{{ user.email }}</div>
         </div>
       </div>
@@ -73,12 +73,6 @@
         </div>
 
         <div class="field mb-4">
-          <label>Nama Pengguna</label>
-          <input type="text" name="username" value="{{ form_data.username }}" disabled style="background:#f8fafc;color:#94a3b8;cursor:not-allowed" />
-          <div class="text-slate-400 text-[11px] mt-2">Nama pengguna tidak boleh diubah</div>
-        </div>
-
-        <div class="field mb-4">
           <label>Alamat E-mel <span class="text-red-500">*</span></label>
           <input type="email" name="email" value="{{ form_data.email }}"
                  class="{% if errors.email %}has-err{% endif %}" placeholder="nama@example.com" />
@@ -100,19 +94,9 @@
           <input type="text" name="organisasi" value="{{ form_data.organisasi }}" placeholder="cth. Kementerian Kesihatan Malaysia" />
         </div>
 
-        <div class="field mb-4">
+        <div class="field">
           <label>Jawatan / Gred</label>
           <input type="text" name="jabatan" value="{{ form_data.jabatan }}" placeholder="cth. Pegawai Kesihatan (U41)" />
-        </div>
-
-        <div class="field mb-4">
-          <label>Unit / Bahagian</label>
-          <input type="text" name="unit" value="{{ form_data.unit }}" placeholder="cth. Unit Perancangan Strategik" />
-        </div>
-
-        <div class="field">
-          <label>Alamat Penuh</label>
-          <textarea name="alamat" rows="3" placeholder="cth: No. 1, Jalan Tun Razak, 50400 Kuala Lumpur" style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;background:#fff;color:#0f172a;resize:vertical">{{ form_data.alamat }}</textarea>
         </div>
       </div>
 

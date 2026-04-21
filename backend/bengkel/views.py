@@ -603,23 +603,14 @@ def open_reg(request, reg_token):
     if request.method == "POST":
         nama     = request.POST.get("nama", "").strip()
         email    = request.POST.get("email", "").strip()
-        username = request.POST.get("username", "").strip()
         org      = request.POST.get("organisasi", "").strip()
         jawatan  = request.POST.get("jawatan", "").strip()
-        unit     = request.POST.get("unit", "").strip()
-        alamat   = request.POST.get("alamat", "").strip()
 
         errors = {}
         if not nama:
             errors["nama"] = "Nama penuh wajib diisi."
         if not email:
             errors["email"] = "E-mel wajib diisi."
-        if not username:
-            errors["username"] = "Nama pengguna wajib diisi."
-        elif len(username) < 3:
-            errors["username"] = "Nama pengguna mesti sekurang-kurangnya 3 aksara."
-        elif User.objects.filter(username=username).exists():
-            errors["username"] = "Nama pengguna ini telah digunakan."
 
         if not errors:
             import random, string, re as _re
@@ -631,12 +622,12 @@ def open_reg(request, reg_token):
             new_account_pw = None
 
             if not linked_user and email:
-                # Auto-create a Peserta account using the entered username
-                requested_username = username or _re.sub(r'[^\w]', '_', email.split('@')[0])[:24] or "peserta"
-                candidate = requested_username
+                # Auto-create a Peserta account
+                base = _re.sub(r'[^\w]', '_', email.split('@')[0])[:24] or "peserta"
+                candidate = base
                 suffix = 1
                 while User.objects.filter(username=candidate).exists():
-                    candidate = f"{requested_username}_{suffix}"
+                    candidate = f"{base}_{suffix}"
                     suffix += 1
                 new_account_pw = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                 name_parts = nama.strip().split()
@@ -656,8 +647,8 @@ def open_reg(request, reg_token):
 
             j = Jemputan.objects.create(
                 bengkel=bengkel,
-                nama=nama, email=email, username=username,
-                organisasi=org, jawatan=jawatan, unit=unit, alamat=alamat,
+                nama=nama, email=email,
+                organisasi=org, jawatan=jawatan,
                 user=linked_user,
                 status="accepted",
                 responded_at=timezone.now(),
@@ -866,19 +857,11 @@ def portal_detail(request, pk):
     if request.method == "POST":
         nama        = request.POST.get("nama", "").strip()
         email       = request.POST.get("email", "").strip()
-        username    = request.POST.get("username", "").strip()
         organisasi  = request.POST.get("organisasi", "").strip()
         jawatan     = request.POST.get("jawatan", "").strip()
-        unit        = request.POST.get("unit", "").strip()
-        alamat      = request.POST.get("alamat", "").strip()
         errors = {}
         if not nama:  errors["nama"]  = "Nama wajib diisi."
         if not email: errors["email"] = "E-mel wajib diisi."
-        if not username: errors["username"] = "Nama pengguna wajib diisi."
-        elif len(username) < 3:
-            errors["username"] = "Nama pengguna mesti sekurang-kurangnya 3 aksara."
-        elif User.objects.filter(username=username).exists():
-            errors["username"] = "Nama pengguna ini telah digunakan."
 
         if not errors:
             if Jemputan.objects.filter(bengkel=bengkel, email=email).exists():
@@ -886,8 +869,8 @@ def portal_detail(request, pk):
             else:
                 j = Jemputan.objects.create(
                     bengkel=bengkel,
-                    nama=nama, email=email, username=username,
-                    organisasi=organisasi, jawatan=jawatan, unit=unit, alamat=alamat,
+                    nama=nama, email=email,
+                    organisasi=organisasi, jawatan=jawatan,
                     status="accepted",           # auto-accept self-registration
                     responded_at=timezone.now(),
                 )
@@ -968,8 +951,6 @@ def edit_profile(request):
         telefon    = request.POST.get("telefon", "").strip()
         jabatan    = request.POST.get("jabatan", "").strip()
         organisasi = request.POST.get("organisasi", "").strip()
-        unit       = request.POST.get("unit", "").strip()
-        alamat     = request.POST.get("alamat", "").strip()
 
         errors = {}
         if not first_name:
@@ -998,8 +979,6 @@ def edit_profile(request):
         profile.telefon    = telefon
         profile.jabatan    = jabatan
         profile.organisasi = organisasi
-        profile.unit       = unit
-        profile.alamat     = alamat
         profile.save()
 
         messages.success(request, "Profil berjaya dikemaskini.")
@@ -1012,12 +991,9 @@ def edit_profile(request):
             "first_name": request.user.first_name,
             "last_name":  request.user.last_name,
             "email":      request.user.email,
-            "username":   request.user.username,
             "telefon":    profile.telefon,
             "jabatan":    profile.jabatan,
             "organisasi": profile.organisasi,
-            "unit":       profile.unit,
-            "alamat":     profile.alamat,
         },
     })
 

@@ -21,16 +21,6 @@
     .hero-r { animation:slideInR .65s cubic-bezier(.4,0,.2,1) .25s both; }
     .pulse-dot { animation:pulse2 2.8s ease-in-out infinite; }
 
-    .shimmer{position:relative;overflow:hidden}
-    .shimmer::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 1.5s infinite}
-    @keyframes shimmer{0%{left:-100%}100%{left:100%}}
-
-    .btn-modern{position:relative;overflow:hidden}
-    .btn-modern.loading span{opacity:0}
-    .btn-modern::after{content:'';position:absolute;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite;left:50%;top:50%;transform:translate(-50%,-50%);opacity:0}
-    .btn-modern.loading::after{opacity:1}
-    @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-
     /* ── Cards ── */
     .card{background:#fff;border:1px solid #e8ecf0;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
     .card-sm{background:#fff;border:1px solid #e8ecf0;border-radius:12px}
@@ -41,11 +31,9 @@
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
     /* ── Sidebar nav ── */
-    .nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.45);border:none;border-left:3px solid transparent;background:transparent;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);white-space:nowrap;text-decoration:none;text-align:left;position:relative;overflow:hidden}
-    .nav-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:0 2px 2px 0;transform:scaleY(0);transition:transform .2s ease}
-    .nav-item.active{color:#3b82f6;background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(147,51,234,.1));border-left-color:#3b82f6}
-    .nav-item.active::before{transform:scaleY(1)}
-    .nav-item:hover:not(.active){color:rgba(255,255,255,.85);background:rgba(59,130,246,.05);transform:translateX(4px)}
+    .nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.45);border:none;border-left:3px solid transparent;background:transparent;cursor:pointer;transition:color .15s,background .15s,border-color .15s;white-space:nowrap;text-decoration:none;text-align:left}
+    .nav-item.active{color:#f59e0b;background:rgba(245,158,11,.07);border-left-color:#f59e0b}
+    .nav-item:hover:not(.active){color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
 
     /* ── Badge ── */
     .bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
@@ -62,44 +50,12 @@
     ::-webkit-scrollbar-track{background:#f1f5f9}
     ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
 
-    /* ── Modern enhancements ── */
-    .card-modern{background:#fff;border:1px solid #e8ecf0;border-radius:20px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 0 0 1px rgba(255,255,255,.05);transition:all .3s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
-    .card-modern::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(59,130,246,.03),rgba(147,51,234,.03));opacity:0;transition:opacity .3s ease}
-    .card-modern:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.1),0 0 0 1px rgba(59,130,246,.1);border-color:#dbeafe}
-    .card-modern:hover::before{opacity:1}
+    /* ── Tool cards ── */
+    .tool-card{background:#fff;border:1.5px solid #e8ecf0;border-radius:16px;padding:24px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;position:relative;overflow:hidden}
+    .tool-card:hover{border-color:#bfdbfe;box-shadow:0 6px 20px rgba(37,99,235,.08);transform:translateY(-2px)}
 
-    .btn-modern{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s cubic-bezier(.4,0,.2,1);cursor:pointer;border:none;position:relative;overflow:hidden}
-    .btn-modern::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#3b82f6,#8b5cf6);opacity:0;transition:opacity .2s ease}
-    .btn-modern:hover::before{opacity:1}
-    .btn-modern span{position:relative;z-index:1}
-
-    .badge-modern{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.2);border:1px solid rgba(255,255,255,.2)}
-
-    .stat-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:20px;padding:24px;color:#fff;position:relative;overflow:hidden}
-    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(45deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s ease}
-    .stat-card:hover::before{opacity:1}
-    .stat-card .number{font-size:48px;font-weight:800;line-height:1;margin-bottom:8px;text-shadow:0 2px 4px rgba(0,0,0,.2)}
-    .stat-card .label{font-size:14px;font-weight:600;opacity:.9;text-transform:uppercase;letter-spacing:.5px}
-
-    .timeline-item{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid #f1f5f9;transition:all .2s ease}
-    .timeline-item:last-child{border-bottom:none}
-    .timeline-item:hover{background:rgba(59,130,246,.02);border-radius:12px;padding-left:12px;padding-right:12px;margin:0 -12px}
-    .timeline-dot{width:12px;height:12px;border-radius:50%;background:#e5e7eb;border:3px solid #fff;box-shadow:0 0 0 3px #3b82f6;margin-top:6px;transition:all .2s ease}
-    .timeline-item:hover .timeline-dot{background:#3b82f6;transform:scale(1.2)}
-
-    .floating-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;cursor:pointer;box-shadow:0 8px 24px rgba(59,130,246,.4);transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
-    .floating-btn:hover{transform:scale(1.1);box-shadow:0 12px 32px rgba(59,130,246,.6)}
-    .floating-btn:active{transform:scale(.95)}
-
-    @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-    .shimmer::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 2s infinite}
-
-    .glass-effect{background:rgba(255,255,255,.1);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2);border-radius:16px}
-
-    .gradient-text{background:linear-gradient(135deg,#667eea,#764ba2);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
-
-    .pulse-ring{position:absolute;border:2px solid #3b82f6;border-radius:50%;animation:pulse-ring 2s infinite}
-    @keyframes pulse-ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.6);opacity:0}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+    .pulse{animation:pulse 2s ease-in-out infinite}
   </style>
 </head>
 <body>
@@ -199,35 +155,18 @@
       <!-- Content -->
       <div style="position:relative;padding:28px 28px 26px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
         <div class="hero-l">
-          <h1 style="font-size:26px;font-weight:800;color:#fff;margin:0 0 5px;line-height:1.2;font-family:'Noto Serif',Georgia,serif">Selamat Datang, <span style="background:linear-gradient(90deg,#C5A028,#FFD95A);-webkit-background-clip:text;-webkit-text-fill-color:transparent">{{ user.username }}</span> 👋</h1>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
-            {% if user.profile.organisasi %}
-            <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:600">Organisasi: {{ user.profile.organisasi }}</span>
-            {% endif %}
-            {% if user.profile.unit %}
-            <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:600">Unit: {{ user.profile.unit }}</span>
-            {% endif %}
+          <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;margin-bottom:12px;backdrop-filter:blur(8px)">
+            <span class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;display:inline-block"></span>
+            <span style="font-size:10.5px;color:#C5A028;font-weight:700;letter-spacing:.1em;text-transform:uppercase">Portal Aktif · Live</span>
           </div>
-          <p style="font-size:13px;color:rgba(255,255,255,.72);margin:14px 0 0;max-width:620px;line-height:1.7">Semoga pengalaman anda di portal IPES hari ini berjalan lancar. Sila semak aturcara dan maklumat program yang telah didaftarkan untuk anda.</p>
+          <h1 style="font-size:26px;font-weight:800;color:#fff;margin:0 0 5px;line-height:1.2;font-family:'Noto Serif',Georgia,serif">Selamat Datang, <span style="background:linear-gradient(90deg,#C5A028,#FFD95A);-webkit-background-clip:text;-webkit-text-fill-color:transparent">{{ user.first_name|default:user.username }}</span> 👋</h1>
+          <p style="font-size:12.5px;color:rgba(255,255,255,.55);margin:0">{{ user.email }}</p>
         </div>
-        <div class="hero-r" style="display:flex;gap:12px;flex-shrink:0;align-items:stretch">
-          <div class="stat-card">
-            <div class="number">{{ jemputan_list|length }}</div>
-            <div class="label">Program Aktif</div>
-            <div style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-          </div>
-          <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)">
-            <div class="number">{{ jemputan_list|length|add:2 }}</div>
-            <div class="label">Total Penyertaan</div>
-            <div style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-              </svg>
-            </div>
+        <div class="hero-r" style="display:flex;gap:10px;flex-shrink:0">
+          <div style="background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:12px 18px;text-align:center;min-width:72px">
+            <div style="font-size:26px;font-weight:800;color:#fff;line-height:1">{{ jemputan_list|length }}</div>
+            <div style="font-size:9.5px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Program</div>
+            <div style="margin-top:6px;height:2px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden"><div style="height:100%;background:#C5A028;width:100%"></div></div>
           </div>
         </div>
       </div>
@@ -323,34 +262,26 @@
 
     {% if jemputan_list %}
       {% for j in jemputan_list %}{% if j.status == 'accepted' %}
-      <div class="card-modern" style="overflow:hidden;margin-bottom:18px">
+      <div class="card" style="overflow:hidden;margin-bottom:18px">
         <!-- Card header -->
-        <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:22px 24px 20px;position:relative">
-          <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(45deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s ease"></div>
+        <div style="background:#2563eb;padding:22px 24px 20px">
           <!-- Date + status -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:.05em;text-transform:uppercase">{{ j.bengkel.tarikh|date:"d M Y" }}</span>
             {% if j.sudah_hadir %}
-            <div class="badge-modern">
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-              </svg>
+            <span class="bdg" style="background:#dcfce7;color:#166534">
+              <svg width="9" height="9" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
               Hadir
-            </div>
+            </span>
             {% else %}
-            <div class="badge-modern" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Akan Datang
-            </div>
+            <span class="bdg" style="background:rgba(255,255,255,.2);color:#fff">Akan Datang</span>
             {% endif %}
           </div>
-          <h2 style="font-size:17px;font-weight:800;color:#fff;margin:0 0 4px;line-height:1.3;position:relative;z-index:1">{{ j.bengkel.title }}</h2>
-          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-bottom:18px;position:relative;z-index:1">📍 {{ j.bengkel.lokasi_nama }}</div>
+          <h2 style="font-size:17px;font-weight:800;color:#fff;margin:0 0 4px;line-height:1.3">{{ j.bengkel.title }}</h2>
+          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-bottom:18px">📍 {{ j.bengkel.lokasi_nama }}</div>
 
           <!-- Countdown -->
-          <div style="position:relative;z-index:1">
+          <div>
             <div style="font-size:9.5px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Masa Menuju Acara</div>
             <div style="display:flex;gap:8px" id="cd-{{ forloop.counter }}" data-dt="{{ j.bengkel.tarikh|date:'Y-m-d H:i:s' }}">
               <div class="cd-box"><div style="font-size:20px;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums" class="cd-d">--</div><div style="font-size:8px;font-weight:600;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.07em">HARI</div></div>
@@ -364,12 +295,12 @@
         <!-- Body details -->
         <div style="padding:20px 24px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
-            <div class="card-modern" style="padding:14px 16px">
+            <div class="card-sm" style="padding:14px 16px">
               <div style="font-size:9.5px;font-weight:700;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px">Tarikh & Masa</div>
               <div style="font-size:13px;font-weight:700;color:#0f172a">{{ j.bengkel.tarikh|date:"d M Y" }}</div>
               <div style="font-size:11.5px;color:#64748b">{{ j.bengkel.tarikh|date:"H:i" }}{% if j.bengkel.tarikh_tamat %} — {{ j.bengkel.tarikh_tamat|date:"H:i" }}{% endif %}</div>
             </div>
-            <div class="card-modern" style="padding:14px 16px">
+            <div class="card-sm" style="padding:14px 16px">
               <div style="font-size:9.5px;font-weight:700;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px">Penganjur</div>
               <div style="font-size:13px;font-weight:700;color:#0f172a">{{ j.bengkel.organizer_nama|default:"—" }}</div>
               {% if j.bengkel.organizer_email %}<div style="font-size:11px;color:#64748b">{{ j.bengkel.organizer_email }}</div>{% endif %}
@@ -383,9 +314,9 @@
           <!-- Action buttons -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
             <a href="{% url 'bengkel:tiket' token=j.token %}"
-               class="btn-modern" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff">
+               class="btn" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M16 3v4M8 3v4M2 11h20"/></svg>
-              <span>Tiket QR Saya</span>
+              Tiket QR Saya
             </a>
           </div>
 
@@ -393,17 +324,14 @@
           {% if j.bengkel.tarikh|date:"Y-m-d" <= today|date:"Y-m-d" and not j.bengkel.tarikh_tamat or j.bengkel.tarikh_tamat|date:"Y-m-d" >= today|date:"Y-m-d" %}
           <div style="border-top:1px solid #f1f5f9;padding-top:16px">
             <a href="{% url 'bengkel:blueprint_peserta' pk=j.bengkel.pk %}"
-               class="btn-modern" style="background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff">
+               style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:11px;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:opacity .15s"
+               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
               <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>Buka Blueprint</span>
+              Buka Blueprint
               {% if j.bengkel.blueprint_themes.exists %}
-              <div class="badge-modern" style="background:linear-gradient(135deg,#22c55e,#16a34a);margin-left:8px">
-                {{ j.bengkel.blueprint_themes.count }} tema
-              </div>
+              <span style="background:#22c55e;border-radius:6px;font-size:10px;padding:1px 7px;font-weight:700">{{ j.bengkel.blueprint_themes.count }} tema</span>
               {% else %}
-              <div class="badge-modern" style="background:linear-gradient(135deg,#64748b,#475569);margin-left:8px">
-                8 Langkah
-              </div>
+              <span style="background:rgba(255,255,255,.15);border-radius:6px;font-size:10px;padding:1px 7px;font-weight:600">8 Langkah</span>
               {% endif %}
             </a>
           </div>
@@ -429,29 +357,12 @@
       {% endif %}{% endfor %}
 
     {% else %}
-    <div class="card-modern" style="padding:60px 24px;text-align:center">
-      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#f1f5f9,#e2e8f0);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <svg width="40" height="40" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-      </div>
-      <div style="font-size:18px;font-weight:700;color:#475569;margin-bottom:6px">Tiada Program Aktif</div>
-      <p style="font-size:14px;color:#64748b;margin:0 0 24px">Anda akan dimaklumkan apabila dijemput ke sebuah bengkel.</p>
-      <a href="{% url 'bengkel:portal_list' %}" class="btn-modern" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-        </svg>
-        <span>Sertai Program</span>
-      </a>
+    <div class="card" style="padding:60px 24px;text-align:center">
+      <div style="font-size:42px;margin-bottom:14px">📅</div>
+      <div style="font-size:16px;font-weight:700;color:#475569;margin-bottom:6px">Tiada Program Aktif</div>
+      <p style="font-size:13px;color:#94a3b8;margin:0">Anda akan dimaklumkan apabila dijemput ke sebuah bengkel.</p>
     </div>
     {% endif %}
-
-    <!-- Floating Action Button -->
-    <button class="floating-btn" onclick="window.location.href='{% url 'bengkel:portal_list' %}'" title="Sertai Program Baharu">
-      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-      </svg>
-    </button>
   </div><!-- end page-bengkel -->
 
 
@@ -516,12 +427,8 @@
 </div><!-- end content -->
 </div><!-- end layout -->
 
-<footer style="background:#f8fafc;border-top:1px solid rgba(148,163,184,.14);text-align:center;padding:24px 0 32px;font-size:12px;color:#64748b">
-  <div style="max-width:960px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px">
-    <span>© 2026 Kementerian Kesihatan Malaysia</span>
-    <span style="display:inline-flex;align-items:center;color:rgba(148,163,184,.8);">•</span>
-    <span>Integrated Planning and Evaluation System (IPES)</span>
-  </div>
+<footer style="text-align:center;padding:12px 0 28px;font-size:11px;color:#94a3b8">
+  2026 Kementerian Kesihatan Malaysia — Integrated Planning and Evaluation System (IPES)
 </footer>
 
 <script>
@@ -577,91 +484,6 @@
     });
   }
   tick(); setInterval(tick, 1000);
-
-  /* Modern interactions */
-  document.addEventListener('DOMContentLoaded', function() {
-    // Add ripple effect to buttons
-    document.querySelectorAll('.btn-modern, .floating-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        const ripple = document.createElement('span');
-        ripple.style.position = 'absolute';
-        ripple.style.borderRadius = '50%';
-        ripple.style.background = 'rgba(255,255,255,.3)';
-        ripple.style.transform = 'scale(0)';
-        ripple.style.animation = 'ripple 0.6s linear';
-        ripple.style.left = (e.offsetX - 10) + 'px';
-        ripple.style.top = (e.offsetY - 10) + 'px';
-        ripple.style.width = '20px';
-        ripple.style.height = '20px';
-        this.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-      });
-    });
-
-    // Smooth scroll for navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', function() {
-        const target = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-        const targetEl = document.getElementById('page-' + target);
-        if (targetEl) {
-          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // Add loading state to buttons
-    document.querySelectorAll('.btn-modern').forEach(btn => {
-      btn.addEventListener('click', function() {
-        if (!this.classList.contains('loading')) {
-          this.classList.add('loading');
-          this.innerHTML = '<span style="opacity:0">' + this.innerHTML + '</span>';
-          setTimeout(() => {
-            this.classList.remove('loading');
-            this.innerHTML = this.querySelector('span').innerHTML;
-          }, 2000);
-        }
-      });
-    });
-
-    // Card hover effects
-    document.querySelectorAll('.card-modern').forEach(card => {
-      card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-4px) scale(1.02)';
-      });
-      card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0) scale(1)';
-      });
-    });
-  });
-
-  // Add ripple animation
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes ripple {
-      to { transform: scale(4); opacity: 0; }
-    }
-    .btn-modern.loading {
-      pointer-events: none;
-      position: relative;
-    }
-    .btn-modern.loading::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-    @keyframes spin {
-      to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-  `;
-  document.head.appendChild(style);
 </script>
 </body>
 </html>

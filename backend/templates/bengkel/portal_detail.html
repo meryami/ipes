@@ -127,32 +127,13 @@
               {% if errors.email %}<p class="text-red-500 text-xs mt-1">{{ errors.email }}</p>{% endif %}
             </div>
 
-            <div>
-              <label class="label">Nama Pengguna (Username) <span class="text-red-400">*</span></label>
-              <input type="text" name="username" required minlength="3" maxlength="100"
-                     value="{{ form_data.username|default:'' }}"
-                     placeholder="cth: ahmad_kkm"
-                     class="input" />
-              {% if errors.username %}<p class="text-red-500 text-xs mt-1">{{ errors.username }}</p>{% endif %}
-            </div>
-
             <div class="grid sm:grid-cols-2 gap-4">
               <div>
                 <label class="label">Organisasi / Kementerian</label>
-              <select name="organisasi" class="input">
-                  <option value="">-- Pilih Organisasi --</option>
-                  <option value="Kementerian Kesihatan Malaysia" {% if form_data.organisasi == 'Kementerian Kesihatan Malaysia' %}selected{% endif %}>Kementerian Kesihatan Malaysia</option>
-                  <option value="Jabatan Kesihatan Negeri" {% if form_data.organisasi == 'Jabatan Kesihatan Negeri' %}selected{% endif %}>Jabatan Kesihatan Negeri</option>
-                  <option value="Pejabat Kesihatan Daerah" {% if form_data.organisasi == 'Pejabat Kesihatan Daerah' %}selected{% endif %}>Pejabat Kesihatan Daerah</option>
-                  <option value="Hospital" {% if form_data.organisasi == 'Hospital' %}selected{% endif %}>Hospital</option>
-                  <option value="Kementerian Pengajian Tinggi" {% if form_data.organisasi == 'Kementerian Pengajian Tinggi' %}selected{% endif %}>Kementerian Pengajian Tinggi</option>
-                  <option value="Kementerian Pertahanan" {% if form_data.organisasi == 'Kementerian Pertahanan' %}selected{% endif %}>Kementerian Pertahanan</option>
-                  <option value="Jabatan Digital Negara" {% if form_data.organisasi == 'Jabatan Digital Negara' %}selected{% endif %}>Jabatan Digital Negara</option>
-                  <option value="Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia" {% if form_data.organisasi == 'Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia' %}selected{% endif %}>Pejabat Ketua Pegawai Keselamatan Kerajaan Malaysia</option>
-                  <option value="Pertubuhan Bukan Kerajaan" {% if form_data.organisasi == 'Pertubuhan Bukan Kerajaan' %}selected{% endif %}>Pertubuhan Bukan Kerajaan</option>
-                  <option value="Badan Akademik" {% if form_data.organisasi == 'Badan Akademik' %}selected{% endif %}>Badan Akademik</option>
-                  <option value="Badan Berkanun" {% if form_data.organisasi == 'Badan Berkanun' %}selected{% endif %}>Badan Berkanun</option>
-                </select>
+                <input type="text" name="organisasi"
+                       value="{{ form_data.organisasi|default:'' }}"
+                       placeholder="cth: KKM, JKNS, Hospital Kuala Lumpur"
+                       class="input" />
               </div>
               <div>
                 <label class="label">Jawatan</label>
@@ -160,22 +141,6 @@
                        value="{{ form_data.jawatan|default:'' }}"
                        placeholder="cth: Pengurus Besar, Doktor Perubatan"
                        class="input" />
-              </div>
-            </div>
-
-            <div class="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label class="label">Unit / Bahagian</label>
-                <input type="text" name="unit"
-                       value="{{ form_data.unit|default:'' }}"
-                       placeholder="cth: Unit Perancangan Strategik"
-                       class="input" />
-              </div>
-              <div>
-                <label class="label">Alamat Penuh</label>
-                <textarea name="alamat" rows="2" maxlength="500"
-                          placeholder="cth: No. 1, Jalan Tun Razak, 50400 Kuala Lumpur"
-                          class="input resize-none">{{ form_data.alamat|default:'' }}</textarea>
               </div>
             </div>
 
