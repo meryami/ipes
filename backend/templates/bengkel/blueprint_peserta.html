@@ -55,8 +55,8 @@
         <img src="{% static 'img/logo.png' %}" alt="Logo" style="width:32px;height:32px;object-fit:cover">
       </div>
       <div>
-        <div style="font-size:13px;color:#fff;font-weight:700;line-height:1.2">Integrated Planning and Evaluation System</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:500">IPES · Kementerian Kesihatan Malaysia</div>
+        <div style="font-size:13px;color:#fff;font-weight:700;line-height:1.2">Sistem Perancangan dan Penilaian Bersepadu</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:500">SPPB · Kementerian Kesihatan Malaysia</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -79,17 +79,18 @@
 
     <!-- Progress bar -->
     <div style="margin-top:20px;display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-      {% with steps="1,2,3,4,5,6,7,8" %}
-      {% for n in "12345678" %}
+      {% with steps="1,2,3,4,5,6,7" %}
+      {% for n in "1234567" %}
       <div style="display:flex;align-items:center;gap:4px">
         <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
           {% if n == '1' or n == '2' %}background:#22c55e;color:#fff;
-          {% elif n == '3' and prob_stmts %}background:#22c55e;color:#fff;
+          {% elif n == '3' and themes %}background:#22c55e;color:#fff;
           {% elif n == '4' and themes %}background:#f59e0b;color:#fff;
-          {% else %}background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.15);{% endif %}">
+          {% else %}background:rgba(255,255,255,.1);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.15);
+          {% endif %}">
           {{ n }}
         </div>
-        {% if n != '8' %}
+        {% if n != '7' %}
         <div style="width:16px;height:2px;background:rgba(255,255,255,.12);border-radius:1px"></div>
         {% endif %}
       </div>
@@ -103,14 +104,13 @@
 <div class="bp-nav-wrap">
   <div class="bp-nav">
     <button class="bp-tab {% if active_tab == 'rujukan' or not active_tab %}active{% endif %}" onclick="showBpTab('t-rujukan',this)" type="button"><span class="bp-tab-label">Langkah 1</span>Rujukan</button>
-    <button class="bp-tab {% if active_tab == 'spaf' %}active{% endif %}" onclick="showBpTab('t-spaf',this)" type="button"><span class="bp-tab-label">Langkah 2</span>Pain Point</button>
-    <button class="bp-tab {% if active_tab == 'ps' %}active{% endif %}" onclick="showBpTab('t-ps',this)" type="button"><span class="bp-tab-label">Langkah 3</span>Problem Statement</button>
-    <button class="bp-tab {% if active_tab == 'tema' %}active{% endif %}" onclick="showBpTab('t-tema',this)" type="button"><span class="bp-tab-label">Langkah 4</span>✦ Tema</button>
-    <button class="bp-tab" onclick="showBpTab('t-teras',this)" type="button"><span class="bp-tab-label">Langkah 5</span>Teras</button>
-    <button class="bp-tab" onclick="showBpTab('t-strategi',this)" type="button"><span class="bp-tab-label">Langkah 6</span>Strategi</button>
-    <button class="bp-tab" onclick="showBpTab('t-pelan',this)" type="button"><span class="bp-tab-label">Langkah 7</span>Pelan Tindakan</button>
-    <button class="bp-tab" onclick="showBpTab('t-indikator',this)" type="button"><span class="bp-tab-label">Langkah 8</span>Indikator</button>
-    <button class="bp-tab" onclick="showBpTab('t-peruntukan',this)" type="button"><span class="bp-tab-label">Langkah 9</span>Peruntukan</button>
+    <button class="bp-tab {% if active_tab == 'spaf' or active_tab == 'ps' %}active{% endif %}" onclick="showBpTab('t-spaf',this)" type="button"><span class="bp-tab-label">Langkah 2</span>SPAF</button>
+    <button class="bp-tab {% if active_tab == 'tema' %}active{% endif %}" onclick="showBpTab('t-tema',this)" type="button"><span class="bp-tab-label">Langkah 3</span>✦ Tema</button>
+    <button class="bp-tab" onclick="showBpTab('t-teras',this)" type="button"><span class="bp-tab-label">Langkah 4</span>Teras</button>
+    <button class="bp-tab" onclick="showBpTab('t-strategi',this)" type="button"><span class="bp-tab-label">Langkah 5</span>Strategi</button>
+    <button class="bp-tab" onclick="showBpTab('t-pelan',this)" type="button"><span class="bp-tab-label">Langkah 6</span>Pelan Tindakan</button>
+    <button class="bp-tab" onclick="showBpTab('t-indikator',this)" type="button"><span class="bp-tab-label">Langkah 7</span>Indikator</button>
+    <button class="bp-tab" onclick="showBpTab('t-peruntukan',this)" type="button"><span class="bp-tab-label">Langkah 8</span>Peruntukan</button>
   </div>
 </div>
 
@@ -228,28 +228,25 @@
   </div>
 
 
-  <!-- ═══ TAB 2: PAIN POINT ════════════════════════════════════════════ -->
-  <div id="t-spaf" class="bp-panel" {% if active_tab == 'spaf' %}style="display:block"{% endif %}>
+  <!-- ═══ TAB 2: PAIN POINT & PROBLEM STATEMENT (MERGED) ════════════════════ -->
+  <div id="t-spaf" class="bp-panel" {% if active_tab == 'spaf' or active_tab == 'ps' %}style="display:block"{% endif %}>
     <div class="card" style="padding:24px 28px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
         <div>
-          <div style="font-size:17px;font-weight:800;color:#1e293b">Langkah 2 — Pain Point</div>
-          <div style="font-size:12.5px;color:#64748b;margin-top:3px">Kenal pasti dan dokumentasikan masalah serta kesan yang dirasai.</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:16px;flex-shrink:0">
-          <span style="background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap">📋 {{ pain_points.count }} Pain Point</span>
+          <div style="font-size:17px;font-weight:800;color:#1e293b">Langkah 2 — Pain Point &amp; Problem Statement</div>
+          <div style="font-size:12.5px;color:#64748b;margin-top:3px">Kenal pasti masalah (Pain Point), AI janakan cadangan Problem Statement, kemudian rumuskan pernyataan masalah utama.</div>
         </div>
       </div>
 
       <div style="height:1px;background:#f1f5f9;margin:18px 0"></div>
 
-      <!-- ── Pain Point Form ─────────────────────────────── -->
-      <div style="background:#fdf2f2;border:1.5px solid #fecaca;border-radius:14px;padding:20px 22px">
+      <!-- ════ SECTION 1: PAIN POINT INPUT ════ -->
+      <div style="background:#fdf2f2;border:1.5px solid #fecaca;border-radius:14px;padding:20px 22px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
           <span style="font-size:14px;font-weight:800;color:#dc2626">Pain Point</span>
-          <span style="font-size:10px;font-weight:800;color:#ef4444;background:#fee2e2;padding:2px 8px;border-radius:20px;letter-spacing:.04em">LANGKAH 2 SPAF</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#ef4444;background:#fee2e2;padding:2px 8px;border-radius:20px;letter-spacing:.04em">📋 {{ pain_points.count }}</span>
         </div>
-        <div style="font-size:12px;color:#ef4444;margin-bottom:18px">AI akan janakan cadangan Problem Statement selepas anda submit — boleh semak di Langkah 3.</div>
+        <div style="font-size:12px;color:#ef4444;margin-bottom:18px">Senaraikan masalah yang dirasai. AI akan janakan cadangan Problem Statement secara automatik.</div>
 
         <form method="post" id="pp-form">
           {% csrf_token %}
@@ -268,13 +265,13 @@
           </button>
           <button type="submit" style="width:100%;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px" onclick="this.disabled=true;this.innerHTML='⏳ Menyimpan &amp; Menjana…';this.form.submit()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-            Simpan &amp; Jana Problem Statement dengan AI
+            Simpan &amp; Jana Problem Statement
           </button>
         </form>
 
         {% if pain_points %}
         <div style="margin-top:18px;padding-top:16px;border-top:1px solid #fecaca">
-          <div class="sec-head" style="color:#ef4444">Rekod sedia ada</div>
+          <div class="sec-head" style="color:#ef4444">Rekod Pain Point</div>
           {% for pp in pain_points %}
           <div style="background:#fff;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px">
             <div style="flex:1;min-width:0">
@@ -293,114 +290,98 @@
         </div>
         {% endif %}
       </div>
-    </div>
-  </div>
 
-
-  <!-- ═══ TAB 3: PROBLEM STATEMENT ══════════════════════════════════════ -->
-  <div id="t-ps" class="bp-panel" {% if active_tab == 'ps' %}style="display:block"{% endif %}>
-    <div class="card" style="padding:24px 28px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
-        <div>
-          <div style="font-size:17px;font-weight:800;color:#1e293b">Langkah 3 — Problem Statement</div>
-          <div style="font-size:12.5px;color:#64748b;margin-top:3px">Rumuskan pernyataan masalah utama berdasarkan Pain Point yang dikenal pasti.</div>
+      <!-- ════ SECTION 2: PROBLEM STATEMENT ════ -->
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:20px 22px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <span style="font-size:14px;font-weight:800;color:#d97706">Problem Statement</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#b45309;background:#fef3c7;padding:2px 8px;border-radius:20px;letter-spacing:.04em">📄 {{ prob_stmts.count }}</span>
         </div>
-        <div style="margin-left:16px;flex-shrink:0">
-          <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap">📄 {{ prob_stmts.count }} Problem Statement</span>
-        </div>
-      </div>
 
-      <div style="height:1px;background:#f1f5f9;margin:18px 0"></div>
-
-      {% if generated %}
-      <!-- AI suggestion banner -->
-      <div style="background:linear-gradient(135deg,#ede9fe,#e0e7ff);border:1.5px solid #c4b5fd;border-radius:14px;padding:18px 20px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="17" height="17" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        {% if generated %}
+        <!-- AI suggestion banner -->
+        <div style="background:linear-gradient(135deg,#ede9fe,#e0e7ff);border:1.5px solid #c4b5fd;border-radius:12px;padding:14px 16px;margin-bottom:14px;margin-top:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="15" height="15" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:800;color:#5b21b6">✦ Cadangan AI</div>
+              <div style="font-size:10px;color:#7c3aed">Berdasarkan Pain Point yang anda senaraikan</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:12.5px;font-weight:800;color:#5b21b6">✦ Cadangan AI — Berdasarkan Pain Point Anda</div>
-            <div style="font-size:11px;color:#7c3aed;margin-top:2px">Guna butang di bawah untuk isi borang dengan cadangan AI, atau taip sendiri.</div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 12px;font-size:12px;color:#1e293b;line-height:1.6">{{ generated.masalah_utama }}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+            <form method="post" style="flex:1">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="save_ps">
+              <input type="hidden" name="masalah_utama" value="{{ generated.masalah_utama }}">
+              <input type="hidden" name="skop" value="">
+              <input type="hidden" name="sasaran" value="">
+              <input type="hidden" name="matlamat" value="">
+              <input type="hidden" name="catatan" value="">
+              <button type="submit" style="width:100%;padding:8px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Simpan
+              </button>
+            </form>
+            <button type="button" onclick="fillFromAI()" style="padding:8px 12px;border:1.5px solid #7c3aed;border-radius:8px;background:#fff;color:#7c3aed;font-size:12px;font-weight:700;cursor:pointer;transition:.15s" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#fff'">
+              Edit
+            </button>
           </div>
         </div>
-        <div style="background:#fff;border:1.5px solid #c4b5fd;border-radius:10px;padding:14px 16px;margin-bottom:14px">
-          <div style="font-size:9.5px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Pernyataan Masalah Utama</div>
-          <div style="font-size:13px;color:#1e293b;line-height:1.7">{{ generated.masalah_utama }}</div>
+        {% elif ai_error %}
+        <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#b91c1c;margin-bottom:12px;margin-top:12px">
+          ⚡ AI tidak dapat menjana — {{ ai_error }}. Isi sendiri di bawah.
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <form method="post" style="flex:1">
+        {% endif %}
+
+        <!-- Manual entry form -->
+        <div style="margin-bottom:12px;margin-top:12px">
+          <div style="font-size:11px;font-weight:800;color:#b45309;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">{% if generated %}Ubah atau Tambah Problem Statement Baru{% else %}Isi Problem Statement{% endif %}</div>
+          <form method="post">
             {% csrf_token %}
             <input type="hidden" name="action" value="save_ps">
-            <input type="hidden" name="masalah_utama" value="{{ generated.masalah_utama }}">
             <input type="hidden" name="skop" value="">
             <input type="hidden" name="sasaran" value="">
             <input type="hidden" name="matlamat" value="">
             <input type="hidden" name="catatan" value="">
-            <button type="submit" style="width:100%;padding:10px 16px;border:none;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-              Simpan Cadangan AI Terus
+            <div style="margin-bottom:12px">
+              <textarea id="inp-masalah" name="masalah_utama" class="inp" style="min-height:80px;resize:vertical;font-size:12px" placeholder="Nyatakan masalah utama...">{{ generated.masalah_utama|default:"" }}</textarea>
+            </div>
+            <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,#d97706,#b45309);padding:9px 14px;font-size:12px">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              + Simpan Problem Statement
             </button>
           </form>
-          <button type="button" onclick="fillFromAI()" style="padding:10px 16px;border:2px solid #7c3aed;border-radius:10px;background:#fff;color:#7c3aed;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#fff'">
-            ✏️ Edit Dahulu
-          </button>
         </div>
-      </div>
-      {% elif ai_error %}
-      <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#b91c1c;margin-bottom:16px">
-        ⚡ AI tidak dapat menjana — {{ ai_error }}. Isi sendiri di bawah atau kembali ke Langkah 2 untuk cuba lagi.
-      </div>
-      {% endif %}
 
-      <!-- Manual entry form -->
-      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:20px 22px;margin-bottom:20px">
-        <div style="font-size:13px;font-weight:800;color:#d97706;margin-bottom:4px">{% if generated %}Edit &amp; Simpan Problem Statement{% else %}Isi Problem Statement Sendiri{% endif %}</div>
-        <div style="font-size:11.5px;color:#b45309;margin-bottom:14px">{% if generated %}Ayat di bawah sudah diisi dengan cadangan AI. Ubah jika perlu, kemudian simpan.{% else %}Taip pernyataan masalah utama dan klik Simpan.{% endif %}</div>
-        <form method="post">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="save_ps">
-          <input type="hidden" name="skop" value="">
-          <input type="hidden" name="sasaran" value="">
-          <input type="hidden" name="matlamat" value="">
-          <input type="hidden" name="catatan" value="">
-          <div style="margin-bottom:16px">
-            <div style="font-size:10.5px;font-weight:800;color:#b45309;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">Pernyataan Masalah Utama *</div>
-            <textarea id="inp-masalah" name="masalah_utama" class="inp" style="min-height:100px;resize:vertical" placeholder="Nyatakan masalah utama yang dikenal pasti...">{{ generated.masalah_utama|default:"" }}</textarea>
+        <!-- Existing PSs -->
+        {% if prob_stmts %}
+        <div class="sec-head" style="color:#d97706;margin-top:16px;padding-top:12px;border-top:1px solid #fde68a">Rekod Problem Statement</div>
+        {% for ps in prob_stmts %}
+        <div class="ps-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;color:#1e293b;line-height:1.6;margin-bottom:4px">{{ ps.masalah_utama }}</div>
+              <div style="font-size:10px;color:#94a3b8">{{ ps.created_at|date:"d M Y" }}</div>
+            </div>
+            <form method="post" onsubmit="return confirm('Padam?')" style="flex-shrink:0">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="del_ps">
+              <input type="hidden" name="ps_id" value="{{ ps.pk }}">
+              <button type="submit" style="background:none;border:none;cursor:pointer;color:#fde68a;font-size:16px;font-weight:700;padding:0 2px;transition:color .15s" onmouseover="this.style.color='#d97706'" onmouseout="this.style.color='#fde68a'">&times;</button>
+            </form>
           </div>
-          <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,#d97706,#b45309)">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            + Simpan Problem Statement
-          </button>
-        </form>
-      </div>
-
-      <!-- Existing PSs -->
-      {% if prob_stmts %}
-      <div class="sec-head" style="color:#d97706">Rekod sedia ada</div>
-      {% for ps in prob_stmts %}
-      <div class="ps-card">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;color:#1e293b;line-height:1.7;margin-bottom:6px">{{ ps.masalah_utama }}</div>
-            <div style="font-size:10.5px;color:#94a3b8">{{ ps.created_at|date:"d M Y" }}</div>
-          </div>
-          <form method="post" onsubmit="return confirm('Padam problem statement ini?')" style="flex-shrink:0">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="del_ps">
-            <input type="hidden" name="ps_id" value="{{ ps.pk }}">
-            <button type="submit" style="background:none;border:none;cursor:pointer;color:#fde68a;font-size:18px;font-weight:700;padding:0 2px;transition:color .15s" onmouseover="this.style.color='#d97706'" onmouseout="this.style.color='#fde68a'">&times;</button>
-          </form>
         </div>
+        {% endfor %}
+        {% else %}
+        <div style="text-align:center;padding:18px 12px;border:2px dashed #fde68a;border-radius:10px;margin-top:12px">
+          <div style="font-size:20px;margin-bottom:4px">📄</div>
+          <div style="font-size:11.5px;font-weight:700;color:#92400e">Belum ada</div>
+        </div>
+        {% endif %}
       </div>
-      {% endfor %}
-      {% else %}
-      <div style="text-align:center;padding:28px 20px;border:2px dashed #fde68a;border-radius:12px">
-        <div style="font-size:26px;margin-bottom:8px">📄</div>
-        <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:3px">Belum ada Problem Statement</div>
-        <div style="font-size:11.5px;color:#b45309">Isi borang di atas atau jana AI dari Langkah 2 (Pain Point).</div>
-      </div>
-      {% endif %}
 
     </div>
   </div>

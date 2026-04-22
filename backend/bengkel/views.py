@@ -859,6 +859,17 @@ def portal_detail(request, pk):
         email       = request.POST.get("email", "").strip()
         organisasi  = request.POST.get("organisasi", "").strip()
         jawatan     = request.POST.get("jawatan", "").strip()
+        unit        = request.POST.get("unit", "").strip()
+        alamat      = request.POST.get("alamat", "").strip()
+        form_data = {
+            "nama": nama,
+            "email": email,
+            "username": username,
+            "organisasi": organisasi,
+            "jawatan": jawatan,
+            "unit": unit,
+            "alamat": alamat,
+        }
         errors = {}
         if not nama:  errors["nama"]  = "Nama wajib diisi."
         if not email: errors["email"] = "E-mel wajib diisi."
@@ -871,6 +882,7 @@ def portal_detail(request, pk):
                     bengkel=bengkel,
                     nama=nama, email=email,
                     organisasi=organisasi, jawatan=jawatan,
+                    unit=unit, alamat=alamat,
                     status="accepted",           # auto-accept self-registration
                     responded_at=timezone.now(),
                 )
@@ -878,7 +890,7 @@ def portal_detail(request, pk):
 
         return render(request, "bengkel/portal_detail.html", {
             "bengkel": bengkel, "errors": errors,
-            "form_data": {"nama": nama, "email": email, "organisasi": organisasi, "jawatan": jawatan},
+            "form_data": form_data,
         })
 
     return render(request, "bengkel/portal_detail.html", {"bengkel": bengkel})
