@@ -42,7 +42,7 @@
 
     /* ── Sidebar nav ── */
     .nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:12px 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.45);border:none;border-left:3px solid transparent;background:transparent;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);white-space:nowrap;text-decoration:none;text-align:left;position:relative;overflow:hidden}
-    .nav-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:0 2px 2px 0;transform:scaleY(0);transition:transform .2s ease}
+    .nav-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:0 2px 2px 0;transform:scaleY(0);transition:transform .2s ease}
     .nav-item.active{color:#3b82f6;background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(147,51,234,.1));border-left-color:#3b82f6}
     .nav-item.active::before{transform:scaleY(1)}
     .nav-item:hover:not(.active){color:rgba(255,255,255,.85);background:rgba(59,130,246,.05);transform:translateX(4px)}
@@ -69,13 +69,13 @@
     .card-modern:hover::before{opacity:1}
 
     .btn-modern{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s cubic-bezier(.4,0,.2,1);cursor:pointer;border:none;position:relative;overflow:hidden}
-    .btn-modern::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#3b82f6,#8b5cf6);opacity:0;transition:opacity .2s ease}
+    .btn-modern::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#3b82f6,#1d4ed8);opacity:0;transition:opacity .2s ease}
     .btn-modern:hover::before{opacity:1}
     .btn-modern span{position:relative;z-index:1}
 
     .badge-modern{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.2);border:1px solid rgba(255,255,255,.2)}
 
-    .stat-card{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:20px;padding:24px;color:#fff;position:relative;overflow:hidden}
+    .stat-card{background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);border-radius:20px;padding:24px;color:#fff;position:relative;overflow:hidden}
     .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(45deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s ease}
     .stat-card:hover::before{opacity:1}
     .stat-card .number{font-size:48px;font-weight:800;line-height:1;margin-bottom:8px;text-shadow:0 2px 4px rgba(0,0,0,.2)}
@@ -87,7 +87,7 @@
     .timeline-dot{width:12px;height:12px;border-radius:50%;background:#e5e7eb;border:3px solid #fff;box-shadow:0 0 0 3px #3b82f6;margin-top:6px;transition:all .2s ease}
     .timeline-item:hover .timeline-dot{background:#3b82f6;transform:scale(1.2)}
 
-    .floating-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;cursor:pointer;box-shadow:0 8px 24px rgba(59,130,246,.4);transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
+    .floating-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;border:none;cursor:pointer;box-shadow:0 8px 24px rgba(59,130,246,.4);transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
     .floating-btn:hover{transform:scale(1.1);box-shadow:0 12px 32px rgba(59,130,246,.6)}
     .floating-btn:active{transform:scale(.95)}
 
@@ -96,7 +96,7 @@
 
     .glass-effect{background:rgba(255,255,255,.1);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.2);border-radius:16px}
 
-    .gradient-text{background:linear-gradient(135deg,#667eea,#764ba2);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+    .gradient-text{background:linear-gradient(135deg,#2563eb,#1d4ed8);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
 
     .pulse-ring{position:absolute;border:2px solid #3b82f6;border-radius:50%;animation:pulse-ring 2s infinite}
     @keyframes pulse-ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.6);opacity:0}}
@@ -251,7 +251,7 @@
         <button type="button" onclick="toggleTent('t{{ j.pk }}')"
                 style="width:100%;display:flex;align-items:center;gap:14px;padding:18px 22px;background:none;border:none;cursor:pointer;text-align:left">
           <!-- Icon -->
-          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">📋</div>
+          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">📋</div>
           <!-- Info -->
           <div style="flex:1;min-width:0">
             <div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-bottom:3px;letter-spacing:.03em">
@@ -325,7 +325,7 @@
       {% for j in jemputan_list %}{% if j.status == 'accepted' %}
       <div class="card-modern" style="overflow:hidden;margin-bottom:18px">
         <!-- Card header -->
-        <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:22px 24px 20px;position:relative">
+        <div style="background:linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#2563eb 100%);padding:22px 24px 20px;position:relative">
           <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(45deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s ease"></div>
           <!-- Date + status -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -437,7 +437,7 @@
       </div>
       <div style="font-size:18px;font-weight:700;color:#475569;margin-bottom:6px">Tiada Program Aktif</div>
       <p style="font-size:14px;color:#64748b;margin:0 0 24px">Anda akan dimaklumkan apabila dijemput ke sebuah bengkel.</p>
-      <a href="{% url 'bengkel:portal_list' %}" class="btn-modern" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff">
+      <a href="{% url 'bengkel:portal_list' %}" class="btn-modern" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
         </svg>

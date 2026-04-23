@@ -536,6 +536,16 @@ def delete_blueprint_theme(request, bid, tid):
 
 
 @login_required
+def analisis_sme(request):
+    """Superadmin — SME Performance Analysis & AI Mapping Dashboard."""
+    if not request.user.is_superuser:
+        return redirect("home")
+    return render(request, "superadmin/analisis_SME.html", {
+        "pending_permohonan": _pending_count(),
+    })
+
+
+@login_required
 def detail_bengkel(request, bid):
     if not request.user.is_superuser:
         return redirect("home")

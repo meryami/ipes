@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Pain Points | {{ bengkel.title }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+
+    /* ── Top Navbar ─────────────────────────────────────────── */
+    .topbar{
+      background:#fff;border-bottom:1px solid #e2e8f0;
+      padding:0 32px;height:60px;display:flex;align-items:center;
+      position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .topbar-left{display:flex;align-items:center;gap:12px}
+    .brand{font-size:15px;font-weight:800;color:#1e293b;letter-spacing:-.3px}
+    .brand span{color:#2563eb}
+    .topbar-sep{width:1px;height:20px;background:#e2e8f0;margin:0 4px}
+    .page-title{font-size:13px;font-weight:600;color:#64748b}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .step-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:#f1f5f9;border:1px solid #e2e8f0;
+      color:#475569;padding:4px 12px;border-radius:99px;
+      font-size:11px;font-weight:700;letter-spacing:.04em;
+    }
+    .step-badge svg{color:#2563eb}
+
+    /* ── Hero Header ───────────────────────────────────────── */
+    .hero{
+      background:linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#2563eb 100%);
+      padding:32px 24px 36px;position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:"";position:absolute;inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .hero::after{
+      content:"";position:absolute;bottom:-40px;right:-20px;
+      width:200px;height:200px;border-radius:50%;
+      background:rgba(255,255,255,.06);pointer-events:none;
+    }
+    .hero-inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+    .hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;
+      transition:.2s;text-decoration:none;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.25);text-decoration:none}
+    .back-btn svg{transition:transform .2s}
+    .back-btn:hover svg{transform:translateX(-2px)}
+    .module-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;
+      letter-spacing:.08em;text-transform:uppercase;
+    }
+    .hero-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.2}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.8);max-width:500px;line-height:1.6}
+
+    /* ── Main Content ──────────────────────────────────────── */
+    .main-wrap{padding:28px 24px 60px;max-width:680px;margin:0 auto}
+
+    /* ── Progress Bar Card ────────────────────────────────── */
+    .progress-card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      padding:16px 20px;margin-bottom:20px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .prog-info{flex:1}
+    .prog-label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .prog-bar-wrap{background:#f1f5f9;border-radius:99px;height:8px;width:100%;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .6s ease}
+    .prog-count{
+      font-size:28px;font-weight:900;color:#2563eb;line-height:1;
+    }
+    .prog-count span{font-size:12px;font-weight:700;color:#94a3b8;display:block;margin-top:2px}
+
+    /* ── Main Form Card ───────────────────────────────────── */
+    .card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:20px;
+      box-shadow:0 2px 8px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+      overflow:hidden;margin-bottom:20px;
+    }
+    .card-head{
+      padding:24px 28px 20px;
+      border-bottom:1px solid #f1f5f9;
+      display:flex;align-items:center;gap:14px;
+      background:linear-gradient(135deg,#eff6ff,#dbeafe);
+    }
+    .card-icon{
+      width:44px;height:44px;border-radius:12px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      box-shadow:0 3px 10px rgba(37,99,235,.3);
+    }
+    .card-icon svg{color:#fff}
+    .card-title{font-size:17px;font-weight:800;color:#1e3a5f}
+    .card-hint{font-size:12px;color:#6b7280;margin-top:2px}
+    .card-body{padding:24px 28px 28px}
+
+    /* ── AI Hint Box ──────────────────────────────────────── */
+    .ai-hint{
+      background:linear-gradient(135deg,#eff6ff,#dbeafe);
+      border:1px solid #bfdbfe;border-radius:14px;
+      padding:14px 16px;margin-bottom:20px;
+      display:flex;align-items:flex-start;gap:10px;
+    }
+    .ai-hint-icon{
+      width:32px;height:32px;border-radius:8px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .ai-hint-icon svg{color:#fff}
+    .ai-hint-text{flex:1}
+    .ai-hint-title{font-size:12px;font-weight:800;color:#1e40af;margin-bottom:2px}
+    .ai-hint-body{font-size:12px;color:#1e3a8a;line-height:1.5}
+
+    /* ── Pain Point Items ────────────────────────────────── */
+    .pp-list{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+    .pp-item{
+      background:#fafbfc;border:1.5px solid #e2e8f0;border-radius:14px;
+      padding:16px 18px;transition:border-color .2s,box-shadow .2s;
+    }
+    .pp-item:focus-within{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,237,.1)}
+    .pp-label{
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:10px;font-weight:800;color:#2563eb;text-transform:uppercase;
+      letter-spacing:.07em;margin-bottom:10px;
+    }
+    .pp-num{
+      font-size:10px;font-weight:800;color:#2563eb;
+      background:#dbeafe;border:1px solid #bfdbfe;
+      padding:2px 10px;border-radius:99px;
+    }
+    .pp-textarea{
+      width:100%;border:none;background:transparent;resize:vertical;
+      font-size:14px;color:#1e293b;font-family:inherit;outline:none;
+      min-height:80px;line-height:1.7;
+    }
+    .pp-textarea::placeholder{color:#9ca3af}
+    .remove-btn{
+      background:#fff;border:1.5px solid #e2e8f0;
+      color:#9ca3af;border-radius:8px;width:28px;height:28px;cursor:pointer;
+      font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;
+      transition:.15s;flex-shrink:0;
+    }
+    .remove-btn:hover{background:#fef2f2;border-color:#fca5a5;color:#ef4444}
+
+    /* ── Add Button ──────────────────────────────────────── */
+    .add-btn{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:12px;border:2px dashed #93c5fd;border-radius:12px;
+      background:#eff6ff;color:#2563eb;font-size:13px;font-weight:700;
+      cursor:pointer;transition:.2s;margin-bottom:20px;
+    }
+    .add-btn:hover{background:#dbeafe;border-color:#2563eb;transform:translateY(-1px)}
+
+    /* ── Submit Button ───────────────────────────────────── */
+    .submit-btn{
+      width:100%;padding:15px 20px;border:none;border-radius:14px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;font-size:15px;font-weight:800;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      transition:.2s;letter-spacing:.02em;
+      box-shadow:0 4px 14px rgba(37,99,235,.35);
+    }
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.4)}
+    .submit-btn:active{transform:translateY(0)}
+    .submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+
+    /* ── Divider ─────────────────────────────────────────── */
+    .divider{
+      display:flex;align-items:center;gap:12px;margin:24px 0 20px;
+    }
+    .divider-line{flex:1;height:1px;background:#f1f5f9}
+    .divider-text{font-size:11px;font-weight:800;color:#cbd5e1;text-transform:uppercase;letter-spacing:.1em}
+
+    /* ── Existing Records ────────────────────────────────── */
+    .existing-section{}
+    .existing-head{
+      font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;
+      letter-spacing:.1em;margin-bottom:12px;padding-bottom:8px;
+      border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;
+    }
+    .existing-head span{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700}
+    .rec-item{
+      background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+      padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;
+      box-shadow:0 1px 3px rgba(0,0,0,.03);
+      transition:.15s;
+    }
+    .rec-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .rec-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#60a5fa);flex-shrink:0;margin-top:4px;box-shadow:0 0 0 3px rgba(37,99,237,.15)}
+    .rec-body{flex:1;min-width:0}
+    .rec-text{font-size:13.5px;color:#1e293b;line-height:1.6;margin-bottom:4px}
+    .rec-date{font-size:11px;color:#94a3b8;font-weight:500}
+    .rec-del{
+      background:none;border:none;color:#cbd5e1;font-size:20px;font-weight:700;
+      cursor:pointer;padding:0 4px;flex-shrink:0;transition:.15s;
+    }
+    .rec-del:hover{color:#ef4444}
+
+    /* ── Empty state decoration ──────────────────────────── */
+    .empty-deco{
+      text-align:center;padding:32px;
+      background:linear-gradient(135deg,#eff6ff,#dbeafe);
+      border:1.5px dashed #bfdbfe;border-radius:14px;
+    }
+    .empty-icon{font-size:40px;margin-bottom:8px}
+    .empty-text{font-size:13px;color:#94a3b8;font-weight:600}
+  </style>
+</head>
+<body>
+
+<!-- Top Navbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="brand">IPES<span>.</span></div>
+    <div class="topbar-sep"></div>
+    <div class="page-title">SPAF</div>
+  </div>
+  <div class="topbar-right">
+    <div class="step-badge">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      MODULE 1
+    </div>
+  </div>
+</div>
+
+<!-- Hero Header -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <a href="{% url 'bengkel:blueprint_peserta' bengkel.pk %}?tab=spaf" class="back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to SPAF
+      </a>
+      <div class="module-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        MODULE 1
+      </div>
+    </div>
+    <h1 class="hero-title">Pain Points Analytics</h1>
+    <p class="hero-sub">Kenal pasti dan senaraikan masalah utama yang dirasai. AI akan menjana cadangan Problem Statement secara automatik.</p>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-wrap">
+
+  <!-- Progress Card -->
+  <div class="progress-card">
+    <div class="prog-info">
+      <div class="prog-label">Rekod Pain Point</div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:{% widthratio pain_points.count 10 100 %}%"></div></div>
+    </div>
+    <div class="prog-count">
+      {{ pain_points.count }}
+      <span>item{{ pain_points.count|pluralize }}</span>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Isi Pain Points</div>
+        <div class="card-hint">Setiap Pain Point = satu ruangan masalah. Semakin spesifik, semakin tepat PS dijana.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post" id="ppForm">
+        {% csrf_token %}
+
+        <!-- AI Hint -->
+        <div class="ai-hint">
+          <div class="ai-hint-icon">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <div class="ai-hint-text">
+            <div class="ai-hint-title">AI akan menjana Problem Statement secara automatik</div>
+            <div class="ai-hint-body">Selepas simpan, AI akan analisis setiap Pain Point dan cadangkan Problem Statement yang sesuai.</div>
+          </div>
+        </div>
+
+        <div class="pp-list" id="ppList">
+          {% for txt in existing %}
+          <div class="pp-item">
+            <div class="pp-label">
+              <span>Pain Point #<span class="pp-num-val">{{ forloop.counter }}</span></span>
+              <button type="button" class="remove-btn" onclick="removeItem(this)" style="display:none">&times;</button>
+            </div>
+            <textarea name="pain_point_{{ forloop.counter0 }}" class="pp-textarea" placeholder="Huraikan masalah yang dirasai...">{{ txt }}</textarea>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="add-btn" onclick="addItem()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          + Tambah Pain Point
+        </button>
+
+        <button type="submit" class="submit-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Simpan & Jana Problem Statement
+        </button>
+      </form>
+
+      <!-- Existing records -->
+      {% if pain_points %}
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">Rekod</div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="existing-section">
+        <div class="existing-head">
+          Rekod Pain Point
+          <span>{{ pain_points.count }}</span>
+        </div>
+        {% for pp in pain_points %}
+        <div class="rec-item">
+          <div class="rec-dot"></div>
+          <div class="rec-body">
+            <div class="rec-text">{{ pp.keterangan }}</div>
+            <div class="rec-date">{{ pp.tajuk }} &middot; {{ pp.created_at|date:"d M Y" }}</div>
+          </div>
+          <form method="post" onsubmit="return confirm('Padam Pain Point ini?')" style="flex-shrink:0">
+            {% csrf_token %}
+            <input type="hidden" name="del_pp" value="{{ pp.pk }}">
+            <button type="submit" class="rec-del">&times;</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let counter = {{ existing|length }};
+
+  function addItem() {
+    counter++;
+    const list = document.getElementById('ppList');
+    const div = document.createElement('div');
+    div.className = 'pp-item';
+    div.innerHTML = `
+      <div class="pp-label">
+        <span>Pain Point #<span class="pp-num-val">${counter}</span></span>
+        <button type="button" class="remove-btn" onclick="removeItem(this)" style="display:flex">&times;</button>
+      </div>
+      <textarea name="pain_point_${counter - 1}" class="pp-textarea" placeholder="Huraikan masalah yang dirasai..."></textarea>
+    `;
+    list.appendChild(div);
+    updateRemoveButtons();
+    div.querySelector('textarea').focus();
+  }
+
+  function removeItem(btn) {
+    btn.closest('.pp-item').remove();
+    updateNumLabels();
+    updateRemoveButtons();
+  }
+
+  function updateNumLabels() {
+    document.querySelectorAll('.pp-num-val').forEach((el, i) => { el.textContent = i + 1; });
+  }
+
+  function updateRemoveButtons() {
+    const items = document.querySelectorAll('.pp-item');
+    items.forEach(item => {
+      const btn = item.querySelector('.remove-btn');
+      btn.style.display = items.length > 1 ? 'flex' : 'none';
+    });
+  }
+
+  updateRemoveButtons();
+
+  // Form submit with loading state
+  document.getElementById('ppForm').addEventListener('submit', function(e) {
+    const empty = [...document.querySelectorAll('.pp-textarea')].filter(t => !t.value.trim());
+    if (empty.length === document.querySelectorAll('.pp-textarea').length) {
+      e.preventDefault();
+      alert('Sila isi sekurang-kurangnya satu Pain Point.');
+      return;
+    }
+    const btn = this.querySelector('.submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Menyimpan...';
+    this.submit();
+  });
+</script>
+
+</body>
+</html>

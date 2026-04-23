@@ -463,6 +463,30 @@ class SpafRiskAnalysis(models.Model):
         return f"Risk — {self.user.username} ({self.created_at:%d/%m/%Y})"
 
 
+# ── Forum Discussion ────────────────────────────────────────────────────────
+
+class ForumPesan(models.Model):
+    bengkel      = models.ForeignKey(Bengkel, on_delete=models.CASCADE, related_name="forum_pesan")
+    pengirim     = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="forum_pesan")
+    nama_paparan = models.CharField(max_length=200, blank=True)  # cached display name
+    organisasi   = models.CharField(max_length=200, blank=True)  # cached org
+    mesej        = models.TextField()
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "Forum Pesan"
+        verbose_name_plural = "Forum Pesan"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.nama_paparan or 'Tanpa Nama'}: {self.mesej[:50]}"
+
+    @property
+    def initials(self):
+        parts = (self.nama_paparan or 'X').split()
+        return ''.join([w[0].upper() for w in parts[:2]])
+
+
 # ── Blueprint — Themes (Step 3 synthesis) ────────────────────────────────────
 
 class BlueprintTheme(models.Model):

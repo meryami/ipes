@@ -5,6 +5,7 @@ app_name = "superadmin"
 
 urlpatterns = [
     path("",                                 views.dashboard,              name="dashboard"),
+    path("analisis-sme/",                    views.analisis_sme,           name="analisis_sme"),
     path("bengkel/",                         views.semua_bengkel,          name="semua_bengkel"),
     path("bengkel/<int:bid>/edit/",          views.edit_bengkel,           name="edit_bengkel"),
     path("bengkel/<int:bid>/delete/",        views.delete_bengkel,         name="delete_bengkel"),

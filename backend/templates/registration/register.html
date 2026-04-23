@@ -177,6 +177,19 @@
           <div class="border-t border-dashed border-amber-200 pt-4">
             <p class="text-[10.5px] text-amber-600 font-bold uppercase tracking-widest mb-3">Maklumat Organisasi</p>
           </div>
+          
+          <!-- Username for Penganjur -->
+          <div>
+            <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              Nama Pengguna <span class="text-red-500">*</span>
+            </label>
+            <input type="text" name="username_penganjur" id="fUsernamePenganjur" required minlength="3" maxlength="100"
+                   value="{{ form_data.username_penganjur|default:'' }}"
+                   placeholder="cth: ahmad_kkm"
+                   class="input-field" autocomplete="username"/>
+            <div id="usernamePenganjurMsg" class="text-[11px] mt-1 hidden"></div>
+          </div>
+          
           <div>
             <label class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
               Nama Organisasi <span class="text-red-500" id="orgRequired">*</span>
@@ -214,7 +227,7 @@
           </div>
         </div>
 
-        <!-- Password -->
+        <!-- Password (shown for both peserta and penganjur) -->
         <div class="mb-4" id="pw1Div">
           <label id="pw1Label" class="block text-[11.5px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Kata Laluan <span class="text-red-500">*</span></label>
           <div class="relative">
@@ -312,11 +325,19 @@
     document.getElementById('regBtn').disabled = false;
     document.getElementById('regBtn').style.opacity = '1';
 
-    // username field — not needed for penganjur (auto-generated from email)
+    // username field — shown for both, but different field names
     var usernameDiv = document.getElementById('usernameDiv');
     var fUsername   = document.getElementById('fUsername');
+    var fUsernamePenganjur = document.getElementById('fUsernamePenganjur');
+    
+    // Show username field for peserta, hide it
     usernameDiv.classList.toggle('hidden', isPenganjur);
     fUsername.required = !isPenganjur;
+    
+    // Penganjur username field
+    if (fUsernamePenganjur) {
+      fUsernamePenganjur.required = isPenganjur;
+    }
 
     // peserta-only fields (organisasi, jawatan, unit, alamat)
     var pesertaFields = document.getElementById('pesertaOnlyFields');
@@ -327,25 +348,20 @@
     fields.classList.toggle('hidden', !isPenganjur);
     document.getElementById('fOrgPenganjur').required = isPenganjur;
 
-    // confirm password — not needed for penganjur
+    // confirm password — shown for both peserta and penganjur
     var confirmDiv = document.getElementById('confirmPwDiv');
     var fPw2       = document.getElementById('fPw2');
-    confirmDiv.classList.toggle('hidden', isPenganjur);
-    fPw2.required = !isPenganjur;
+    confirmDiv.classList.toggle('hidden', false);  // Always show
+    fPw2.required = true;  // Always required
 
-    // password field — hidden entirely for penganjur (no password needed until approval)
+    // password field — shown for both peserta and penganjur
     var pw1Div  = document.getElementById('pw1Div');
     var pw1     = document.getElementById('fPw1');
     var strBar  = document.getElementById('strengthBar').parentElement;
     var strLbl  = document.getElementById('strengthLbl');
-    pw1Div.classList.toggle('hidden', isPenganjur);
-    pw1.required = !isPenganjur;
-    if (isPenganjur) {
-      pw1.value = '';
-      pw1.removeAttribute('minlength');
-    } else {
-      pw1.setAttribute('minlength', '8');
-    }
+    pw1Div.classList.toggle('hidden', false);  // Always show
+    pw1.required = true;  // Always required
+    pw1.setAttribute('minlength', '8');  // Always require min 8 chars
 
     // button label + colour
     var btn    = document.getElementById('regBtn');
@@ -408,16 +424,31 @@
   }
   pw2.addEventListener('input', checkMatch);
 
-  /* Username validation feedback */
+  /* Username validation feedback (peserta) */
   var uField = document.getElementById('fUsername');
   var uMsg   = document.getElementById('usernameMsg');
-  uField.addEventListener('input', function(){
-    var v = this.value.trim();
-    if(v.length === 0){ uMsg.classList.add('hidden'); this.className='input-field'; return; }
-    if(v.length < 3) { uMsg.textContent='Minimum 3 aksara'; uMsg.className='text-[11px] mt-1 text-red-500 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field invalid'; }
-    else if(/[^a-zA-Z0-9_]/.test(v)) { uMsg.textContent='Hanya huruf, nombor, dan garis bawah (_) dibenarkan'; uMsg.className='text-[11px] mt-1 text-amber-600 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field invalid'; }
-    else { uMsg.textContent='✓ Format nama pengguna sah'; uMsg.className='text-[11px] mt-1 text-emerald-600 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field valid'; }
-  });
+  if (uField) {
+    uField.addEventListener('input', function(){
+      var v = this.value.trim();
+      if(v.length === 0){ uMsg.classList.add('hidden'); this.className='input-field'; return; }
+      if(v.length < 3) { uMsg.textContent='Minimum 3 aksara'; uMsg.className='text-[11px] mt-1 text-red-500 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field invalid'; }
+      else if(/[^a-zA-Z0-9_]/.test(v)) { uMsg.textContent='Hanya huruf, nombor, dan garis bawah (_) dibenarkan'; uMsg.className='text-[11px] mt-1 text-amber-600 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field invalid'; }
+      else { uMsg.textContent='✓ Format nama pengguna sah'; uMsg.className='text-[11px] mt-1 text-emerald-600 font-semibold'; uMsg.classList.remove('hidden'); this.className='input-field valid'; }
+    });
+  }
+  
+  /* Username validation feedback (penganjur) */
+  var uFieldPenganjur = document.getElementById('fUsernamePenganjur');
+  var uMsgPenganjur   = document.getElementById('usernamePenganjurMsg');
+  if (uFieldPenganjur) {
+    uFieldPenganjur.addEventListener('input', function(){
+      var v = this.value.trim();
+      if(v.length === 0){ uMsgPenganjur.classList.add('hidden'); this.className='input-field'; return; }
+      if(v.length < 3) { uMsgPenganjur.textContent='Minimum 3 aksara'; uMsgPenganjur.className='text-[11px] mt-1 text-red-500 font-semibold'; uMsgPenganjur.classList.remove('hidden'); this.className='input-field invalid'; }
+      else if(/[^a-zA-Z0-9_]/.test(v)) { uMsgPenganjur.textContent='Hanya huruf, nombor, dan garis bawah (_) dibenarkan'; uMsgPenganjur.className='text-[11px] mt-1 text-amber-600 font-semibold'; uMsgPenganjur.classList.remove('hidden'); this.className='input-field invalid'; }
+      else { uMsgPenganjur.textContent='✓ Format nama pengguna sah'; uMsgPenganjur.className='text-[11px] mt-1 text-emerald-600 font-semibold'; uMsgPenganjur.classList.remove('hidden'); this.className='input-field valid'; }
+    });
+  }
 
   /* Email validation */
   var eField = document.getElementById('fEmail');

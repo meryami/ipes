@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 import csv
 import io as _io
+import json
+from collections import defaultdict
+from django.db.models import Count
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_POST
@@ -17,7 +20,11 @@ import uuid
 from django.db.models import Count, Sum
 from django.urls import reverse
 
-from .models import Bengkel, Jemputan, Kehadiran, PenganjurRequest, UserProfile
+from .models import (Bengkel, Jemputan, Kehadiran, PenganjurRequest, UserProfile,
+    SpafPainPoint, SpafProblemStatement, SpafRootCauseAnalysis,
+    SpafRootCauseValidation, SpafRiskAnalysis,
+    AnalisisSWOT, AnalisisPESTEL, Analisis5C, AnalisisSOAR, AnalisisVMOST,
+    BengkelContribution, ContributionFile, ForumPesan)
 
 
 def _home_url(user):
@@ -121,6 +128,462 @@ def _bengkel_form_save(request, bengkel=None):
 
 
 # ── Workshop CRUD ─────────────────────────────────────────────────────────────
+
+@login_required
+def penganjur_insight(request, pk):
+    """Penganjur — Analytics/Insight page for their own bengkel."""
+    if not request.user.is_staff or request.user.is_superuser:
+        return redirect("home")
+
+    bengkel = get_object_or_404(Bengkel, pk=pk, created_by=request.user)
+
+    # ── Core querysets ────────────────────────────────────────────────────────
+    jemputan_qs  = Jemputan.objects.filter(bengkel=bengkel).select_related('user').prefetch_related('kehadiran')
+    kehadiran_qs = Kehadiran.objects.filter(jemputan__bengkel=bengkel)
+
+    stats = {
+        "total_jemputan": jemputan_qs.count(),
+        "total_hadir":    kehadiran_qs.count(),
+        "total_diterima": jemputan_qs.filter(status="accepted").count(),
+        "total_pending":  jemputan_qs.filter(status="pending").count(),
+        "total_ditolak":  jemputan_qs.filter(status="rejected").count(),
+    }
+
+    # ── Contribution / file stats ─────────────────────────────────────────────
+    contribution_files = ContributionFile.objects.filter(
+        contribution__bengkel=bengkel
+    ).select_related('contribution__jemputan')
+    total_files = contribution_files.count()
+
+    # File format breakdown
+    word_exts  = {'doc', 'docx'}
+    excel_exts = {'xls', 'xlsx'}
+    pptx_exts  = {'ppt', 'pptx'}
+    image_exts = {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'}
+    ext_map    = {'pdf': 0, 'word': 0, 'excel': 0, 'pptx': 0, 'image': 0, 'txt': 0}
+    for cf in contribution_files:
+        ext = cf.original_name.rsplit('.', 1)[-1].lower() if '.' in cf.original_name else ''
+        if ext == 'pdf':             ext_map['pdf']   += 1
+        elif ext in word_exts:       ext_map['word']  += 1
+        elif ext in excel_exts:      ext_map['excel'] += 1
+        elif ext in pptx_exts:       ext_map['pptx']  += 1
+        elif ext in image_exts:      ext_map['image'] += 1
+        else:                        ext_map['txt']   += 1
+
+    jenis_fail_semua = [
+        ext_map['pdf'], ext_map['word'], ext_map['excel'],
+        ext_map['pptx'], ext_map['image'], ext_map['txt']
+    ]
+
+    # ── Mind-map: group jemputan by organisasi ────────────────────────────────
+    COLOR_BG  = ['bg-blue-600','bg-cyan-600','bg-emerald-600','bg-lime-500',
+                 'bg-amber-600','bg-red-600','bg-purple-600','bg-pink-600',
+                 'bg-indigo-600','bg-orange-600']
+    COLOR_HEX = ['#2563eb','#0891b2','#059669','#84cc16',
+                 '#d97706','#dc2626','#7c3aed','#db2777',
+                 '#4f46e5','#ea580c']
+
+    org_dict = defaultdict(list)
+    for j in jemputan_qs:
+        org = (j.organisasi or '').strip() or 'Tidak Dinyatakan'
+        org_dict[org].append({'id': j.id, 'nama': j.nama, 'kumpulan': j.jawatan or 'Umum'})
+
+    hierarki         = []
+    pglb_semua       = []
+    smbn_semua       = []
+    data_mockup      = {}
+    org_list_ordered = sorted(org_dict.items(), key=lambda x: -len(x[1]))
+
+    for i, (org, members) in enumerate(org_list_ordered):
+        cidx      = i % len(COLOR_BG)
+        ids       = [m['id'] for m in members]
+        org_files = ContributionFile.objects.filter(
+            contribution__jemputan_id__in=ids
+        ).count()
+
+        hierarki.append({
+            'kategori': org,
+            'pax':      len(members),
+            'warnaBg':  COLOR_BG[cidx],
+            'warnaHex': COLOR_HEX[cidx],
+            'cawangan': [{'nama': org, 'ahli': members}]
+        })
+        pglb_semua.append(len(members))
+        smbn_semua.append(org_files)
+
+        # Per-org filter arrays for chart update
+        n = len(org_list_ordered)
+        data_mockup[org] = {
+            'penglibatan': [len(members) if j == i else 0 for j in range(n)],
+            'sumbangan':   [org_files   if j == i else 0 for j in range(n)],
+            'jenisFail':   jenis_fail_semua,
+        }
+
+    data_mockup['Semua'] = {
+        'penglibatan': pglb_semua,
+        'sumbangan':   smbn_semua,
+        'jenisFail':   jenis_fail_semua,
+    }
+
+    # ── Trend line: check-ins grouped by hour ─────────────────────────────────
+    # Use Python-level grouping to avoid MySQL timezone issues
+    kehadiran_list = list(kehadiran_qs.order_by('checked_in_at').values_list('checked_in_at', flat=True))
+    hour_counts = defaultdict(int)
+    for dt in kehadiran_list:
+        if dt:
+            hour_counts[dt.strftime('%H:%M')] += 1
+    trend_labels = list(hour_counts.keys())
+    trend_values = list(hour_counts.values())
+
+    # ── Top contributors (most files uploaded) ────────────────────────────────
+    top_contrib_qs = (
+        jemputan_qs
+        .annotate(file_count=Count('contribution__files', distinct=True))
+        .filter(file_count__gt=0)
+        .order_by('-file_count')[:5]
+    )
+    top_contributors = []
+    for j in top_contrib_qs:
+        nama = j.nama or 'Tanpa Nama'
+        top_contributors.append({
+            'id':       j.id,
+            'nama':     nama,
+            'org':      j.organisasi or 'Tidak Dinyatakan',
+            'files':    j.file_count,
+            'initials': ''.join([w[0].upper() for w in nama.split()[:2]]),
+        })
+
+    # ── Passive participants (no contribution yet) ────────────────────────────
+    contributed_ids = BengkelContribution.objects.filter(
+        bengkel=bengkel
+    ).values_list('jemputan_id', flat=True)
+    passive_qs = jemputan_qs.exclude(id__in=contributed_ids).order_by('nama')[:5]
+    passive_list = []
+    for j in passive_qs:
+        nama = j.nama or 'Tanpa Nama'
+        passive_list.append({
+            'id':       j.id,
+            'nama':     nama,
+            'org':      j.organisasi or 'Tidak Dinyatakan',
+            'initials': ''.join([w[0].upper() for w in nama.split()[:2]]),
+        })
+
+    # ── AI Audit stats ────────────────────────────────────────────────────────
+    total_submissions = BengkelContribution.objects.filter(bengkel=bengkel).count()
+    indexed_pct = round((total_files / (total_files + 1)) * 100) if total_files else 0  # placeholder
+    audit_stats = {
+        'total_files':   total_files,
+        'pdf':           ext_map['pdf'],
+        'word':          ext_map['word'],
+        'excel':         ext_map['excel'],
+        'pptx':          ext_map['pptx'],
+        'image':         ext_map['image'],
+        'txt':           ext_map['txt'],
+        'submissions':   total_submissions,
+        'indexed_pct':   indexed_pct,
+    }
+
+    # ── Forum messages ────────────────────────────────────────────────────────
+    forum_messages = list(
+        ForumPesan.objects.filter(bengkel=bengkel)
+        .order_by('created_at')[:30]
+        .values('id','nama_paparan','organisasi','mesej','created_at')
+    )
+    for fm in forum_messages:
+        nm = fm['nama_paparan'] or 'X'
+        fm['initials'] = ''.join([w[0].upper() for w in nm.split()[:2]])
+        fm['masa'] = fm['created_at'].strftime('%H:%M') if fm['created_at'] else ''
+    forum_count = ForumPesan.objects.filter(bengkel=bengkel).count()
+
+    # ── Seating (assign seat number by creation order) ────────────────────────
+    seating_list = list(jemputan_qs.order_by('created_at').values(
+        'id','nama','organisasi','status'
+    ))
+    for idx, seat in enumerate(seating_list):
+        seat['no_tempat_duduk'] = idx + 1
+        nm = seat['nama'] or 'X'
+        seat['initials'] = ''.join([w[0].upper() for w in nm.split()[:2]])
+
+    # ── SPAF contribution word-count proxy ────────────────────────────────────
+    spaf_words = 0
+    for pp in SpafPainPoint.objects.filter(user__jemputan__bengkel=bengkel):
+        spaf_words += len((pp.keterangan + ' ' + pp.kesan).split())
+    for ps in SpafProblemStatement.objects.filter(user__jemputan__bengkel=bengkel):
+        spaf_words += len((ps.masalah_utama + ' ' + ps.skop).split())
+    corpus_k = round(spaf_words / 1000, 1)
+
+    return render(request, "bengkel/insight.html", {
+        "bengkel":              bengkel,
+        "stats":                stats,
+        "jemputan_list":        jemputan_qs.order_by('nama')[:50],
+        "top_participants":     jemputan_qs.filter(status="accepted").order_by('nama')[:5],
+        "passive_participants": jemputan_qs.filter(status="pending").order_by('nama')[:5],
+        "total_contributions":  total_submissions,
+        "total_files":          total_files,
+        "corpus_k":             corpus_k,
+        # JSON blobs for JavaScript
+        "hierarki_json":         json.dumps(hierarki,          ensure_ascii=False),
+        "data_mockup_json":      json.dumps(data_mockup,       ensure_ascii=False),
+        "trend_labels_json":     json.dumps(trend_labels,      ensure_ascii=False),
+        "trend_values_json":     json.dumps(trend_values,      ensure_ascii=False),
+        "top_contributors_json": json.dumps(top_contributors,  ensure_ascii=False),
+        "passive_list_json":     json.dumps(passive_list,      ensure_ascii=False),
+        "audit_stats_json":      json.dumps(audit_stats,       ensure_ascii=False),
+        "forum_messages_json":   json.dumps(forum_messages,    ensure_ascii=False, default=str),
+        "forum_count":           forum_count,
+        "seating_json":          json.dumps(seating_list,      ensure_ascii=False),
+        "jemputan_list_json":    json.dumps(list(jemputan_qs.order_by('nama')[:50].values('id', 'nama', 'organisasi', 'jawatan')), ensure_ascii=False),
+    })
+
+
+@login_required
+def profil_peserta(request, jid):
+    """Show detailed analytics profile for a participant (penganjur version of profil_SME)."""
+    if not request.user.is_staff:
+        return redirect("bengkel:dashboard")
+    
+    j = get_object_or_404(Jemputan, pk=jid)
+    bengkel = j.bengkel
+    
+    # Verify user owns this bengkel
+    if bengkel.created_by != request.user:
+        return redirect("bengkel:dashboard")
+    
+    # Get participant's contributions
+    contributions = BengkelContribution.objects.filter(bengkel=bengkel, jemputan=j)
+    files = ContributionFile.objects.filter(contribution__in=contributions)
+    
+    # Calculate mock scores based on real data
+    total_files = files.count()
+    quality_score = min(95, 60 + total_files * 5)  # Base 60, +5 per file, max 95
+    index_rate = 100 if total_files > 0 else 0
+    
+    # Get file types for radar chart
+    file_types = {'pdf': 0, 'doc': 0, 'xls': 0, 'ppt': 0, 'img': 0, 'txt': 0}
+    for f in files:
+        ext = f.original_name.rsplit('.', 1)[-1].lower() if '.' in f.original_name else ''
+        if ext == 'pdf': file_types['pdf'] += 1
+        elif ext in ('doc', 'docx'): file_types['doc'] += 1
+        elif ext in ('xls', 'xlsx'): file_types['xls'] += 1
+        elif ext in ('ppt', 'pptx'): file_types['ppt'] += 1
+        elif ext in ('jpg', 'jpeg', 'png', 'gif'): file_types['img'] += 1
+        else: file_types['txt'] += 1
+    
+    # REAL persona radar analysis from contribution summaries
+    keyword_categories = {
+        'klinikal': ['pesakit', 'clinic', 'hospital', 'doctor', 'medical', 'clinical', 'diagnosis', 'treatment', 'patient', 'sakit', 'ubat', 'rawatan'],
+        'polisi': ['policy', 'dasar', 'regulation', 'guideline', 'procedure', 'garis panduan', 'peraturan', 'compliance', 'piawaian', 'standard'],
+        'teknologi': ['system', 'teknologi', 'IT', 'software', 'database', 'cloud', 'digital', 'API', 'integration', 'sistem', 'komputer'],
+        'kewangan': ['budget', 'cost', 'financial', 'kewangan', 'belanjawan', 'expense', 'revenue', 'pelaburan', 'investment', 'wang'],
+        'infrastruktur': ['infrastructure', 'facility', 'bangunan', 'premises', 'equipment', 'hardware', 'server', 'network', 'rangkaian']
+    }
+    
+    # Collect all text from contribution summaries AND SPAF forms
+    all_text = ''
+    
+    # From contribution files
+    for cf in files:
+        if cf.summary:
+            all_text += ' ' + cf.summary.lower()
+    
+    # From SPAF Pain Points
+    for pp in SpafPainPoint.objects.filter(user__jemputan=j):
+        all_text += ' ' + (pp.keterangan or '').lower() + ' ' + (pp.kesan or '').lower()
+    
+    # From SPAF Problem Statements
+    for ps in SpafProblemStatement.objects.filter(user__jemputan=j):
+        all_text += ' ' + (ps.masalah_utama or '').lower() + ' ' + (ps.skop or '').lower()
+    
+    # From SPAF Root Cause Analysis
+    for rca in SpafRootCauseAnalysis.objects.filter(user__jemputan=j):
+        all_text += ' ' + (rca.masalah or '').lower() + ' ' + (rca.punca_utama or '').lower() + ' ' + (rca.punca_penyumbang or '').lower() + ' ' + (rca.bukti or '').lower()
+    
+    # From SPAF Root Cause Validation
+    for rcv in SpafRootCauseValidation.objects.filter(user__jemputan=j):
+        all_text += ' ' + (rcv.pengesahan or '').lower() + ' ' + (rcv.cadangan or '').lower()
+    
+    # From SPAF Risk Analysis
+    for ra in SpafRiskAnalysis.objects.filter(user__jemputan=j):
+        all_text += ' ' + (ra.risiko or '').lower() + ' ' + (ra.impak or '').lower() + ' ' + (ra.mitoligasi or '').lower()
+    
+    # Count keyword occurrences per category
+    category_scores = {cat: 0 for cat in keyword_categories}
+    total_keywords = 0
+    
+    for text in all_text.split():
+        for category, keywords in keyword_categories.items():
+            if any(kw in text for kw in keywords):
+                category_scores[category] += 1
+                total_keywords += 1
+    
+    # Convert to percentages (0-100 scale)
+    if total_keywords > 0:
+        persona_radar = {
+            cat: round((score / total_keywords) * 100, 1)
+            for cat, score in category_scores.items()
+        }
+    else:
+        # No contributions = 0% for all categories
+        persona_radar = {'klinikal': 0, 'polisi': 0, 'teknologi': 0, 'kewangan': 0, 'infrastruktur': 0}
+    
+    # Build events timeline (mock - would need actual event history in production)
+    events = [
+        {
+            'id': f'evt{bengkel.id}',
+            'nama': bengkel.title,
+            'tarikh': bengkel.tarikh.strftime('%d %B %Y') if bengkel.tarikh else 'TBD',
+            'status': 'Ongoing' if bengkel.tarikh and bengkel.tarikh <= timezone.now() <= (bengkel.tarikh_tamat or bengkel.tarikh) else 'Upcoming',
+            'badgeWarna': 'bg-emerald-100 text-emerald-700 border-emerald-200' if bengkel.tarikh and bengkel.tarikh <= timezone.now() else 'bg-amber-100 text-amber-700 border-amber-200',
+            'ikon': 'fa-dot-circle animate-pulse text-emerald-500' if bengkel.tarikh and bengkel.tarikh <= timezone.now() else 'fa-clock text-amber-500',
+            'skor': quality_score,
+            'kataKunci': ['Digital Transformation', 'Data Management', 'System Integration'][:min(3, total_files + 1)],
+            'dokumen': [
+                {
+                    'jenis': 'File' if cf.original_name else 'Form',
+                    'tajuk': cf.original_name or f'Contribution Form #{cf.id}',
+                    'kategori': 'Document',
+                    'vol': f'{len(cf.summary or "")} w' if cf.summary else f'{total_files * 500} w'
+                }
+                for cf in files[:5]
+            ]
+        }
+    ]
+    
+    # Ecosystem role determination based on actual content
+    clinical_keywords = ['pesakit', 'doctor', 'medical', 'clinical', 'hospital', 'ubat', 'rawatan', 'diagnosis']
+    tech_keywords = ['system', 'IT', 'software', 'database', 'API', 'digital', 'cloud', 'sistem', 'teknologi']
+    
+    clinical_count = sum(1 for word in all_text.split() if any(kw in word for kw in clinical_keywords))
+    tech_count = sum(1 for word in all_text.split() if any(kw in word for kw in tech_keywords))
+    
+    if clinical_count > 0 and tech_count > 0:
+        ecosystem_role = 'The Translator'
+        role_desc = 'IT & Medical Liaison'
+        role_recommendation = 'bridges the communication gap between medical practitioners and IT vendors'
+        best_for = ['System Integration Workshops', 'SOP & Policy Drafting']
+    elif clinical_count > tech_count:
+        ecosystem_role = 'The Clinical Expert'
+        role_desc = 'Medical Domain Specialist'
+        role_recommendation = 'provides deep clinical insights and patient workflow expertise'
+        best_for = ['Clinical Workflow Design', 'Medical Policy Development']
+    elif tech_count > clinical_count:
+        ecosystem_role = 'The Technical Expert'
+        role_desc = 'IT & Systems Specialist'
+        role_recommendation = 'drives technical implementation and system architecture decisions'
+        best_for = ['Technical Architecture Planning', 'IT Infrastructure Design']
+    else:
+        ecosystem_role = 'The Strategist'
+        role_desc = 'Policy & Management'
+        role_recommendation = 'focuses on strategic planning and organizational governance'
+        best_for = ['Strategic Planning Sessions', 'Governance & Compliance']
+    
+    # Working style (Executor vs Visionary) based on content structure
+    executor_keywords = ['SOP', 'procedure', 'step', 'process', 'cost', 'budget', 'implementation', 'action', 'garis panduan', 'langkah']
+    visionary_keywords = ['vision', 'future', 'innovate', 'transform', 'potential', 'opportunity', 'strategy', 'vision', 'masa depan', 'inovasi']
+    
+    executor_count = sum(1 for word in all_text.split() if any(kw.lower() in word for kw in executor_keywords))
+    visionary_count = sum(1 for word in all_text.split() if any(kw.lower() in word for kw in visionary_keywords))
+    
+    total_style = executor_count + visionary_count
+    if total_style > 0:
+        executor_pct = round((executor_count / total_style) * 100)
+    else:
+        executor_pct = 50  # Default if no style indicators
+    
+    executor_pct = min(95, max(5, executor_pct))  # Clamp between 5-95%
+    
+    # Digital readiness level based on tech keywords and file types
+    tech_depth_keywords = ['API', 'cloud', 'microservice', 'blockchain', 'AI', 'machine learning', 'big data', 'analytics', 'integration']
+    tech_depth_count = sum(1 for word in all_text.split() if any(kw.lower() in word for kw in tech_depth_keywords))
+    
+    if tech_depth_count > 10:
+        digital_level = 5
+        digital_desc = 'Expert level. Fluent in discussing advanced concepts like microservices, AI/ML, and enterprise architecture.'
+    elif tech_depth_count > 5:
+        digital_level = 4
+        digital_desc = 'Advanced. Fluent in discussing system integration, APIs, Cloud migration, and Big Data.'
+    elif tech_depth_count > 2:
+        digital_level = 3
+        digital_desc = 'Intermediate. Understands the need for new systems and basic technical concepts.'
+    elif tech_count > 0:
+        digital_level = 2
+        digital_desc = 'Basic. Familiar with general IT concepts but limited technical depth.'
+    else:
+        digital_level = 1
+        digital_desc = 'Limited. Minimal exposure to digital transformation concepts.'
+    
+    # Blindspots based on missing topics in contributions
+    blindspots = []
+    
+    security_keywords = ['security', 'cybersecurity', 'privacy', 'PDPA', 'encryption', 'authentication', 'keselamatan', 'privasi']
+    if not any(kw in all_text for kw in security_keywords):
+        blindspots.append({'area': 'Cybersecurity', 'desc': 'No mentions of security protocols. Monitor for potential patient privacy (PDPA) oversights.'})
+    
+    change_keywords = ['change management', 'adoption', 'training', 'user acceptance', 'pengurusan perubahan', 'latihan']
+    if not any(kw in all_text for kw in change_keywords):
+        blindspots.append({'area': 'Change Management', 'desc': 'Lacks focus on end-user emotional adaptation and training needs.'})
+    
+    if not blindspots:
+        blindspots.append({'area': 'Risk Management', 'desc': 'Consider addressing potential implementation risks and contingency planning.'})
+    
+    return render(request, "bengkel/profil_peserta.html", {
+        'jemputan': j,
+        'bengkel': bengkel,
+        'quality_score': quality_score,
+        'index_rate': index_rate,
+        'persona_radar': persona_radar,
+        'events': json.dumps(events, ensure_ascii=False),
+        'ecosystem_role': ecosystem_role,
+        'role_desc': role_desc,
+        'role_recommendation': role_recommendation,
+        'best_for': json.dumps(best_for, ensure_ascii=False),
+        'executor_pct': executor_pct,
+        'digital_level': digital_level,
+        'digital_desc': digital_desc,
+        'blindspots': json.dumps(blindspots, ensure_ascii=False),
+    })
+
+
+@login_required
+@require_POST
+def forum_post(request, pk):
+    """AJAX: post a message to bengkel forum."""
+    bengkel = get_object_or_404(Bengkel, pk=pk)
+    mesej = request.POST.get('mesej', '').strip()
+    if not mesej:
+        return JsonResponse({'ok': False, 'error': 'Mesej kosong'}, status=400)
+
+    # Resolve display name from linked jemputan or profile
+    nama_paparan = request.user.get_full_name() or request.user.username
+    organisasi   = ''
+    try:
+        j = Jemputan.objects.filter(bengkel=bengkel, user=request.user).first()
+        if j:
+            nama_paparan = j.nama or nama_paparan
+            organisasi   = j.organisasi or ''
+        elif hasattr(request.user, 'profile'):
+            organisasi = request.user.profile.organisasi or ''
+    except Exception:
+        pass
+
+    pesan = ForumPesan.objects.create(
+        bengkel      = bengkel,
+        pengirim     = request.user,
+        nama_paparan = nama_paparan,
+        organisasi   = organisasi,
+        mesej        = mesej,
+    )
+    nm = pesan.nama_paparan or 'X'
+    return JsonResponse({
+        'ok':       True,
+        'id':       pesan.id,
+        'nama':     pesan.nama_paparan,
+        'org':      pesan.organisasi,
+        'mesej':    pesan.mesej,
+        'masa':     pesan.created_at.strftime('%H:%M'),
+        'initials': ''.join([w[0].upper() for w in nm.split()[:2]]),
+    })
+
 
 @login_required
 def penganjur_home(request):
@@ -1670,12 +2133,80 @@ def tentative_delete(request, pk, tid):
 
 
 # ---------------------------------------------------------------------------
-#  SITUATIONAL ANALYSIS VIEWS
+#  SPAF SITUATIONAL ANALYSIS HUB
 # ---------------------------------------------------------------------------
+
+@login_required
+def spaf_situational(request):
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
+
+    swot_count   = AnalisisSWOT.objects.filter(user=request.user).count()
+    pestel_count = AnalisisPESTEL.objects.filter(user=request.user).count()
+    c5_count     = Analisis5C.objects.filter(user=request.user).count()
+    soar_count   = AnalisisSOAR.objects.filter(user=request.user).count()
+    vmost_count  = AnalisisVMOST.objects.filter(user=request.user).count()
+    total_done   = sum([swot_count, pestel_count, c5_count, soar_count, vmost_count])
+
+    frameworks = [
+        {
+            "key": "swot",   "label": "SWOT",
+            "color": "#2563eb",  "light": "#dbeafe",
+            "title": "SWOT Analysis",
+            "desc": "Kekuatan, Kelemahan, Peluang, Ancaman",
+            "url": "analisis_swot",   "count": swot_count,
+            "icon": "<svg width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><rect x='3' y='3' width='8' height='8' rx='1'/><rect x='13' y='3' width='8' height='8' rx='1'/><rect x='3' y='13' width='8' height='8' rx='1'/><rect x='13' y='13' width='8' height='8' rx='1'/></svg>",
+        },
+        {
+            "key": "pestel", "label": "PESTEL",
+            "color": "#059669",  "light": "#d1fae5",
+            "title": "PESTEL Analysis",
+            "desc": "Politik, Ekonomi, Sosial, Teknologi, Alam, Undang-Undang",
+            "url": "analisis_pestel", "count": pestel_count,
+            "icon": "<svg width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9'/><path stroke-linecap='round' d='M12 3a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z'/><path stroke-linecap='round' d='M3 12h18'/></svg>",
+        },
+        {
+            "key": "5c",     "label": "5C",
+            "color": "#d97706", "light": "#fef3c7",
+            "title": "5C Analysis",
+            "desc": "Syarikat, Pelanggan, Pesaing, Rakan Kongsi, Persekitaran",
+            "url": "analisis_5c",     "count": c5_count,
+            "icon": "<svg width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z'/></svg>",
+        },
+        {
+            "key": "soar",   "label": "SOAR",
+            "color": "#0891b2", "light": "#cffafe",
+            "title": "SOAR Analysis",
+            "desc": "Strengths, Opportunities, Aspirations, Results",
+            "url": "analisis_soar",   "count": soar_count,
+            "icon": "<svg width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M5 3l14 9-14 9V3z'/></svg>",
+        },
+        {
+            "key": "vmost",  "label": "VMOST",
+            "color": "#7c3aed", "light": "#ede9fe",
+            "title": "VMOST Analysis",
+            "desc": "Vision, Mission, Objectives, Strategies, Tactics",
+            "url": "analisis_vmost",  "count": vmost_count,
+            "icon": "<svg width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' d='M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7'/></svg>",
+        },
+    ]
+
+    return render(request, "bengkel/analisis/spaf_situational.html", {
+        "bengkel": bengkel,
+        "frameworks": frameworks,
+        "total_done": total_done,
+    })
+
 
 @login_required
 def analisis_swot(request):
     from .models import AnalisisSWOT
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
     existing = AnalisisSWOT.objects.filter(user=request.user).order_by('-created_at')
     saved = None
     if request.method == 'POST':
@@ -1689,7 +2220,7 @@ def analisis_swot(request):
         )
         messages.success(request, 'Analisis SWOT berjaya disimpan.')
         return redirect('bengkel:analisis_swot')
-    return render(request, 'bengkel/analisis/swot.html', {'existing': existing, 'saved': saved})
+    return render(request, 'bengkel/analisis/swot.html', {'bengkel': bengkel, 'existing': existing, 'saved': saved})
 
 
 @login_required
@@ -1705,6 +2236,10 @@ def analisis_swot_delete(request, pk):
 @login_required
 def analisis_pestel(request):
     from .models import AnalisisPESTEL
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
     existing = AnalisisPESTEL.objects.filter(user=request.user).order_by('-created_at')
     if request.method == 'POST':
         AnalisisPESTEL.objects.create(
@@ -1719,7 +2254,7 @@ def analisis_pestel(request):
         )
         messages.success(request, 'Analisis PESTEL berjaya disimpan.')
         return redirect('bengkel:analisis_pestel')
-    return render(request, 'bengkel/analisis/pestel.html', {'existing': existing})
+    return render(request, 'bengkel/analisis/pestel.html', {'bengkel': bengkel, 'existing': existing})
 
 
 @login_required
@@ -1735,6 +2270,10 @@ def analisis_pestel_delete(request, pk):
 @login_required
 def analisis_vmost(request):
     from .models import AnalisisVMOST
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
     existing = AnalisisVMOST.objects.filter(user=request.user).order_by('-created_at')
     if request.method == 'POST':
         AnalisisVMOST.objects.create(
@@ -1748,7 +2287,7 @@ def analisis_vmost(request):
         )
         messages.success(request, 'Analisis VMOST berjaya disimpan.')
         return redirect('bengkel:analisis_vmost')
-    return render(request, 'bengkel/analisis/vmost.html', {'existing': existing})
+    return render(request, 'bengkel/analisis/vmost.html', {'bengkel': bengkel, 'existing': existing})
 
 
 @login_required
@@ -1764,6 +2303,10 @@ def analisis_vmost_delete(request, pk):
 @login_required
 def analisis_5c(request):
     from .models import Analisis5C
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
     existing = Analisis5C.objects.filter(user=request.user).order_by('-created_at')
     if request.method == 'POST':
         Analisis5C.objects.create(
@@ -1777,7 +2320,7 @@ def analisis_5c(request):
         )
         messages.success(request, 'Analisis 5C berjaya disimpan.')
         return redirect('bengkel:analisis_5c')
-    return render(request, 'bengkel/analisis/5c.html', {'existing': existing})
+    return render(request, 'bengkel/analisis/5c.html', {'bengkel': bengkel, 'existing': existing})
 
 
 @login_required
@@ -1793,6 +2336,10 @@ def analisis_5c_delete(request, pk):
 @login_required
 def analisis_soar(request):
     from .models import AnalisisSOAR
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
     existing = AnalisisSOAR.objects.filter(user=request.user).order_by('-created_at')
     if request.method == 'POST':
         AnalisisSOAR.objects.create(
@@ -1805,7 +2352,7 @@ def analisis_soar(request):
         )
         messages.success(request, 'Analisis SOAR berjaya disimpan.')
         return redirect('bengkel:analisis_soar')
-    return render(request, 'bengkel/analisis/soar.html', {'existing': existing})
+    return render(request, 'bengkel/analisis/soar.html', {'bengkel': bengkel, 'existing': existing})
 
 
 @login_required
@@ -1877,45 +2424,47 @@ def blueprint_peserta(request, pk):
                     keutamaan="sederhana",
                     catatan="",
                 )
-            messages.success(request, "%d Pain Point disimpan. AI sedang jana cadangan Problem Statement..." % len(raw_pps))
+            # --- Try AI generation (optional) --------------------------
+            ai_ok = False
             try:
                 import json
-                from google import genai as _genai
                 from django.conf import settings as _cfg
-                _client = _genai.Client(api_key=_cfg.GEMINI_API_KEY)
-                sep = "\n"
-                pp_list = sep.join("%d. %s" % (i, t) for i, t in enumerate(raw_pps, 1))
-                _prompt = (
-                    "Anda adalah pakar analisis masalah dalam konteks organisasi sektor awam Malaysia."
-                    + sep
-                    + sep
-                    + "Berdasarkan senarai Pain Point berikut, jana SATU ayat Pernyataan Masalah Utama dalam BAHASA MELAYU yang jelas, padat, dan tepat."
-                    + sep
-                    + sep
-                    + "Senarai Pain Point:"
-                    + sep
-                    + pp_list
-                    + sep
-                    + sep
-                    + "Jana respons dalam format JSON SAHAJA (tanpa markdown, tanpa ```json), dengan satu medan:"
-                    + sep
-                    + '{"masalah_utama":"..."}'
-                )
-                _MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
-                ai_raw = None
-                for _m in _MODELS:
-                    try:
-                        ai_raw = _client.models.generate_content(model=_m, contents=_prompt).text.strip()
-                        break
-                    except Exception:
-                        continue
-                if ai_raw:
-                    if ai_raw.startswith("```"):
-                        ai_raw = ai_raw.split(sep, 1)[1].rsplit("```", 1)[0].strip()
-                    request.session["spaf_generated_ps"] = json.loads(ai_raw)
-                    request.session["spaf_ai_error"] = None
+                if _cfg.GEMINI_API_KEY:
+                    from google import genai as _genai
+                    _client = _genai.Client(api_key=_cfg.GEMINI_API_KEY)
+                    sep = "\n"
+                    pp_list = sep.join("%d. %s" % (i, t) for i, t in enumerate(raw_pps, 1))
+                    _prompt = (
+                        "Anda adalah pakar analisis masalah dalam konteks organisasi sektor awam Malaysia."
+                        + sep + sep
+                        + "Berdasarkan senarai Pain Point berikut, jana SATU ayat Pernyataan Masalah Utama dalam BAHASA MELAYU yang jelas, padat, dan tepat."
+                        + sep + sep
+                        + "Senarai Pain Point:" + sep + pp_list
+                        + sep + sep
+                        + "Jana respons dalam format JSON SAHAJA (tanpa markdown, tanpa ```json), dengan satu medan:"
+                        + sep + '{"masalah_utama":"..."}'
+                    )
+                    _MODELS = ["gemini-3-flash-preview", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash-lite", "gemini-2.5-flash"]
+                    ai_raw = None
+                    for _m in _MODELS:
+                        try:
+                            ai_raw = _client.models.generate_content(model=_m, contents=_prompt).text.strip()
+                            break
+                        except Exception:
+                            continue
+                    if ai_raw:
+                        if ai_raw.startswith("```"):
+                            ai_raw = ai_raw.split(sep, 1)[1].rsplit("```", 1)[0].strip()
+                        request.session["spaf_generated_ps"] = json.loads(ai_raw)
+                        request.session["spaf_ai_error"] = None
+                        ai_ok = True
             except Exception as _e:
                 request.session["spaf_ai_error"] = str(_e)
+            if ai_ok:
+                messages.success(request, "%d Pain Point disimpan. AI berjaya jana cadangan Problem Statement." % len(raw_pps))
+            else:
+                messages.success(request, "%d Pain Point disimpan. Sila isi Problem Statement secara manual." % len(raw_pps))
+                request.session.pop("spaf_ai_error", None)
             request.session.modified = True
             return redirect(bp_url + "?tab=ps")
 
@@ -1973,7 +2522,7 @@ def blueprint_peserta(request, pk):
                     + sep
                     + '[{"tema":"...","penerangan":"...","kata_kunci":"..."},{"tema":"...","penerangan":"...","kata_kunci":"..."}]'
                 )
-                _MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
+                _MODELS = ["gemini-3-flash-preview", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash-lite", "gemini-2.5-flash"]
                 ai_raw = None
                 for _m in _MODELS:
                     try:
@@ -2021,62 +2570,364 @@ def blueprint_peserta(request, pk):
     request.session.modified = True
     active_tab      = request.GET.get("tab", "rujukan")
 
+    # Count situational analysis records for Module 3
+    sit_swot_count   = AnalisisSWOT.objects.filter(user=request.user).count()
+    sit_pestel_count = AnalisisPESTEL.objects.filter(user=request.user).count()
+    sit_c5_count     = Analisis5C.objects.filter(user=request.user).count()
+    sit_soar_count   = AnalisisSOAR.objects.filter(user=request.user).count()
+    sit_vmost_count  = AnalisisVMOST.objects.filter(user=request.user).count()
+    sit_total        = sit_swot_count + sit_pestel_count + sit_c5_count + sit_soar_count + sit_vmost_count
+
+    # SPAF pipeline progress (2 core steps + 3 situational steps)
+    done = sum([
+        pain_points.count() > 0,
+        prob_stmts.count() > 0,
+    ])
+    spaf_progress = int(done / 2 * 100)
+
     return render(request, "bengkel/blueprint_peserta.html", {
-        "bengkel":      bengkel,
-        "jemputan":     jemputan,
-        "pain_points":  pain_points,
-        "prob_stmts":   prob_stmts,
-        "contribution": contribution,
-        "themes":       themes,
-        "generated":    generated,
-        "ai_error":     ai_error,
-        "active_tab":   active_tab,
+        "bengkel":        bengkel,
+        "jemputan":       jemputan,
+        "pain_points":    pain_points,
+        "prob_stmts":     prob_stmts,
+        "contribution":   contribution,
+        "themes":         themes,
+        "generated":      generated,
+        "ai_error":      ai_error,
+        "active_tab":     active_tab,
+        "spaf_progress":  spaf_progress,
+        "sit_swot_count": sit_swot_count,
+        "sit_pestel_count": sit_pestel_count,
+        "sit_c5_count":   sit_c5_count,
+        "sit_soar_count": sit_soar_count,
+        "sit_vmost_count": sit_vmost_count,
+        "sit_total":      sit_total,
     })
 
 
-# ── SPAF standalone stubs (consolidated into blueprint page) ──────────────────
+# ── SPAF standalone pages ────────────────────────────────────────────────
 
-@login_required
-def spaf_hub(request):
-    return redirect("bengkel:dashboard")
+def _get_bengkel_for_user(request):
+    """Get user's active bengkel from latest accepted invitation."""
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    return jemputan.bengkel if jemputan else None
+
 
 @login_required
 def spaf_pain_point(request):
-    return redirect("bengkel:dashboard")
+    # Find bengkel from user's latest accepted invitation
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
 
-@login_required
-def spaf_pain_point_delete(request, pk):
-    return redirect("bengkel:dashboard")
+    pain_points = SpafPainPoint.objects.filter(user=request.user).order_by("-created_at")
+
+    # Handle form submission — save Pain Points
+    if request.method == "POST":
+        raw_pps = [v.strip() for k, v in request.POST.items() if k.startswith("pain_point_") and v.strip()]
+        if raw_pps:
+            SpafPainPoint.objects.filter(user=request.user).delete()
+            for i, text in enumerate(raw_pps, 1):
+                SpafPainPoint.objects.create(
+                    user=request.user,
+                    tajuk="Pain Point %d" % i,
+                    keterangan=text,
+                    kesan="",
+                    keutamaan="sederhana",
+                    catatan="",
+                )
+            # Try AI generation — store in session for PS page
+            ai_ok = False
+            try:
+                import json
+                from django.conf import settings as _cfg
+                if _cfg.GEMINI_API_KEY:
+                    from google import genai as _genai
+                    _client = _genai.Client(api_key=_cfg.GEMINI_API_KEY)
+                    sep = "\n"
+                    pp_list = sep.join("%d. %s" % (i, t) for i, t in enumerate(raw_pps, 1))
+                    _prompt = (
+                        "Anda adalah pakar analisis masalah dalam konteks organisasi sektor awam Malaysia."
+                        + sep + sep
+                        + "Berdasarkan senarai Pain Point berikut, jana SATU ayat Pernyataan Masalah Utama dalam BAHASA MELAYU yang jelas, padat, dan tepat."
+                        + sep + sep
+                        + "Senarai Pain Point:" + sep + pp_list
+                        + sep + sep
+                        + "Jana respons dalam format JSON SAHAJA (tanpa markdown, tanpa ```json), dengan satu medan:"
+                        + sep + '{"masalah_utama":"..."}'
+                    )
+                    _MODELS = ["gemini-3-flash-preview", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+                    ai_raw = None
+                    for _m in _MODELS:
+                        try:
+                            ai_raw = _client.models.generate_content(model=_m, contents=_prompt).text.strip()
+                            break
+                        except Exception:
+                            continue
+                    if ai_raw:
+                        if ai_raw.startswith("```"):
+                            ai_raw = ai_raw.split(sep, 1)[1].rsplit("```", 1)[0].strip()
+                        request.session["spaf_generated_ps"] = json.loads(ai_raw)
+                        request.session.pop("spaf_ai_error", None)
+                        ai_ok = True
+            except Exception as _e:
+                request.session["spaf_ai_error"] = str(_e)
+            request.session.modified = True
+            messages.success(request, "%d Pain Point disimpan. Sila lengkapkan Problem Statement seterusnya." % len(raw_pps))
+            return redirect("bengkel:spaf_problem_statement")
+        messages.warning(request, "Sila isi sekurang-kurangnya satu Pain Point.")
+        return redirect("bengkel:spaf_pain_point")
+
+    # Handle delete
+    if request.method == "POST" and request.POST.get("del_pp"):
+        SpafPainPoint.objects.filter(pk=request.POST["del_pp"], user=request.user).delete()
+        messages.success(request, "Pain Point dipadam.")
+        return redirect("bengkel:spaf_pain_point")
+
+    # Initial form: load existing pain points into form fields
+    existing = list(pain_points.values_list("keterangan", flat=True))
+    if not existing:
+        existing = [""]
+
+    return render(request, "bengkel/analisis/spaf_pain_point.html", {
+        "bengkel":     bengkel,
+        "pain_points": pain_points,
+        "existing":    existing,
+    })
+
 
 @login_required
 def spaf_problem_statement(request):
-    return redirect("bengkel:dashboard")
+    bengkel = _get_bengkel_for_user(request)
+    if not bengkel:
+        return redirect("bengkel:dashboard")
+
+    prob_stmts = SpafProblemStatement.objects.filter(user=request.user).order_by("-created_at")
+    generated  = request.session.pop("spaf_generated_ps", None)
+    ai_error   = request.session.pop("spaf_ai_error", None)
+    request.session.modified = True
+
+    # Handle save PS
+    # Handle delete
+    if request.method == "POST" and request.POST.get("del_ps"):
+        SpafProblemStatement.objects.filter(pk=request.POST["del_ps"], user=request.user).delete()
+        messages.success(request, "Problem Statement dipadam.")
+        return redirect("bengkel:spaf_problem_statement")
+
+    if request.method == "POST":
+        masalah = request.POST.get("masalah_utama", "").strip()
+        if masalah:
+            SpafProblemStatement.objects.create(
+                user=request.user,
+                masalah_utama=masalah,
+                skop=request.POST.get("skop", ""),
+                sasaran=request.POST.get("sasaran", ""),
+                matlamat=request.POST.get("matlamat", ""),
+                catatan=request.POST.get("catatan", ""),
+            )
+            messages.success(request, "Problem Statement berjaya disimpan.")
+        else:
+            messages.warning(request, "Sila isi ruangan Pernyataan Masalah.")
+        return redirect("bengkel:spaf_problem_statement")
+
+    return render(request, "bengkel/analisis/spaf_problem_statement.html", {
+        "bengkel":     bengkel,
+        "prob_stmts": prob_stmts,
+        "generated":  generated,
+        "ai_error":   ai_error,
+    })
+
+
+@login_required
+def spaf_hub(request):
+    # Find the user's active bengkel (latest accepted invitation)
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
+
+    # Count records for progress
+    pain_point_count = SpafPainPoint.objects.filter(user=request.user).count()
+    ps_count         = SpafProblemStatement.objects.filter(user=request.user).count()
+    swot_count       = AnalisisSWOT.objects.filter(bengkel=bengkel).count()
+    pestel_count     = AnalisisPESTEL.objects.filter(bengkel=bengkel).count()
+    rca_count        = SpafRootCauseAnalysis.objects.filter(user=request.user).count()
+    rcv_count        = SpafRootCauseValidation.objects.filter(user=request.user).count()
+    risk_count        = SpafRiskAnalysis.objects.filter(user=request.user).count()
+
+    # Pipeline progress: 1=PP, 2=PS, 3=Situational, 4=RCA, 5=RCV, 6=Risk
+    done = sum([
+        pain_point_count > 0,
+        ps_count > 0,
+        swot_count > 0 or pestel_count > 0,
+        rca_count > 0,
+        rcv_count > 0,
+        risk_count > 0,
+    ])
+    progress = int(done / 6 * 100)
+
+    modules = [
+        {
+            "num": 1, "color": "#be185d",   "light": "#fce7f3",   "border": "#fbcfe8",
+            "title": "Pain Points Analytics",
+            "desc":  "Collection, deduplication, and clustering of raw complaints from 300 participants.",
+            "url":   f"/bengkel/{bengkel.pk}/blueprint/?tab=spaf",
+            "count": pain_point_count,
+        },
+        {
+            "num": 2, "color": "#7c3aed",   "light": "#ede9fe",   "border": "#ddd6fe",
+            "title": "Problem Statements",
+            "desc":  "Formulation of master problem statements based on combined Pain Point clusters.",
+            "url":   f"/bengkel/{bengkel.pk}/blueprint/?tab=ps",
+            "count": ps_count,
+        },
+        {
+            "num": 3, "color": "#1d4ed8",   "light": "#dbeafe",   "border": "#bfdbfe",
+            "title": "Situational Analysis",
+            "desc":  "Environmental scanning (As-Is State) utilizing AI-driven PESTLE/SWOT frameworks.",
+            "url":   f"/bengkel/{bengkel.pk}/blueprint/?tab=tema",
+            "count": swot_count + pestel_count,
+        },
+        {
+            "num": 4, "color": "#b45309",   "light": "#fef3c7",   "border": "#fde68a",
+            "title": "Root Cause Analysis",
+            "desc":  "Identification of root causes (Ishikawa / 5 Whys methodology) for each Problem Statement.",
+            "url":   f"/bengkel/{bengkel.pk}/blueprint/?tab=teras",
+            "count": rca_count,
+        },
+        {
+            "num": 5, "color": "#047857",   "light": "#d1fae5",   "border": "#a7f3d0",
+            "title": "Root Cause Validation",
+            "desc":  "Validation process of root causes via cross-referencing against the 1.2M word corpus data.",
+            "url":   f"/bengkel/{bengkel.pk}/blueprint/?tab=strategi",
+            "count": rcv_count,
+        },
+        {
+            "num": 6, "color": "#b91c1c",   "light": "#fee2e2",   "border": "#fecaca",
+            "title": "Risk Analysis",
+            "desc":  "Projection of risk matrices if the Problem Statements are left without intervention plans.",
+            "url":   f"/bengkel/{bengkel.pk}/blueprint/?tab=indikator",
+            "count": risk_count,
+        },
+    ]
+
+    return render(request, "bengkel/analisis/spaf_hub.html", {
+        "bengkel":   bengkel,
+        "modules":   modules,
+        "progress":  progress,
+    })
+
+@login_required
+def spaf_pain_point_delete(request, pk):
+    SpafPainPoint.objects.filter(pk=pk, user=request.user).delete()
+    messages.success(request, "Pain Point dipadam.")
+    return redirect("bengkel:spaf_pain_point")
+
 
 @login_required
 def spaf_problem_statement_delete(request, pk):
-    return redirect("bengkel:dashboard")
+    SpafProblemStatement.objects.filter(pk=pk, user=request.user).delete()
+    messages.success(request, "Problem Statement dipadam.")
+    return redirect("bengkel:spaf_problem_statement")
+
 
 @login_required
 def spaf_rca(request):
-    return redirect("bengkel:dashboard")
+    from .models import SpafRootCauseAnalysis
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
+    existing = SpafRootCauseAnalysis.objects.filter(user=request.user).order_by("-created_at")
+    if request.method == "POST":
+        SpafRootCauseAnalysis.objects.create(
+            user=request.user,
+            masalah=request.POST.get("masalah", ""),
+            punca_utama=request.POST.get("punca_utama", ""),
+            punca_penyumbang=request.POST.get("punca_penyumbang", ""),
+            bukti=request.POST.get("bukti", ""),
+            catatan=request.POST.get("catatan", ""),
+        )
+        messages.success(request, "Root Cause Analysis berjaya disimpan.")
+        return redirect("bengkel:spaf_rca")
+    return render(request, "bengkel/analisis/spaf_rca.html", {
+        "bengkel": bengkel, "existing": existing
+    })
+
+
 
 @login_required
 def spaf_rca_delete(request, pk):
-    return redirect("bengkel:dashboard")
+    from .models import SpafRootCauseAnalysis
+    SpafRootCauseAnalysis.objects.filter(pk=pk, user=request.user).delete()
+    messages.success(request, "Rekod dipadam.")
+    return redirect("bengkel:spaf_rca")
 
 @login_required
 def spaf_rcv(request):
-    return redirect("bengkel:dashboard")
+    from .models import SpafRootCauseValidation
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
+    existing = SpafRootCauseValidation.objects.filter(user=request.user).order_by("-created_at")
+    if request.method == "POST":
+        SpafRootCauseValidation.objects.create(
+            user=request.user,
+            punca=request.POST.get("punca", ""),
+            kaedah=request.POST.get("kaedah", ""),
+            dapatan=request.POST.get("dapatan", ""),
+            kesimpulan=request.POST.get("kesimpulan", ""),
+            catatan=request.POST.get("catatan", ""),
+        )
+        messages.success(request, "Root Cause Validation berjaya disimpan.")
+        return redirect("bengkel:spaf_rcv")
+    return render(request, "bengkel/analisis/spaf_rcv.html", {
+        "bengkel": bengkel, "existing": existing
+    })
+
+
 
 @login_required
 def spaf_rcv_delete(request, pk):
-    return redirect("bengkel:dashboard")
+    from .models import SpafRootCauseValidation
+    SpafRootCauseValidation.objects.filter(pk=pk, user=request.user).delete()
+    messages.success(request, "Rekod dipadam.")
+    return redirect("bengkel:spaf_rcv")
+
+
 
 @login_required
 def spaf_risk(request):
-    return redirect("bengkel:dashboard")
+    from .models import SpafRiskAnalysis
+    jemputan = Jemputan.objects.filter(user=request.user, status="accepted").select_related("bengkel").order_by("-created_at").first()
+    if not jemputan:
+        return redirect("bengkel:dashboard")
+    bengkel = jemputan.bengkel
+    existing = SpafRiskAnalysis.objects.filter(user=request.user).order_by("-created_at")
+    if request.method == "POST":
+        SpafRiskAnalysis.objects.create(
+            user=request.user,
+            risiko=request.POST.get("risiko", ""),
+            kemungkinan=request.POST.get("kemungkinan", "sederhana"),
+            impak=request.POST.get("impak", "sederhana"),
+            mitigasi=request.POST.get("mitigasi", ""),
+            pemilik=request.POST.get("pemilik", ""),
+            catatan=request.POST.get("catatan", ""),
+        )
+        messages.success(request, "Risk Analysis berjaya disimpan.")
+        return redirect("bengkel:spaf_risk")
+    return render(request, "bengkel/analisis/spaf_risk.html", {
+        "bengkel": bengkel, "existing": existing
+    })
+
 
 @login_required
 def spaf_risk_delete(request, pk):
-    return redirect("bengkel:dashboard")
+    from .models import SpafRiskAnalysis
+    SpafRiskAnalysis.objects.filter(pk=pk, user=request.user).delete()
+    messages.success(request, "Rekod dipadam.")
+    return redirect("bengkel:spaf_risk")
+
 

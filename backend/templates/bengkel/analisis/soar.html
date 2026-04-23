@@ -1,105 +1,129 @@
-{% extends "bengkel/analisis/_base.html" %}
-{% block title %}SOAR Analysis{% endblock %}
-{% block tool_name %}SOAR Analysis{% endblock %}
-{% block tool_tag %}INKLUSIF · POSITIF{% endblock %}
-{% block accent_bg %}#0891b2{% endblock %}
-{% block accent_color %}#0891b2{% endblock %}
-{% block accent_light %}#cffafe{% endblock %}
-{% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/></svg>{% endblock %}
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SOAR Analysis | {{ bengkel.title }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+    .topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 32px;height:60px;display:flex;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    .topbar-left{display:flex;align-items:center;gap:12px}
+    .brand{font-size:15px;font-weight:800;color:#1e293b;letter-spacing:-.3px}.brand span{color:#6366f1}
+    .topbar-sep{width:1px;height:20px;background:#e2e8f0;margin:0 4px}
+    .page-title{font-size:13px;font-weight:600;color:#64748b}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .step-badge{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.04em}
+    .step-badge svg{color:#6366f1}
+    .hero{background:linear-gradient(135deg,#7c3aed 0%,#6366f1 50%,#8b5cf6 100%);padding:32px 24px 36px;position:relative;overflow:hidden}
+    .hero::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+    .hero::after{content:"";position:absolute;bottom:-40px;right:-20px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+    .hero-inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+    .hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;transition:.2s;text-decoration:none}
+    .back-btn:hover{background:rgba(255,255,255,.25);text-decoration:none}
+    .back-btn svg{transition:transform .2s}.back-btn:hover svg{transform:translateX(-2px)}
+    .module-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .hero-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.2}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.8);max-width:500px;line-height:1.6}
+    .main-wrap{padding:28px 24px 60px;max-width:680px;margin:0 auto}
+    .progress-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .prog-info{flex:1}.prog-label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .prog-bar-wrap{background:#f1f5f9;border-radius:99px;height:8px;width:100%;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#a78bfa);transition:width .6s ease}
+    .prog-count{font-size:28px;font-weight:900;color:#7c3aed;line-height:1}.prog-count span{font-size:12px;font-weight:700;color:#94a3b8;display:block;margin-top:2px}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);overflow:hidden;margin-bottom:20px}
+    .card-head{padding:24px 28px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#ede9fe,#ddd6fe)}
+    .card-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px rgba(109,40,217,.3)}
+    .card-icon svg{color:#fff}
+    .card-title{font-size:17px;font-weight:800;color:#1e1b4b}.card-hint{font-size:12px;color:#6b7280;margin-top:2px}
+    .card-body{padding:24px 28px 28px}
+    .field-group{margin-bottom:18px}
+    .field-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px}
+    .field-hint{font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.5}
+    textarea{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;background:#fafbfc;font-family:inherit;font-size:14px;color:#1e293b;resize:vertical;min-height:80px;line-height:1.6;outline:none;transition:.2s}
+    textarea:focus{border-color:#7c3aed;background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+    textarea::placeholder{color:#9ca3af}
+    .submit-btn{width:100%;padding:15px 20px;border:none;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s;letter-spacing:.02em;box-shadow:0 4px 14px rgba(109,40,217,.35)}
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(109,40,217,.4)}
+    .divider{display:flex;align-items:center;gap:12px;margin:24px 0 20px}
+    .divider-line{flex:1;height:1px;background:#f1f5f9}.divider-text{font-size:11px;font-weight:800;color:#cbd5e1;text-transform:uppercase;letter-spacing:.1em}
+    .existing-head{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+    .existing-head span{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700}
+    .rec-item{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.03);transition:.15s}
+    .rec-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+    .rec-label{font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;margin-bottom:2px}.rec-catatan{font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-top:6px}
+    .rec-value{font-size:12px;color:#1e293b;line-height:1.5}
+    .rec-del{background:none;border:none;color:#cbd5e1;font-size:20px;font-weight:700;cursor:pointer;padding:0 4px;transition:.15s}.rec-del:hover{color:#ef4444}
+    .empty-deco{text-align:center;padding:32px;background:linear-gradient(135deg,#faf9ff,#f5f3ff);border:1.5px dashed #ddd6fe;border-radius:14px}
+    .empty-icon{font-size:40px;margin-bottom:8px}.empty-text{font-size:13px;color:#94a3b8;font-weight:600}
+  </style>
+</head>
+<body>
 
-{% block content %}
-<style>:root{--accent:#0891b2}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-</style>
-
-<!-- AI Loading Overlay -->
-<div id="ai-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);backdrop-filter:blur(4px);z-index:999;flex-direction:column;align-items:center;justify-content:center">
-  <div style="display:flex;gap:8px;margin-bottom:14px">
-    <div style="width:10px;height:10px;border-radius:50%;background:#0891b2;animation:bounce .8s infinite"></div>
-    <div style="width:10px;height:10px;border-radius:50%;background:#0891b2;animation:bounce .8s .15s infinite"></div>
-    <div style="width:10px;height:10px;border-radius:50%;background:#0891b2;animation:bounce .8s .3s infinite"></div>
-  </div>
-  <div style="font-size:14px;font-weight:700;color:#1e293b">AI sedang menganalisis...</div>
-  <div style="font-size:12px;color:#64748b;margin-top:4px">Sila tunggu sebentar</div>
+<div class="topbar">
+  <div class="topbar-left"><div class="brand">IPES<span>.</span></div><div class="topbar-sep"></div><div class="page-title">SPAF</div></div>
+  <div class="topbar-right"><div class="step-badge"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>MODULE 3</div></div>
 </div>
 
-<div style="background:#0891b2;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
-  <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">Alat Analitik Situasi</div>
-  <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">SOAR Analysis</h1>
-  <p style="font-size:12.5px;opacity:.75;margin:0">Kekuatan · Peluang · Aspirasi · Keputusan</p>
-</div>
-
-<div class="two-col">
-
-  <div class="card" style="padding:28px">
-    <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Analisis SOAR</div>
-
-    {% if ps %}
-    <div style="background:#ecfeff;border:1.5px solid #67e8f9;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:10px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Problem Statement Tersedia</div>
-        <div style="font-size:12px;color:#0c4a6e;line-height:1.4">{{ ps.masalah_utama|truncatechars:90 }}</div>
-      </div>
-      <form method="post" onsubmit="document.getElementById('ai-overlay').style.display='flex'">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="jana_ai">
-        <button type="submit" style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">✦ Jana AI</button>
-      </form>
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <a href="{% url 'bengkel:blueprint_peserta' bengkel.pk %}?tab=spaf" class="back-btn"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>Back to SPAF</a>
+      <div class="module-badge"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>MODULE 3</div>
     </div>
-    {% endif %}
+    <h1 class="hero-title">SOAR Analysis</h1>
+    <p class="hero-sub">Strengths, Opportunities, Aspirations, Results — analisis inklusif yang berorientasikan kekuatan dan masa depan.</p>
+  </div>
+</div>
 
-    {% if ai_error %}
-    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#b91c1c">⚠️ Ralat AI: {{ ai_error }}</div>
-    {% endif %}
-    {% if ai_result %}
-    <div style="background:#ecfeff;border:1.5px solid #67e8f9;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0c4a6e;font-weight:600">✦ AI telah mengisi borang di bawah. Semak dan simpan.</div>
-    {% endif %}
-
-    <form method="post">
-      {% csrf_token %}
-
-      <div class="field-group"><div class="field-label" style="color:#0891b2"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">💪</span>S — Kekuatan (Strengths)</div><div class="field-hint">Apakah yang paling kukuh dalam organisasi anda? Aset unik, keupayaan terbaik dan kejayaan sedia ada.</div><textarea name="kekuatan" placeholder="Contoh: Pasukan pakar berpengalaman, teknologi proprietari, kepercayaan pelanggan setia..." required>{% if ai_result %}{{ ai_result.kekuatan }}{% endif %}</textarea></div>
-
-      <div class="field-group"><div class="field-label" style="color:#0e7490"><span style="width:22px;height:22px;border-radius:6px;background:#a5f3fc;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>O — Peluang (Opportunities)</div><div class="field-hint">Potensi luar yang boleh dimanfaatkan — trend baru, keperluan pasaran, ruang untuk berkembang.</div><textarea name="peluang" placeholder="Contoh: Pertumbuhan pasaran telehealth 30% setahun, permintaan AI diagnostik meningkat..." required>{% if ai_result %}{{ ai_result.peluang }}{% endif %}</textarea></div>
-
-      <div class="field-group"><div class="field-label" style="color:#155e75"><span style="width:22px;height:22px;border-radius:6px;background:#cffafe;border:1px solid #22d3ee;display:inline-flex;align-items:center;justify-content:center;font-size:12px">✨</span>A — Aspirasi (Aspirations)</div><div class="field-hint">Impian dan visi ideal — masa depan yang diinginkan jika semua berjalan dengan baik.</div><textarea name="aspirasi" placeholder="Contoh: Menjadi platform kesihatan #1 di Malaysia, memberi akses rawatan kepada 1 juta rakyat..." required>{% if ai_result %}{{ ai_result.aspirasi }}{% endif %}</textarea></div>
-
-      <div class="field-group"><div class="field-label" style="color:#0c4a6e"><span style="width:22px;height:22px;border-radius:6px;background:#bae6fd;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🏆</span>R — Keputusan (Results)</div><div class="field-hint">Apakah hasil atau petunjuk kejayaan yang boleh diukur bagi membuktikan aspirasi tercapai?</div><textarea name="keputusan" placeholder="Contoh: 500,000 pengguna aktif dalam 2 tahun, pendapatan RM10 juta, NPS skor >70..." required>{% if ai_result %}{{ ai_result.keputusan }}{% endif %}</textarea></div>
-
-      <div class="field-group"><div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div><textarea name="catatan" placeholder="Sebarang catatan tambahan..." style="min-height:60px"></textarea></div>
-
-      <button type="submit" class="tbtn" style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;width:100%;justify-content:center">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        Simpan Analisis SOAR
-      </button>
-    </form>
+<div class="main-wrap">
+  <div class="progress-card">
+    <div class="prog-info"><div class="prog-label">Rekod Analisis SOAR</div><div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:{% widthratio existing|length 10 100 %}%"></div></div></div>
+    <div class="prog-count">{{ existing|length }}<span>rekod</span></div>
   </div>
 
-  <div>
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Rekod Analisis ({{ existing|length }})</div>
-    {% if existing %}
+  <div class="card">
+    <div class="card-head">
+      <div class="card-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <div><div class="card-title">Isi Analisis SOAR</div><div class="card-hint">Fokus kepada kekuatan, peluang, aspirasi dan hasil yang boleh diukur.</div></div>
+    </div>
+    <div class="card-body">
+      <form method="post">{% csrf_token %}
+        <div class="field-group"><div class="field-label"><span style="font-size:14px">💪</span> S — Kekuatan (Strengths)</div><div class="field-hint">Apakah yang paling kukuh dalam organisasi? Aset unik, keupayaan terbaik, kejayaan sedia ada.</div><textarea name="kekuatan" placeholder="Contoh: Pasukan pakar berpengalaman, teknologi proprietari..." required></textarea></div>
+        <div class="field-group"><div class="field-label"><span style="font-size:14px">🌱</span> O — Peluang (Opportunities)</div><div class="field-hint">Potensi luar yang boleh dimanfaatkan — trend baru, keperluan pasaran, ruang untuk berkembang.</div><textarea name="peluang" placeholder="Contoh: Pertumbuhan pasaran telehealth 30% setahun..." required></textarea></div>
+        <div class="field-group"><div class="field-label"><span style="font-size:14px">✨</span> A — Aspirasi (Aspirations)</div><div class="field-hint">Impian dan visi ideal — masa depan yang diinginkan jika semua berjalan dengan baik.</div><textarea name="aspirasi" placeholder="Contoh: Menjadi platform kesihatan #1 di Malaysia..." required></textarea></div>
+        <div class="field-group"><div class="field-label"><span style="font-size:14px">🏆</span> R — Keputusan (Results)</div><div class="field-hint">Hasil atau petunjuk kejayaan yang boleh diukur bagi membuktikan aspirasi tercapai.</div><textarea name="keputusan" placeholder="Contoh: 500,000 pengguna aktif, pendapatan RM10 juta..." required></textarea></div>
+        <div class="field-group"><div class="field-label">📝 Catatan Tambahan</div><textarea name="catatan" placeholder="Sebarang catatan tambahan..." style="min-height:60px"></textarea></div>
+        <button type="submit" class="submit-btn"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>Simpan Analisis SOAR</button>
+      </form>
+
+      {% if existing %}
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">Rekod</div><div class="divider-line"></div></div>
+      <div class="existing-head">Rekod SOAR <span>{{ existing|length }}</span></div>
       {% for e in existing %}
-      <div class="rec-card" style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <span style="font-size:11px;font-weight:700;color:#0891b2;background:#cffafe;border-radius:99px;padding:2px 10px">SOAR</span>
-          <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y, H:i" }}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="rec-item">
+        <div class="rec-grid">
           <div><div class="rec-label">💪 Kekuatan</div><div class="rec-value">{{ e.kekuatan }}</div></div>
           <div><div class="rec-label">🌱 Peluang</div><div class="rec-value">{{ e.peluang }}</div></div>
           <div><div class="rec-label">✨ Aspirasi</div><div class="rec-value">{{ e.aspirasi }}</div></div>
           <div><div class="rec-label">🏆 Keputusan</div><div class="rec-value">{{ e.keputusan }}</div></div>
         </div>
-        {% if e.catatan %}<div style="font-size:12px;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:10px">📝 {{ e.catatan }}</div>{% endif %}
-        <form method="post" action="{% url 'bengkel:analisis_soar_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">
-          {% csrf_token %}<button type="submit" style="font-size:11.5px;font-weight:600;color:#ef4444;background:none;border:none;cursor:pointer;padding:0">Padam ✕</button>
-        </form>
+        {% if e.catatan %}<div class="rec-catatan">📝 {{ e.catatan }}</div>{% endif %}
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <span style="font-size:11px;color:#94a3b8">{{ e.created_at|date:"d M Y" }}</span>
+          <form method="post" action="{% url 'bengkel:analisis_soar_delete' e.pk %}" onsubmit="return confirm('Padam analisis ini?')">{% csrf_token %}<button type="submit" class="rec-del">×</button></form>
+        </div>
       </div>
       {% endfor %}
-    {% else %}
-    <div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:32px;margin-bottom:8px">🚀</div><div style="font-size:13px;color:#94a3b8">Belum ada analisis SOAR disimpan.</div></div>
-    {% endif %}
+      {% else %}
+      <div class="empty-deco" style="margin-top:24px"><div class="empty-icon">🚀</div><div class="empty-text">Belum ada analisis SOAR disimpan.</div></div>
+      {% endif %}
+    </div>
   </div>
-
 </div>
-{% endblock %}
+
+</body>
+</html>

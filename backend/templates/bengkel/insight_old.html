@@ -1,0 +1,271 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insight — {{ bengkel.title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.open { max-height: 500px; opacity: 1; }
+        * { -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 p-6 md:p-8">
+
+    <!-- Back -->
+    <div class="max-w-[1600px] w-full mx-auto mb-4">
+        <a href="{% url 'bengkel:detail' pk=bengkel.pk %}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition">
+            <i class="fas fa-arrow-left"></i> Kembali ke Bengkel
+        </a>
+    </div>
+
+    <div class="max-w-[1600px] w-full mx-auto">
+        
+        <!-- Header -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#134e4a] rounded-2xl px-8 py-7 mb-8 shadow-lg">
+            <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1px);background-size:24px 24px;"></div>
+            <div class="relative flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-1.5 bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-3">
+                        <i class="fas fa-chart-pie"></i> Bengkel Analytics
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-white leading-tight">{{ bengkel.title }}</h1>
+                    <p class="text-white/60 text-sm mt-1">Insight & performance analysis untuk bengkel anda.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'bengkel:qr_scan' pk=bengkel.pk %}" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-xl backdrop-blur-sm transition shadow-sm flex items-center">
+                        <i class="fas fa-qrcode mr-2 text-blue-300"></i> Imbas QR
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Stat Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden hover:border-blue-400 hover:shadow-md transition group">
+                <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition"><i class="fas fa-users text-8xl"></i></div>
+                <div class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1.5 flex items-center relative z-10">
+                    <i class="fas fa-user-plus mr-2 text-blue-400"></i>Total Jemputan
+                </div>
+                <div class="text-4xl font-black text-blue-600 relative z-10">{{ stats.total_jemputan }} <span class="text-sm text-slate-400 font-medium ml-1">Pax</span></div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden hover:border-emerald-400 hover:shadow-md transition group">
+                <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition"><i class="fas fa-check-circle text-8xl"></i></div>
+                <div class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1.5 flex items-center relative z-10">
+                    <i class="fas fa-check mr-2 text-emerald-500"></i>Kadar Diterima
+                </div>
+                <div class="text-4xl font-black text-emerald-600 relative z-10">{% widthratio stats.total_diterima stats.total_jemputan 100 %}%</div>
+                <div class="text-[10px] text-emerald-600 mt-2 font-semibold bg-emerald-50 inline-block px-2 py-0.5 rounded border border-emerald-100 relative z-10">{{ stats.total_diterima }} dari {{ stats.total_jemputan }} peserta</div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden hover:border-purple-400 hover:shadow-md transition group">
+                <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition"><i class="fas fa-clipboard-check text-8xl"></i></div>
+                <div class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1.5 flex items-center relative z-10">
+                    <i class="fas fa-qrcode mr-2 text-purple-500"></i>Kadar Kehadiran
+                </div>
+                <div class="text-4xl font-black text-purple-600 relative z-10">{% if stats.total_diterima %}{% widthratio stats.total_hadir stats.total_diterima 100 %}{% else %}0{% endif %}%</div>
+                <div class="text-[10px] text-slate-400 mt-2 font-medium relative z-10"><strong class="text-purple-600">{{ stats.total_hadir }} hadir</strong> dari {{ stats.total_diterima }} diterima.</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 mb-8 items-start">
+            
+            <!-- Left: Charts -->
+            <div class="lg:col-span-3 flex flex-col gap-4 h-full">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-sm mb-2 text-slate-700">Status Penyertaan</h3>
+                    <div class="relative h-44 w-full"><canvas id="chartStatus"></canvas></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-sm mb-2 text-slate-700">Kehadiran vs Jemputan</h3>
+                    <div class="relative h-44 w-full"><canvas id="chartAttendance"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Center: Peserta List -->
+            <div class="lg:col-span-6 flex flex-col h-full">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-sm text-slate-700"><i class="fas fa-users mr-2 text-blue-500"></i>Senarai Peserta</h3>
+                        <div class="flex gap-2">
+                            <a href="{% url 'bengkel:jemputan_list' pk=bengkel.pk %}" class="text-[10px] font-bold bg-blue-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-700 transition flex items-center">
+                                <i class="fas fa-list mr-1"></i>Lihat Semua
+                            </a>
+                            <a href="{% url 'bengkel:jemput' pk=bengkel.pk %}" class="text-[10px] font-bold bg-emerald-600 text-white px-3 py-1.5 rounded-full shadow-sm hover:bg-emerald-700 transition flex items-center">
+                                <i class="fas fa-plus mr-1"></i>Tambah
+                            </a>
+                        </div>
+                    </div>
+                    
+                    {% if jemputan_list %}
+                    <div class="overflow-x-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-400 text-[9px] uppercase tracking-wider">
+                                    <th class="py-2 px-3 border-b font-bold">Nama</th>
+                                    <th class="py-2 px-3 border-b font-bold">E-mel</th>
+                                    <th class="py-2 px-3 border-b font-bold">Status</th>
+                                    <th class="py-2 px-3 border-b font-bold">Check-in</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-[11px]">
+                                {% for j in jemputan_list %}
+                                <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
+                                    <td class="py-3 px-3 font-bold text-slate-700">{{ j.nama }}</td>
+                                    <td class="py-3 px-3 text-slate-500">{{ j.email|default:"-" }}</td>
+                                    <td class="py-3 px-3">
+                                        {% if j.status == 'accepted' %}
+                                        <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[9px] font-bold">Diterima</span>
+                                        {% elif j.status == 'pending' %}
+                                        <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-[9px] font-bold">Pending</span>
+                                        {% else %}
+                                        <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[9px] font-bold">Ditolak</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-3">
+                                        {% if j.kehadiran %}
+                                        <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[9px] font-bold"><i class="fas fa-check mr-1"></i>Hadir</span>
+                                        {% else %}
+                                        <span class="text-slate-400 text-[9px]">Belum</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="flex-1 flex items-center justify-center text-slate-400">
+                        <div class="text-center">
+                            <i class="fas fa-users text-4xl mb-3 opacity-30"></i>
+                            <p class="text-sm">Tiada peserta lagi</p>
+                            <a href="{% url 'bengkel:jemput' pk=bengkel.pk %}" class="text-blue-600 text-xs font-bold mt-2 inline-block hover:underline">+ Tambah peserta pertama</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right: Top/Bottom -->
+            <div class="lg:col-span-3 flex flex-col gap-4">
+                
+                <!-- Top Contributors -->
+                <div class="bg-white rounded-xl shadow-sm border border-emerald-200 overflow-hidden">
+                    <div class="p-3 border-b border-emerald-200 bg-emerald-50/80 flex justify-between items-center">
+                        <h3 class="font-bold text-[11px] text-emerald-900"><i class="fas fa-trophy text-amber-500 mr-1"></i>Top Peserta (Aktif)</h3>
+                    </div>
+                    <div class="overflow-x-auto bg-white">
+                        {% if top_participants %}
+                        <table class="w-full text-left border-collapse">
+                            <tbody class="text-[11px]">
+                                {% for p in top_participants %}
+                                <tr class="hover:bg-emerald-50 transition border-b border-slate-100 last:border-0">
+                                    <td class="py-3 px-3 font-bold text-emerald-700">
+                                        <div class="truncate w-36"><i class="fas fa-external-link-alt text-[8px] mr-1 text-emerald-400"></i> {{ p.nama }}</div>
+                                        <div class="text-[9px] text-slate-400 font-normal truncate w-36">{{ p.email|default:"-" }}</div>
+                                    </td>
+                                    <td class="py-3 px-3 font-black text-emerald-600 text-right text-sm">
+                                        {% if p.kehadiran %}✓{% else %}-{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="p-6 text-center text-slate-400 text-xs">Tiada data lagi</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Bottom/Passive -->
+                <div class="bg-white rounded-xl shadow-sm border border-rose-200 overflow-hidden">
+                    <div class="p-3 border-b border-rose-200 bg-rose-50/80 flex justify-between items-center">
+                        <h3 class="font-bold text-[11px] text-rose-900"><i class="fas fa-exclamation-circle text-rose-500 mr-1"></i>Belum Bertindak</h3>
+                    </div>
+                    <div class="overflow-x-auto bg-white">
+                        {% if passive_participants %}
+                        <table class="w-full text-left border-collapse">
+                            <tbody class="text-[11px]">
+                                {% for p in passive_participants %}
+                                <tr class="hover:bg-rose-50 transition border-b border-slate-100 last:border-0">
+                                    <td class="py-3 px-3 font-bold text-rose-700">
+                                        <div class="truncate w-36"><i class="fas fa-external-link-alt text-[8px] mr-1 text-rose-400"></i> {{ p.nama }}</div>
+                                        <div class="text-[9px] text-slate-400 font-normal truncate w-36">{{ p.email|default:"-" }}</div>
+                                    </td>
+                                    <td class="py-3 px-3 font-black text-rose-600 text-right text-sm">Pending</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="p-6 text-center text-slate-400 text-xs">Semua telah bertindak</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Chart: Status (Doughnut)
+        const ctxStatus = document.getElementById('chartStatus').getContext('2d');
+        new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: ['Diterima', 'Pending', 'Ditolak'],
+                datasets: [{
+                    data: [{{ stats.total_diterima }}, {{ stats.total_pending }}, {{ stats.total_ditolak }}],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                }
+            }
+        });
+
+        // Chart: Attendance (Bar)
+        const ctxAttendance = document.getElementById('chartAttendance').getContext('2d');
+        new Chart(ctxAttendance, {
+            type: 'bar',
+            data: {
+                labels: ['Jemputan', 'Diterima', 'Hadir'],
+                datasets: [{
+                    data: [{{ stats.total_jemputan }}, {{ stats.total_diterima }}, {{ stats.total_hadir }}],
+                    backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

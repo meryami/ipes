@@ -1,128 +1,423 @@
-{% extends "bengkel/analisis/_base.html" %}
-{% block title %}Root Cause Analysis{% endblock %}
-{% block tool_name %}Root Cause Analysis{% endblock %}
-{% block tool_tag %}LANGKAH 4 — SPAF{% endblock %}
-{% block accent_bg %}#7c3aed{% endblock %}
-{% block accent_color %}#7c3aed{% endblock %}
-{% block accent_light %}#ede9fe{% endblock %}
-{% block topbar_icon %}<svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>{% endblock %}
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Ishikawa Diagram | {{ bengkel.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
 
-{% block content %}
-<style>:root{--accent:#7c3aed}</style>
+    /* ── Top Navbar ─────────────────────────────────────────── */
+    .topbar{
+      background:#fff;border-bottom:1px solid #e2e8f0;
+      padding:0 32px;height:60px;display:flex;align-items:center;
+      position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .topbar-left{display:flex;align-items:center;gap:12px}
+    .brand{font-size:15px;font-weight:800;color:#1e293b;letter-spacing:-.3px}
+    .brand span{color:#2563eb}
+    .topbar-sep{width:1px;height:20px;background:#e2e8f0;margin:0 4px}
+    .page-title{font-size:13px;font-weight:600;color:#64748b}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .step-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:#f1f5f9;border:1px solid #e2e8f0;
+      color:#475569;padding:4px 12px;border-radius:99px;
+      font-size:11px;font-weight:700;letter-spacing:.04em;
+    }
+    .step-badge svg{color:#2563eb}
 
-<!-- Breadcrumb -->
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
-  <a href="{% url 'bengkel:spaf_hub' %}" style="font-size:12px;color:#4f46e5;font-weight:600;text-decoration:none">← SPAF Framework</a>
-  <span style="color:#cbd5e1;font-size:12px">/</span>
-  <span style="font-size:12px;color:#64748b;font-weight:600">Root Cause Analysis</span>
+    /* ── Hero Header ───────────────────────────────────────── */
+    .hero{
+      background:linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#2563eb 100%);
+      padding:32px 24px 36px;position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:"";position:absolute;inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .hero::after{
+      content:"";position:absolute;bottom:-40px;right:-20px;
+      width:200px;height:200px;border-radius:50%;
+      background:rgba(255,255,255,.06);pointer-events:none;
+    }
+    .hero-inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+    .hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;
+      transition:.2s;text-decoration:none;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.25);text-decoration:none}
+    .back-btn svg{transition:transform .2s}
+    .back-btn:hover svg{transform:translateX(-2px)}
+    .module-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;
+      letter-spacing:.08em;text-transform:uppercase;
+    }
+    .hero-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.2}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.8);max-width:500px;line-height:1.6}
+
+    /* ── Main Content ──────────────────────────────────────── */
+    .main-wrap{padding:28px 24px 60px;max-width:680px;margin:0 auto}
+
+    /* ── Progress Bar Card ────────────────────────────────── */
+    .progress-card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      padding:16px 20px;margin-bottom:20px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .prog-info{flex:1}
+    .prog-label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .prog-bar-wrap{background:#f1f5f9;border-radius:99px;height:8px;width:100%;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .6s ease}
+    .prog-count{font-size:28px;font-weight:900;color:#2563eb;line-height:1}
+    .prog-count span{font-size:12px;font-weight:700;color:#94a3b8;display:block;margin-top:2px}
+
+    /* ── Main Form Card ───────────────────────────────────── */
+    .card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:20px;
+      box-shadow:0 2px 8px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
+      overflow:hidden;margin-bottom:20px;
+    }
+    .card-head{
+      padding:24px 28px 20px;
+      border-bottom:1px solid #f1f5f9;
+      display:flex;align-items:center;gap:14px;
+      background:linear-gradient(135deg,#eff6ff,#dbeafe);
+    }
+    .card-icon{
+      width:44px;height:44px;border-radius:12px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      box-shadow:0 3px 10px rgba(37,99,235,.3);
+    }
+    .card-icon svg{color:#fff}
+    .card-title{font-size:17px;font-weight:800;color:#1e1b4b}
+    .card-hint{font-size:12px;color:#6b7280;margin-top:2px}
+    .card-body{padding:24px 28px 28px}
+
+    /* ── AI Hint Box ──────────────────────────────────────── */
+    .ai-hint{
+      background:linear-gradient(135deg,#fffbeb,#fefce8);
+      border:1.5px solid #fde68a;border-radius:14px;
+      padding:14px 16px;margin-bottom:20px;
+      display:flex;align-items:flex-start;gap:10px;
+    }
+    .ai-hint-icon{
+      width:32px;height:32px;border-radius:8px;
+      background:#fef3c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      font-size:16px;
+    }
+    .ai-hint-text{flex:1}
+    .ai-hint-title{font-size:12px;font-weight:800;color:#92400e;margin-bottom:2px}
+    .ai-hint-body{font-size:12px;color:#b45309;line-height:1.5}
+
+    /* ── Field Group ──────────────────────────────────────── */
+    .field-group{margin-bottom:20px}
+    .field-label{
+      display:flex;align-items:center;gap:8px;
+      font-size:12px;font-weight:800;color:#2563eb;text-transform:uppercase;
+      letter-spacing:.07em;margin-bottom:8px;
+    }
+    .field-label span{
+      width:22px;height:22px;border-radius:6px;background:#dbeafe;
+      display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;
+    }
+    .field-hint{font-size:11.5px;color:#6b7280;margin-bottom:8px;line-height:1.5}
+    .field-textarea{
+      width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:12px;
+      font-size:14px;color:#1e293b;font-family:inherit;outline:none;
+      resize:vertical;min-height:90px;line-height:1.7;
+      transition:border-color .15s,box-shadow .15s;
+    }
+    .field-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,237,.1)}
+    .field-textarea::placeholder{color:#9ca3af}
+
+    /* ── Submit Button ───────────────────────────────────── */
+    .submit-btn{
+      width:100%;padding:15px 20px;border:none;border-radius:14px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;font-size:15px;font-weight:800;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      transition:.2s;letter-spacing:.02em;
+      box-shadow:0 4px 14px rgba(37,99,235,.35);
+      margin-top:8px;
+    }
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.4)}
+
+    /* ── Divider ─────────────────────────────────────────── */
+    .divider{
+      display:flex;align-items:center;gap:12px;margin:24px 0 20px;
+    }
+    .divider-line{flex:1;height:1px;background:#f1f5f9}
+    .divider-text{font-size:11px;font-weight:800;color:#cbd5e1;text-transform:uppercase;letter-spacing:.1em}
+
+    /* ── Existing Records ────────────────────────────────── */
+    .existing-head{
+      font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;
+      letter-spacing:.1em;margin-bottom:12px;padding-bottom:8px;
+      border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;
+    }
+    .existing-head span{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700}
+    .rec-item{
+      background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+      padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;
+      box-shadow:0 1px 3px rgba(0,0,0,.03);
+      transition:.15s;
+    }
+    .rec-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .rec-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#60a5fa);flex-shrink:0;margin-top:4px;box-shadow:0 0 0 3px rgba(37,99,237,.15)}
+    .rec-body{flex:1;min-width:0}
+    .rec-section{font-size:10.5px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+    .rec-text{font-size:13px;color:#1e293b;line-height:1.6;margin-bottom:6px}
+    .rec-date{font-size:11px;color:#94a3b8;font-weight:500}
+    .rec-del{
+      background:none;border:none;color:#cbd5e1;font-size:20px;font-weight:700;
+      cursor:pointer;padding:0 4px;flex-shrink:0;transition:.15s;
+    }
+    .rec-del:hover{color:#ef4444}
+
+    /* ── Empty state ─────────────────────────────────────── */
+    .empty-deco{
+      text-align:center;padding:32px;
+      background:linear-gradient(135deg,#eff6ff,#dbeafe);
+      border:1.5px dashed #bfdbfe;border-radius:14px;
+    }
+    .empty-icon{font-size:40px;margin-bottom:8px}
+    .empty-text{font-size:13px;color:#94a3b8;font-weight:600}
+  </style>
+</head>
+<body>
+
+<!-- Top Navbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="brand">IPES<span>.</span></div>
+    <div class="topbar-sep"></div>
+    <div class="page-title">SPAF</div>
+  </div>
+  <div class="topbar-right">
+  </div>
 </div>
 
-<!-- Hero -->
-<div style="background:#7c3aed;border-radius:14px;padding:22px 24px 20px;margin-bottom:24px;color:#fff">
-  <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:5px">SPAF · Langkah 4</div>
-  <h1 style="font-size:22px;font-weight:800;margin:0 0 4px">Root Cause Analysis</h1>
-  <p style="font-size:12.5px;opacity:.75;margin:0">Kenali punca akar dan faktor penyumbang masalah secara mendalam</p>
+<!-- Hero Header -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <a href="{% url 'bengkel:blueprint_peserta' bengkel.pk %}?tab=spaf" class="back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to SPAF
+      </a>
+    </div>
+    <h1 class="hero-title">Ishikawa Diagram Analysis</h1>
+    <p class="hero-sub">Lengkapkan keempat-empat komponen untuk analisis punca akar yang komprehensif menggunakan kaedah Ishikawa (Fishbone).</p>
+  </div>
 </div>
 
-<!-- Idea Box -->
-<div style="max-width:640px;margin-bottom:16px;background:linear-gradient(135deg,#fffbeb,#fefce8);border:1.5px solid #fde68a;border-radius:16px;padding:20px 22px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-    <div style="display:flex;align-items:center;gap:9px">
-      <div style="width:32px;height:32px;border-radius:9px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">💡</div>
+<!-- Main Content -->
+<div class="main-wrap">
+
+  <!-- Progress Card -->
+  <div class="progress-card">
+    <div class="prog-info">
+      <div class="prog-label">Rekod Root Cause Analysis</div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:{% widthratio existing.count 10 100 %}%"></div></div>
+    </div>
+    <div class="prog-count">
+      {{ existing.count }}
+      <span>item{{ existing.count|pluralize }}</span>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L12 22"></path>
+          <path d="M12 6L5 12"></path>
+          <path d="M12 10L19 16"></path>
+          <path d="M12 14L7 18"></path>
+          <path d="M12 18L17 22"></path>
+        </svg>
+      </div>
       <div>
-        <div style="font-size:12.5px;font-weight:800;color:#92400e">Idea &amp; Nota Anda</div>
-        <div style="font-size:11px;color:#b45309;margin-top:1px">Kenapa masalah ini berlaku? Gunakan kaedah 5 Whys — tulis di sini dulu</div>
+        <div class="card-title">Isi Analisis Ishikawa</div>
+        <div class="card-hint">Lengkapkan keempat-empat komponen untuk analisis punca akar yang komprehensif.</div>
       </div>
     </div>
-    <span id="idea-status-rca" style="font-size:11px;font-weight:700;color:#059669;opacity:0;transition:opacity .4s">✓ Tersimpan</span>
+    <div class="card-body">
+      <form method="post" id="rcaForm">
+        {% csrf_token %}
+
+<!-- Technology / System -->
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg font-bold">T</span>
+      <div>
+        <label class="text-base font-bold text-gray-800">Technology / System</label>
+        <span class="text-red-500 text-sm ml-1">*</span>
+      </div>
+    </div>
+    <button type="button" onclick="showAIHelp('teknologi')" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all">
+      <i class="fas fa-robot"></i>
+      <span>AI Help</span>
+    </button>
   </div>
-  <textarea id="idea-box-rca" placeholder="Kenapa? Sebab... Kenapa? Sebab... (5 Whys) — atau lukis carta Ishikawa dalam kepala anda dulu..." style="width:100%;min-height:96px;border:none;background:transparent;font-size:13px;color:#78350f;font-family:inherit;outline:none;resize:vertical;line-height:1.7"></textarea>
+  <textarea id="teknologi" name="teknologi" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all" placeholder="Sebutkan isu teknikal yang dikenalpasti" rows="4"></textarea>
+  <div id="ai-help-teknologi" class="hidden mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+    <div class="flex items-start gap-2">
+      <i class="fas fa-lightbulb text-purple-600 mt-0.5"></i>
+      <div class="text-xs text-purple-800">
+        <strong>AI Suggestion:</strong> Contoh: "Sistem EHR kerap crash semasa peak hours", "API integration dengan sistem luar tidak stabil", "Database server tidak scalable untuk jumlah data yang meningkat"
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Process / Policy -->
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-lg font-bold">P</span>
+      <div>
+        <label class="text-base font-bold text-gray-800">Process / Policy</label>
+        <span class="text-red-500 text-sm ml-1">*</span>
+      </div>
+    </div>
+    <button type="button" onclick="showAIHelp('proses')" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all">
+      <i class="fas fa-robot"></i>
+      <span>AI Help</span>
+    </button>
+  </div>
+  <textarea id="proses" name="proses" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all" placeholder="Sebutkan isu proses dan dasar" rows="4"></textarea>
+  <div id="ai-help-proses" class="hidden mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+    <div class="flex items-start gap-2">
+      <i class="fas fa-lightbulb text-purple-600 mt-0.5"></i>
+      <div class="text-xs text-purple-800">
+        <strong>AI Suggestion:</strong> Contoh: "SOP procurement terlalu panjang (3 bulan)", "Tiada standard operating procedure untuk data backup", "Approval workflow tidak clear menyebabkan delay"
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- People / Culture -->
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg font-bold">P</span>
+      <div>
+        <label class="text-base font-bold text-gray-800">People / Culture</label>
+        <span class="text-red-500 text-sm ml-1">*</span>
+      </div>
+    </div>
+    <button type="button" onclick="showAIHelp('people')" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all">
+      <i class="fas fa-robot"></i>
+      <span>AI Help</span>
+    </button>
+  </div>
+  <textarea id="people" name="people" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all" placeholder="Sebutkan isu manusia dan budaya" rows="4"></textarea>
+  <div id="ai-help-people" class="hidden mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+    <div class="flex items-start gap-2">
+      <i class="fas fa-lightbulb text-purple-600 mt-0.5"></i>
+      <div class="text-xs text-purple-800">
+        <strong>AI Suggestion:</strong> Contoh: "Staff resist change kepada sistem baru", "Kurang training untuk digital tools", "Communication gap antara IT dan clinical departments"
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Environment -->
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-lg font-bold">E</span>
+      <div>
+        <label class="text-base font-bold text-gray-800">Environment</label>
+        <span class="text-red-500 text-sm ml-1">*</span>
+      </div>
+    </div>
+    <button type="button" onclick="showAIHelp('persekitaran')" class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all">
+      <i class="fas fa-robot"></i>
+      <span>AI Help</span>
+    </button>
+  </div>
+  <textarea id="persekitaran" name="persekitaran" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all" placeholder="Sebutkan isu persekitaran fizikal" rows="4"></textarea>
+  <div id="ai-help-persekitaran" class="hidden mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+    <div class="flex items-start gap-2">
+      <i class="fas fa-lightbulb text-purple-600 mt-0.5"></i>
+      <div class="text-xs text-purple-800">
+        <strong>AI Suggestion:</strong> Contoh: "Server room tidak ada proper cooling system", "Physical security weak (no access control)", "Backup power supply tidak reliable"
+      </div>
+    </div>
+  </div>
+</div>
+
+        <button type="submit" class="submit-btn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Simpan Ishikawa Analysis
+        </button>
+      </form>
+
+      <!-- Existing records -->
+      {% if existing %}
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">Rekod</div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="existing-head">
+        Rekod Root Cause Analysis
+        <span>{{ existing.count }}</span>
+      </div>
+      {% for obj in existing %}
+      <div class="rec-item">
+        <div class="rec-dot"></div>
+        <div class="rec-body">
+          <div class="rec-section">{{ obj.created_at|date:"d/m/Y H:i" }}</div>
+          <div class="rec-text"><strong>Masalah:</strong> {{ obj.masalah }}</div>
+          <div class="rec-text"><strong>Punca Akar:</strong> {{ obj.punca_utama }}</div>
+          {% if obj.punca_penyumbang %}<div class="rec-text"><strong>Punca Penyumbang:</strong> {{ obj.punca_penyumbang }}</div>{% endif %}
+          {% if obj.catatan %}<div class="rec-text" style="color:#6b7280"><strong>Catatan:</strong> {{ obj.catatan }}</div>{% endif %}
+          <div class="rec-date">{{ obj.created_at|date:"d M Y, H:i" }}</div>
+        </div>
+        <form method="post" action="{% url 'bengkel:spaf_rca_delete' obj.pk %}" onsubmit="return confirm('Padam rekod ini?')" style="flex-shrink:0">
+          {% csrf_token %}
+          <button type="submit" class="rec-del">&times;</button>
+        </form>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
 <script>
-(function(){
-  var KEY='spaf_idea_rca', ta=document.getElementById('idea-box-rca'), st=document.getElementById('idea-status-rca'), t;
-  ta.value=localStorage.getItem(KEY)||'';
-  ta.addEventListener('input',function(){clearTimeout(t);t=setTimeout(function(){localStorage.setItem(KEY,ta.value);st.style.opacity='1';setTimeout(function(){st.style.opacity='0';},2000);},600);});
-})();
+  function showAIHelp(fieldId) {
+    const helpBox = document.getElementById('ai-help-' + fieldId);
+    if (helpBox) {
+      helpBox.classList.toggle('hidden');
+    }
+  }
+  
+  document.getElementById('rcaForm').addEventListener('submit', function(e) {
+    const btn = this.querySelector('.submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Menyimpan...';
+    this.submit();
+  });
 </script>
 
-<div class="card" style="padding:28px;max-width:640px">
-    <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:20px">Isi Root Cause Analysis</div>
-    <form method="post">
-      {% csrf_token %}
-
-      <div class="field-group" style="--accent:#7c3aed">
-        <div class="field-label" style="color:#7c3aed">
-          <span style="width:22px;height:22px;border-radius:6px;background:#ede9fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">❓</span>
-          Masalah yang Dianalisis
-        </div>
-        <div class="field-hint">Nyatakan masalah spesifik yang akan dianalisis punca akarnya.</div>
-        <textarea name="masalah" placeholder="Masalah yang spesifik untuk dianalisis..." required style="min-height:60px"></textarea>
-      </div>
-
-      <div class="field-group" style="--accent:#7c3aed">
-        <div class="field-label" style="color:#7c3aed">
-          <span style="width:22px;height:22px;border-radius:6px;background:#ede9fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🌱</span>
-          Punca Akar (Root Cause)
-        </div>
-        <div class="field-hint">Apakah punca SEBENAR yang menjadi asal usul masalah? Guna kaedah 5 Whys atau Ishikawa.</div>
-        <textarea name="punca_utama" placeholder="Punca akar utama selepas analisis mendalam (Kenapa? → Kenapa? → ...)..." required></textarea>
-      </div>
-
-      <div class="field-group" style="--accent:#7c3aed">
-        <div class="field-label" style="color:#7c3aed">
-          <span style="width:22px;height:22px;border-radius:6px;background:#ede9fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🔗</span>
-          Faktor Penyumbang
-        </div>
-        <div class="field-hint">Faktor-faktor lain yang menyumbang kepada berlakunya masalah (walau bukan punca utama).</div>
-        <textarea name="punca_penyumbang" placeholder="Faktor manusia, proses, persekitaran, teknologi, dll..." required></textarea>
-      </div>
-
-      <div class="field-group" style="--accent:#7c3aed">
-        <div class="field-label" style="color:#7c3aed">
-          <span style="width:22px;height:22px;border-radius:6px;background:#ede9fe;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📊</span>
-          Bukti / Data Sokongan
-        </div>
-        <div class="field-hint">Data, pemerhatian, atau fakta yang menyokong kenal pasti punca akar ini.</div>
-        <textarea name="bukti" placeholder="Data statistik, rekod pemerhatian, temubual, laporan audit..." required></textarea>
-      </div>
-
-      <div class="field-group">
-        <div class="field-label" style="color:#64748b">📝 Catatan Tambahan (Pilihan)</div>
-        <textarea name="catatan" placeholder="Sebarang nota, penemuan tambahan atau cadangan awal..." style="min-height:60px"></textarea>
-      </div>
-
-      <button type="submit" class="tbtn" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;width:100%;justify-content:center">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        Simpan Root Cause Analysis
-      </button>
-    </form>
-</div>
-
-{% if existing %}
-<div style="max-width:640px;margin-top:32px">
-  <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:14px;display:flex;align-items:center;gap:8px">
-    <span style="width:7px;height:7px;border-radius:50%;background:#7c3aed;display:inline-block"></span>
-    Rekod Root Cause Analysis ({{ existing|length }})
-  </div>
-  {% for obj in existing %}
-  <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:10px">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:10.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">{{ obj.created_at|date:"d/m/Y H:i" }}</div>
-        <div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:3px">Masalah</div>
-        <div style="font-size:13px;color:#1e293b;line-height:1.6;margin-bottom:8px">{{ obj.masalah }}</div>
-        <div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:3px">Punca Utama</div>
-        <div style="font-size:12.5px;color:#475569;line-height:1.5;margin-bottom:8px">{{ obj.punca_utama }}</div>
-        {% if obj.punca_penyumbang %}<div style="font-size:11px;font-weight:700;color:#6d28d9;margin-bottom:3px">Punca Penyumbang</div><div style="font-size:12.5px;color:#475569;line-height:1.5">{{ obj.punca_penyumbang }}</div>{% endif %}
-      </div>
-      <form method="post" action="{% url 'bengkel:spaf_rca_delete' obj.pk %}" onsubmit="return confirm('Padam rekod ini?')" style="flex-shrink:0">
-        {% csrf_token %}
-        <button type="submit" style="background:none;border:1.5px solid #fca5a5;color:#ef4444;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer">Padam</button>
-      </form>
-    </div>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-{% endblock %}
+</body>
+</html>

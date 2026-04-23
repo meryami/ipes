@@ -456,12 +456,12 @@ def register_view(request):
 
     if request.method == "POST":
         role       = request.POST.get("role", "peserta")
-        username   = request.POST.get("username", "").strip()
+        username   = request.POST.get("username", "").strip() or request.POST.get("username_penganjur", "").strip()
         email      = request.POST.get("email", "").strip()
         first_name = request.POST.get("first_name", "").strip()
         last_name  = request.POST.get("last_name", "").strip()
-        organisasi = request.POST.get("organisasi", "").strip()
-        jabatan    = request.POST.get("jabatan", "").strip()
+        organisasi = request.POST.get("organisasi", "").strip() or request.POST.get("organisasi_penganjur", "").strip()
+        jabatan    = request.POST.get("jabatan", "").strip() or request.POST.get("jabatan_penganjur", "").strip()
         telefon    = request.POST.get("telefon", "").strip()
         sebab      = request.POST.get("sebab", "").strip()
         pw1        = request.POST.get("password1", "")
@@ -471,7 +471,8 @@ def register_view(request):
         form_data = {
             "username": username, "email": email,
             "first_name": first_name, "last_name": last_name,
-            "organisasi": organisasi, "jabatan": jabatan,
+            "organisasi": organisasi, "organisasi_penganjur": request.POST.get("organisasi_penganjur", "").strip(),
+            "jabatan": jabatan, "jabatan_penganjur": request.POST.get("jabatan_penganjur", "").strip(),
             "telefon": telefon, "sebab": sebab, "role": role,
         }
 
@@ -482,32 +483,31 @@ def register_view(request):
 
         # ── Penganjur flow ────────────────────────────────────────────────────
         if role == "penganjur":
+            if not username or len(username) < 3:
+                return _err("Nama pengguna mesti sekurang-kurangnya 3 aksara.")
+            if not _re.match(r'^[\w]+$', username):
+                return _err("Nama pengguna hanya boleh mengandungi huruf, nombor, dan garis bawah (_).")
+            if User.objects.filter(username=username).exists():
+                return _err("Nama pengguna ini sudah digunakan. Sila pilih nama lain.")
             if not email or not _re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
                 return _err("Sila masukkan alamat e-mel yang sah.")
             if User.objects.filter(email=email).exists():
-                return _err("E-mel ini sudah berdaftar. Sila gunakan e-mel lain atau log masuk.")
+                return _err("E-mel ini sudah berdaftar. Sila gunakan e-mel lain.")
+            if len(pw1) < 8:
+                return _err("Kata laluan mesti sekurang-kurangnya 8 aksara.")
+            if pw1 != pw2:
+                return _err("Kata laluan tidak sepadan. Sila cuba semula.")
             if not organisasi:
                 return _err("Nama organisasi wajib diisi untuk permohonan penganjur.")
             if not terms:
                 return _err("Sila bersetuju dengan Dasar Privasi untuk meneruskan pendaftaran.")
 
-            # Auto-generate username from email prefix
-            base = _re.sub(r'[^\w]', '_', email.split('@')[0])[:24] or "penganjur"
-            candidate = base
-            suffix = 1
-            while User.objects.filter(username=candidate).exists():
-                candidate = f"{base}_{suffix}"
-                suffix += 1
-            username = candidate
-
-            # Create inactive account (no password yet — will be set upon approval)
+            # Create inactive account with password
             user = User.objects.create_user(
-                username=username, email=email, password=None,
+                username=username, email=email, password=pw1,
                 first_name=first_name, last_name=last_name,
-                is_active=False,
+                is_active=False,  # Inactive until admin approval
             )
-            user.set_unusable_password()
-            user.save()
 
             profile, _ = UserProfile.objects.get_or_create(user=user)
             profile.organisasi = organisasi

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ms">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil & Prestasi Individu - {{ jemputan.nama }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 min-h-screen">
+
+    <div class="relative overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#134e4a] sticky top-0 z-50 shadow-lg">
+        <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1px);background-size:24px 24px;"></div>
+        
+        <div class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between relative z-10">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'bengkel:insight' pk=bengkel.pk %}" class="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center transition shadow-sm border border-white/20 backdrop-blur-sm" title="Kembali ke Dashboard Utama">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="border-l-2 border-white/20 pl-4">
+                    <h1 class="text-xl font-black text-white">Participant Analytics Profile</h1>
+                    <p class="text-xs font-bold text-blue-200 uppercase tracking-widest">Digital Health Blueprint SME</p>
+                </div>
+            </div>
+            <div>
+                <button class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-xl backdrop-blur-sm transition shadow-sm flex items-center gap-2">
+                    <i class="fas fa-download text-blue-300"></i> Export PDF Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+            <div class="h-24 md:h-32 bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#134e4a] relative">
+                <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(rgba(255,255,255,.15) 1px,transparent 1px);background-size:20px 20px;"></div>
+            </div>
+            
+            <div class="px-6 pb-6 relative">
+                <div class="absolute -top-12 md:-top-16 left-6 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center shadow-lg overflow-hidden">
+                    <span id="profil-abjad" class="text-4xl md:text-6xl font-black text-slate-300">A</span>
+                </div>
+                
+                <div class="ml-28 md:ml-40 pt-4 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                    <div>
+                        <h2 id="profil-nama" class="text-2xl md:text-3xl font-black text-slate-800">{{ jemputan.nama|default:"Tanpa Nama" }}</h2>
+                        <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-600">
+                            <span class="flex items-center gap-1.5 font-medium"><i class="fas fa-hospital text-blue-500"></i> <span id="profil-agensi">{{ jemputan.organisasi|default:"Tidak Dinyatakan" }}</span></span>
+                            <span class="text-slate-300 hidden md:inline">|</span>
+                            <span class="flex items-center gap-1.5 font-medium"><i class="fas fa-user-md text-emerald-500"></i> <span id="profil-jawatan">{{ jemputan.jawatan|default:"Umum" }}</span></span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-500">
+                            {% if jemputan.user.email %}
+                            <span class="flex items-center gap-1.5"><i class="fas fa-envelope text-slate-400"></i> {{ jemputan.user.email }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-2 text-center min-w-[80px] relative group cursor-help transition hover:bg-blue-100">
+                            <div class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                                Quality Score <i class="fas fa-info-circle text-blue-400"></i>
+                            </div>
+                            <div id="profil-skor" class="text-2xl font-black text-blue-800">{{ quality_score }}</div>
+                            
+                            <div class="absolute right-0 top-full mt-2 hidden group-hover:block bg-slate-800 text-white text-[10px] p-3 rounded-lg w-60 text-left z-[100] shadow-xl pointer-events-none before:content-[''] before:absolute before:bottom-full before:right-6 before:border-4 before:border-transparent before:border-b-slate-800 leading-relaxed">
+                                <strong class="text-blue-300 block mb-1">Quality Score (0-100)</strong>
+                                Dinilai oleh AI NLP berdasarkan kepadatan fakta, nilai penyelesaian (actionability), kerelevanan topik, dan keunikan data untuk melatih LLM.
+                            </div>
+                        </div>
+                        
+                        <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-2 text-center min-w-[80px] relative group cursor-help transition hover:bg-emerald-100">
+                            <div class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                                AI Index Rate <i class="fas fa-info-circle text-emerald-400"></i>
+                            </div>
+                            <div id="profil-indeks" class="text-2xl font-black text-emerald-800">{{ index_rate }}%</div>
+                            
+                            <div class="absolute right-0 top-full mt-2 hidden group-hover:block bg-slate-800 text-white text-[10px] p-3 rounded-lg w-60 text-left z-[100] shadow-xl pointer-events-none before:content-[''] before:absolute before:bottom-full before:right-6 before:border-4 before:border-transparent before:border-b-slate-800 leading-relaxed">
+                                <strong class="text-emerald-300 block mb-1">AI Index Rate</strong>
+                                % kesihatan fail. Peratusan dokumen yang berjaya dibaca & diekstrak sepenuhnya oleh enjin OCR tanpa ralat (contoh: fail tidak berkunci/rosak).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            
+            <div class="lg:col-span-4 space-y-6">
+                
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center"><i class="fas fa-spider text-indigo-500 mr-2"></i> Input Inclination (Persona)</h3>
+                    <div class="relative h-60 w-full"><canvas id="grafKecenderungan"></canvas></div>
+                    <p class="text-[11px] text-slate-400 mt-4 text-center italic">Chart indicates the participant's primary descriptive focus leans towards operational and clinical aspects.</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+                        <span><i class="fas fa-project-diagram text-blue-500 mr-2"></i> Analytical Focus Shift</span>
+                        <span class="text-[9px] bg-blue-50 text-blue-600 font-bold px-2 py-1 rounded border border-blue-100">Event Timeline</span>
+                    </h3>
+                    <div class="relative h-56 w-full">
+                        <canvas id="grafProgress"></canvas>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-4 text-center italic">Compares the participant's shifting focus areas (Clinical, Strategic, Technical) across past, current, and upcoming events.</p>
+                </div>
+
+            </div> 
+            
+            <div class="lg:col-span-8 space-y-6 flex flex-col h-full"> 
+                
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="mb-4">
+                        <h3 class="font-black text-xl text-slate-800 flex items-center"><i class="fas fa-stream text-blue-500 mr-2"></i> Engagement Timeline</h3>
+                        <p class="text-xs text-slate-500 mt-1">Track record of documents and analytical forms submitted across various events. Click to view details.</p>
+                    </div>
+                    <div class="overflow-x-auto pb-4 pt-2">
+                        <div id="event-history-container" class="flex items-start gap-4 min-w-max px-2">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="mb-5 flex justify-between items-end border-b border-slate-100 pb-4">
+                        <div>
+                            <h3 class="font-black text-xl text-slate-800 flex items-center"><i class="fas fa-brain text-purple-600 mr-2"></i> AI Cognitive Assessment</h3>
+                            <p class="text-xs text-slate-500 mt-1">NLP engine analyzes writing style and sentiment to generate a psychometric profile.</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 p-5 rounded-xl shadow-inner">
+                        <h4 class="font-bold text-[10px] text-purple-600 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-robot mr-2"></i> AI Executive Recommendation</h4>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Based on historical data, Dr. Alina Harun is highly recommended for <strong>implementation and operational-phase workshops</strong>. As a <strong class="text-blue-600">Translator</strong> with a high <strong class="text-emerald-600">Executor (80%)</strong> tendency, she effectively bridges the communication gap between medical practitioners and IT vendors. Her advanced digital readiness ensures smooth adoption of new systems. However, organizers should pair her with Cybersecurity experts to cover her technical blindspots.
+                        </p>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm"><i class="fas fa-check-circle mr-1"></i> Best for: System Integration Workshops</span>
+                            <span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm"><i class="fas fa-check-circle mr-1"></i> Best for: SOP & Policy Drafting</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        
+                        <div class="bg-slate-50 rounded-lg border border-slate-200 p-5 relative overflow-hidden transition hover:border-blue-300 flex flex-col h-full group">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-widest">Ecosystem Role</h4>
+                                <button onclick="bukaInfoKognitif('ecosystem')" class="text-blue-400 hover:text-blue-600 transition p-1"><i class="fas fa-info-circle text-lg"></i></button>
+                            </div>
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg shadow-inner flex-shrink-0"><i class="fas fa-random"></i></div>
+                                <div>
+                                    <div class="font-black text-base text-slate-800">The Translator</div>
+                                    <div class="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 inline-block uppercase tracking-wider mt-0.5">IT & Medical Liaison</div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed mt-auto">Frequently bridges clinical and technical terms. Ideal for liaison roles between doctors and system vendors.</p>
+                        </div>
+
+                        <div class="bg-slate-50 rounded-lg border border-slate-200 p-5 relative overflow-hidden transition hover:border-emerald-300 flex flex-col h-full group">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-widest">Working Style (Execution)</h4>
+                                <button onclick="bukaInfoKognitif('working')" class="text-emerald-400 hover:text-emerald-600 transition p-1"><i class="fas fa-info-circle text-lg"></i></button>
+                            </div>
+                            <div class="mb-1.5 flex justify-between text-[9px] font-black uppercase tracking-wider mt-1">
+                                <span class="text-indigo-400">Visionary</span>
+                                <span class="text-emerald-600">Executor</span>
+                            </div>
+                            <div class="relative w-full h-2 bg-slate-200 rounded-full mb-4 shadow-inner">
+                                <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-400 to-emerald-500 rounded-full" style="width: 80%;"></div>
+                                <div class="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-4 border-emerald-500 rounded-full shadow-md" style="left: 80%; transform: translate(-50%, -50%);"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed mt-auto">Leans towards <strong class="text-emerald-600">Executor (80%)</strong>. Writing focuses heavily on SOPs, costs, and practical steps.</p>
+                        </div>
+
+                        <div class="bg-slate-50 rounded-lg border border-slate-200 p-5 relative overflow-hidden transition hover:border-amber-300 flex flex-col h-full group">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-[9px] text-slate-400 uppercase tracking-widest">Digital Readiness</h4>
+                                <button onclick="bukaInfoKognitif('digital')" class="text-amber-400 hover:text-amber-600 transition p-1"><i class="fas fa-info-circle text-lg"></i></button>
+                            </div>
+                            <div class="flex items-end gap-2 mb-3">
+                                <div class="text-3xl font-black text-amber-500 leading-none">Lvl 4</div>
+                                <div class="text-[10px] font-bold text-slate-400 mb-0.5">/ 5 (Advanced)</div>
+                            </div>
+                            <div class="flex gap-1 h-1.5 w-full mb-4 mt-1">
+                                <div class="h-full flex-1 bg-amber-500 rounded-l-full"></div>
+                                <div class="h-full flex-1 bg-amber-500"></div>
+                                <div class="h-full flex-1 bg-amber-500"></div>
+                                <div class="h-full flex-1 bg-amber-500"></div>
+                                <div class="h-full flex-1 bg-slate-200 rounded-r-full shadow-inner border-dashed border border-slate-300"></div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed mt-auto">High-level understanding. Fluent in discussing system integration, APIs, Cloud migration, and Big Data.</p>
+                        </div>
+
+                        <div class="bg-rose-50/40 rounded-lg border border-rose-200 p-5 relative overflow-hidden transition hover:border-rose-300 flex flex-col h-full group">
+                            <div class="absolute top-0 right-0 w-10 h-10 bg-rose-100/80 rounded-bl-full flex items-center justify-center pointer-events-none">
+                                <i class="fas fa-exclamation-triangle text-rose-400 text-sm ml-2 mb-2"></i>
+                            </div>
+                            <div class="flex justify-between items-center mb-3 relative z-10">
+                                <h4 class="font-bold text-[9px] text-rose-500 uppercase tracking-widest">Blindspots</h4>
+                                <button onclick="bukaInfoKognitif('blindspot')" class="text-rose-400 hover:text-rose-600 transition p-1 mr-6"><i class="fas fa-info-circle text-lg"></i></button>
+                            </div>
+                            <ul class="space-y-3 mt-1 relative z-10">
+                                <li class="flex items-start gap-2.5 text-[11px]">
+                                    <i class="fas fa-times-circle text-rose-500 mt-0.5 text-[11px]"></i>
+                                    <div>
+                                        <span class="font-bold text-slate-700 block mb-0.5">Cybersecurity</span>
+                                        <span class="text-slate-500 leading-tight block">Only 2% mentions. Monitor for potential patient privacy (PDPA) oversights.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-2.5 text-[11px]">
+                                    <i class="fas fa-times-circle text-rose-500 mt-0.5 text-[11px]"></i>
+                                    <div>
+                                        <span class="font-bold text-slate-700 block mb-0.5">Change Management</span>
+                                        <span class="text-slate-500 leading-tight block">Lacks focus on end-user emotional adaptation.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+        
+    <script>
+        /*
+         * Profil Peserta - Data dari Django backend
+         */
+
+        const dataSME = {
+            id: {{ jemputan.id }},
+            nama: "{{ jemputan.nama|default:'Tanpa Nama'|escapejs }}",
+            agensi: "{{ jemputan.organisasi|default:'Tidak Dinyatakan'|escapejs }}",
+            jawatan: "{{ jemputan.jawatan|default:'Umum'|escapejs }}",
+            skor: {{ quality_score }},
+            kadarIndex: {{ index_rate }},
+            personaRadar: {{ persona_radar|safe }},
+            events: {{ events|safe }}
+        };
+
+        const ecosystemRole = "{{ ecosystem_role|escapejs }}";
+        const roleDesc = "{{ role_desc|escapejs }}";
+        const roleRecommendation = "{{ role_recommendation|escapejs }}";
+        const bestFor = {{ best_for|safe }};
+        const executorPct = {{ executor_pct }};
+        const digitalLevel = {{ digital_level }};
+        const digitalDesc = "{{ digital_desc|escapejs }}";
+        const blindspots = {{ blindspots|safe }};
+
+        let cartaKecenderungan;
+        let cartaProgress; // Pembolehubah untuk Graf Line
+
+        function renderHeaderProfil() {
+            document.getElementById('profil-nama').innerText = dataSME.nama;
+            document.getElementById('profil-agensi').innerText = dataSME.agensi;
+            document.getElementById('profil-jawatan').innerText = dataSME.jawatan;
+            const initial = dataSME.nama.charAt(0).toUpperCase();
+            document.getElementById('profil-abjad').innerText = initial;
+            
+            const elSkor = document.getElementById('profil-skor');
+            elSkor.innerText = dataSME.skor;
+            if(dataSME.skor >= 80) elSkor.className = "text-2xl font-black text-emerald-600";
+            else if(dataSME.skor >= 50) elSkor.className = "text-2xl font-black text-amber-600";
+            else elSkor.className = "text-2xl font-black text-rose-600";
+            
+            document.getElementById('profil-indeks').innerText = dataSME.kadarIndex + '%';
+        }
+
+        // FUNGSI 1: Render Graf Radar (Kecenderungan Input)
+        function renderGrafRadar() {
+            const ctx = document.getElementById('grafKecenderungan').getContext('2d');
+            if(cartaKecenderungan) cartaKecenderungan.destroy();
+
+            const dRadar = dataSME.personaRadar;
+            
+            // Check if all values are 0
+            const allZero = Object.values(dRadar).every(v => v === 0);
+            
+            if (allZero) {
+                // Show empty state message
+                const container = document.getElementById('grafKecenderungan').parentElement;
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-center">
+                        <div>
+                            <i class="fas fa-chart-radar text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-sm text-gray-400 italic">No contributions yet. Radar chart will appear after participant submits content.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            cartaKecenderungan = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Clinical/Ops', 'Policy/Macro', 'Tech (IT)', 'Finance', 'Physical/Infra'],
+                    datasets: [{
+                        label: 'Discussion Focus',
+                        data: [dRadar.klinikal, dRadar.polisi, dRadar.teknologi, dRadar.kewangan, dRadar.infrastruktur],
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)', 
+                        borderColor: '#6366f1', 
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#6366f1',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.05)' },
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            pointLabels: { font: { size: 10, weight: 'bold' }, color: '#475569' },
+                            ticks: { display: false, max: 100, min: 0, stepSize: 20 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // FUNGSI 2: Render Graf Garisan Berbilang (Multi-line Analytical Shift)
+        function renderGrafProgress() {
+            const ctx = document.getElementById('grafProgress').getContext('2d');
+            if(cartaProgress) cartaProgress.destroy();
+
+            const labels = [];
+            // Mockup data yang meniru lengkungan pada gambar rujukan anda
+            const dataKlinikal = [];   // Garisan menurun (Ungu)
+            const dataStrategik = [];  // Garisan menaik mendadak (Oren/Emas)
+            const dataTech = [];       // Garisan menaik sedikit (Teal)
+
+            const trendKlinikal = [80, 60, 35, null]; 
+            const trendStrategik = [10, 45, 85, null]; 
+            const trendTech = [5, 15, 25, null]; 
+
+            // Ekstrak nama acara dan susun di Paksi-X
+            dataSME.events.forEach((evt, i) => {
+                // Pecahkan label kepada 2 baris (Status di atas, Nama Acara di bawah)
+                let namaPendek = evt.nama.split(' ').slice(0, 2).join(' ');
+                labels.push([evt.status.toUpperCase(), namaPendek]); 
+                
+                dataKlinikal.push(trendKlinikal[i]);
+                dataStrategik.push(trendStrategik[i]);
+                dataTech.push(trendTech[i]);
+            });
+
+            cartaProgress = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Clinical Focus',
+                            data: dataKlinikal,
+                            borderColor: '#6b21a8', // Ungu Gelap
+                            backgroundColor: '#6b21a8',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#6b21a8',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.4, // Melengkung lancar (smooth curve)
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Strategic Focus',
+                            data: dataStrategik,
+                            borderColor: '#d97706', // Emas/Oren
+                            backgroundColor: '#d97706',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#d97706',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.4,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Tech Focus',
+                            data: dataTech,
+                            borderColor: '#0d9488', // Teal / Hijau kebiruan
+                            backgroundColor: '#0d9488',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#0d9488',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.4,
+                            spanGaps: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: true, 
+                            position: 'top',
+                            align: 'end',
+                            labels: { usePointStyle: true, boxWidth: 6, font: { size: 10 } }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(context) { return context[0].label.replace(',', ' - '); }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: true, color: '#f1f5f9' },
+                            ticks: { font: { size: 9, weight: 'bold' }, color: '#64748b' }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: '#e2e8f0', borderDash: [4, 4] },
+                            ticks: { font: { size: 10 }, color: '#94a3b8', stepSize: 25 }
+                        }
+                    },
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // FUNGSI 3: Render Event History (Sangat Leper / Super Compact Horizontal)
+        function renderEventHistory() {
+            const container = document.getElementById('event-history-container');
+            let html = '';
+
+            dataSME.events.forEach((evt, index) => {
+                let jumlahDokumen = evt.dokumen.length;
+                let badgeDokumen = jumlahDokumen > 0 
+                    ? `<span class="bg-blue-50 text-blue-600 border border-blue-100 px-1.5 py-0.5 rounded text-[8px] font-bold"><i class="fas fa-file-alt mr-1"></i>${jumlahDokumen} Docs</span>`
+                    : `<span class="bg-slate-100 text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded text-[8px] font-bold">No Docs</span>`;
+
+                // Garisan Mendatar (Timeline Line)
+                let lineTrail = index !== dataSME.events.length - 1 ? '<div class="absolute top-4 left-[50%] w-full h-0.5 bg-slate-300 z-0"></div>' : '';
+
+                html += `
+                    <div class="relative w-64 flex-shrink-0 cursor-pointer group pb-2" onclick="pilihEvent('${evt.id}')">
+                        ${lineTrail}
+                        
+                        <div class="relative z-10 w-8 h-8 mx-auto rounded-full bg-white border-2 border-slate-200 flex items-center justify-center shadow-sm transition-all group-hover:scale-110 group-hover:border-blue-500">
+                            <i class="fas ${evt.ikon} text-[10px]"></i>
+                        </div>
+                        
+                        <div class="mt-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition-all group-hover:border-blue-400 group-hover:bg-blue-50/20 text-left flex flex-col h-[90px] justify-between">
+                            <div class="flex justify-between items-start mb-1.5">
+                                <span class="text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${evt.badgeWarna}">${evt.status}</span>
+                                ${badgeDokumen}
+                            </div>
+                            <h4 class="font-bold text-[11px] text-slate-800 line-clamp-2 leading-tight" title="${evt.nama}">${evt.nama}</h4>
+                            <div class="text-[9px] text-slate-400"><i class="far fa-calendar-alt mr-1"></i> ${evt.tarikh}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // FUNGSI 4: Buka Tetingkap Modal (Insight + Keywords + Docs)
+        window.pilihEvent = function(eventId) {
+            const evt = dataSME.events.find(e => e.id === eventId);
+            if(!evt) return;
+
+            // 1. Bina Keyword Trail
+            let kwHtml = '<div class="flex flex-wrap gap-1.5">';
+            if(evt.kataKunci && evt.kataKunci.length > 0){
+                 evt.kataKunci.forEach(kw => {
+                     kwHtml += `<span class="bg-rose-50 text-rose-600 border border-rose-100 px-2 py-1 rounded text-[9px] font-bold shadow-sm">${kw}</span>`;
+                 });
+            } else {
+                 kwHtml += `<span class="text-[10px] text-slate-400 italic">No keywords extracted</span>`;
+            }
+            kwHtml += '</div>';
+            document.getElementById('modal-evt-keywords').innerHTML = `<h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-tags mr-2 text-rose-500"></i> Event Keyword Trail</h4>` + kwHtml;
+
+            // 2. Bina Senarai Dokumen (Table)
+            let docHtml = '';
+            if(evt.dokumen.length > 0) {
+                docHtml = `
+                    <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-400 text-[10px] uppercase tracking-widest border-b border-slate-200">
+                                    <th class="p-3 font-bold w-12 text-center">No</th>
+                                    <th class="p-3 font-bold">Document Title</th>
+                                    <th class="p-3 font-bold">Category</th>
+                                    <th class="p-3 font-bold text-right">Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-xs">
+                `;
+                evt.dokumen.forEach((doc, idx) => {
+                    let iconJenis = doc.jenis === "File" ? `<i class="fas fa-file-pdf text-rose-500 mr-2"></i>` : `<i class="fas fa-list-alt text-blue-500 mr-2"></i>`;
+                    docHtml += `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="p-3 text-center text-slate-400">${idx + 1}</td>
+                            <td class="p-3 font-bold text-slate-700">${iconJenis} ${doc.tajuk}</td>
+                            <td class="p-3"><span class="bg-slate-100 px-2 py-1 rounded text-slate-500 text-[10px]">${doc.kategori}</span></td>
+                            <td class="p-3 text-right font-black text-slate-500">${doc.vol}</td>
+                        </tr>
+                    `;
+                });
+                docHtml += `</tbody></table></div>`;
+            } else {
+                docHtml = `<div class="p-6 text-center text-sm text-slate-400 italic bg-white rounded-lg border border-slate-200 border-dashed">Awaiting contributions for this event.</div>`;
+            }
+
+            // 3. Masukkan data ke dalam Modal
+            document.getElementById('modal-evt-title').innerText = evt.nama;
+            document.getElementById('modal-evt-date').innerText = evt.tarikh;
+            document.getElementById('modal-evt-score').innerText = evt.skor;
+            document.getElementById('modal-evt-status').innerText = evt.status;
+            document.getElementById('modal-evt-docs').innerHTML = docHtml;
+
+            // Buka Modal
+            const modal = document.getElementById('modal-event-detail');
+            const box = document.getElementById('event-detail-box');
+            modal.classList.remove('pointer-events-none', 'opacity-0');
+            box.classList.remove('scale-95');
+        }
+
+        // FUNGSI 5: Tutup Modal Event
+        window.tutupEventDetail = function() {
+            const modal = document.getElementById('event-detail-panel'); // ID yang salah sebelum ini
+            const modalReal = document.getElementById('modal-event-detail');
+            const box = document.getElementById('event-detail-box');
+            
+            modalReal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => { modalReal.classList.add('pointer-events-none'); }, 300);
+        }
+
+        // MULA SISTEM
+        window.onload = () => {
+            renderHeaderProfil();
+            renderGrafRadar();
+            renderGrafProgress();
+            renderEventHistory();
+            renderAICognitiveAssessment();
+        };
+        
+        function renderAICognitiveAssessment() {
+            // Update AI Executive Recommendation
+            const recommendationEl = document.querySelector('.bg-gradient-to-r.from-purple-50');
+            if (recommendationEl) {
+                const textEl = recommendationEl.querySelector('p');
+                if (textEl) {
+                    textEl.innerHTML = `Based on historical data, <strong>${dataSME.nama}</strong> is highly recommended for <strong>implementation and operational-phase workshops</strong>. As a <strong class="text-blue-600">${ecosystemRole}</strong> with a high <strong class="text-emerald-600">Executor (${executorPct}%)</strong> tendency, ${roleRecommendation}. Her advanced digital readiness ensures smooth adoption of new systems.`;
+                }
+                
+                // Update best for tags
+                const tagsContainer = recommendationEl.querySelector('.flex.flex-wrap.gap-2');
+                if (tagsContainer && bestFor.length > 0) {
+                    tagsContainer.innerHTML = bestFor.map(topic => 
+                        `<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm"><i class="fas fa-check-circle mr-1"></i> Best for: ${topic}</span>`
+                    ).join('');
+                }
+            }
+            
+            // Update Ecosystem Role
+            const ecosystemEl = document.querySelector('.bg-slate-50.rounded-lg.border.border-slate-200.p-5');
+            if (ecosystemEl) {
+                const titleEl = ecosystemEl.querySelector('.font-black.text-base');
+                const descEl = ecosystemEl.querySelector('.text-\\[9\\]px.font-bold');
+                const detailEl = ecosystemEl.querySelector('p.text-\\[11\\]px');
+                
+                if (titleEl) titleEl.textContent = ecosystemRole;
+                if (descEl) descEl.textContent = roleDesc;
+                if (detailEl) {
+                    const descriptions = {
+                        'The Translator': 'Frequently bridges clinical and technical terms. Ideal for liaison roles between doctors and system vendors.',
+                        'The Clinical Expert': 'Provides deep clinical insights and patient workflow expertise. Best for medical domain discussions.',
+                        'The Technical Expert': 'Drives technical implementation and system architecture decisions. Strong IT background.',
+                        'The Strategist': 'Focuses on strategic planning and organizational governance. Macro-level thinking.'
+                    };
+                    detailEl.textContent = descriptions[ecosystemRole] || 'Balanced contributor across multiple domains.';
+                }
+            }
+            
+            // Update Working Style
+            const workingStyleContainers = document.querySelectorAll('.bg-slate-50.rounded-lg');
+            const workingStyleEl = workingStyleContainers[1]; // Second card
+            if (workingStyleEl) {
+                const slider = workingStyleEl.querySelector('.absolute.top-1\\/2');
+                const gradient = workingStyleEl.querySelector('.absolute.top-0.left-0');
+                const descEl = workingStyleEl.querySelector('p.text-\\[11\\]px');
+                
+                if (slider) slider.style.left = executorPct + '%';
+                if (gradient) gradient.style.width = executorPct + '%';
+                if (descEl) {
+                    descEl.innerHTML = `Leans towards <strong class="text-emerald-600">Executor (${executorPct}%)</strong>. ${executorPct > 60 ? 'Writing focuses heavily on SOPs, costs, and practical steps.' : 'Writing shows balanced strategic and operational thinking.'}`;
+                }
+            }
+            
+            // Update Digital Readiness
+            const digitalContainers = document.querySelectorAll('.bg-slate-50.rounded-lg');
+            const digitalEl = digitalContainers[2]; // Third card
+            if (digitalEl) {
+                const levelEl = digitalEl.querySelector('.text-3xl.font-black');
+                const descEl = digitalEl.querySelector('p.text-\\[11\\]px');
+                const bars = digitalEl.querySelectorAll('.h-full.flex-1');
+                
+                if (levelEl) levelEl.textContent = `Lvl ${digitalLevel}`;
+                if (descEl) descEl.textContent = digitalDesc;
+                
+                // Update progress bars
+                if (bars.length >= 5) {
+                    bars.forEach((bar, idx) => {
+                        if (idx < digitalLevel) {
+                            bar.className = 'h-full flex-1 bg-amber-500' + (idx === 0 ? ' rounded-l-full' : '');
+                        } else {
+                            bar.className = 'h-full flex-1 bg-slate-200 rounded-r-full shadow-inner border-dashed border border-slate-300';
+                        }
+                    });
+                }
+            }
+            
+            // Update Blindspots
+            const blindspotEl = document.querySelector('.bg-rose-50\\/40');
+            if (blindspotEl) {
+                const listEl = blindspotEl.querySelector('ul.space-y-3');
+                if (listEl && blindspots.length > 0) {
+                    listEl.innerHTML = blindspots.map(bs => `
+                        <li class="flex items-start gap-2.5 text-[11px]">
+                            <i class="fas fa-times-circle text-rose-500 mt-0.5 text-[11px]"></i>
+                            <div>
+                                <span class="font-bold text-slate-700 block mb-0.5">${bs.area}</span>
+                                <span class="text-slate-500 leading-tight block">${bs.desc}</span>
+                            </div>
+                        </li>
+                    `).join('');
+                }
+            }
+        }
+    </script>
+    <div id="modal-event-detail" class="fixed inset-0 bg-slate-900 bg-opacity-80 z-[1100] flex justify-center items-center backdrop-blur-sm p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="event-detail-box">
+            
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 flex justify-between items-start text-white border-b-4 border-blue-400">
+                <div class="pr-4">
+                    <div class="flex items-center gap-3 mb-1">
+                        <span id="modal-evt-status" class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-white/20"></span>
+                        <p class="text-blue-100 text-xs font-medium"><i class="fas fa-calendar-alt mr-1"></i> <span id="modal-evt-date"></span></p>
+                    </div>
+                    <h2 id="modal-evt-title" class="text-xl font-black mt-1"></h2>
+                </div>
+                <button onclick="tutupEventDetail()" class="bg-white/10 hover:bg-red-500 w-8 h-8 rounded-full transition flex items-center justify-center flex-shrink-0"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+                <div class="flex items-center justify-between bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-500"><i class="fas fa-chart-line text-lg"></i></div>
+                        <span class="text-xs font-bold text-blue-800 uppercase tracking-wider">Contribution Score</span>
+                    </div>
+                    <span id="modal-evt-score" class="text-3xl font-black text-blue-600"></span>
+                </div>
+                
+                <div id="modal-evt-keywords" class="mb-5 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                </div>
+                
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-folder-open mr-2 text-amber-500"></i> Submitted Documents</h4>
+                    <div id="modal-evt-docs"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-info-kognitif" class="fixed inset-0 bg-slate-900 bg-opacity-80 z-[1200] flex justify-center items-center backdrop-blur-sm p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="info-kognitif-box">
+            
+            <div id="info-header" class="p-5 flex justify-between items-start text-white">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <i id="info-icon" class="fas text-xl"></i>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-white/20">AI Psychometric Metric</span>
+                    </div>
+                    <h2 id="info-title" class="text-2xl font-black mt-2"></h2>
+                </div>
+                <button onclick="tutupInfoKognitif()" class="bg-white/20 hover:bg-red-500 w-8 h-8 rounded-full transition flex items-center justify-center flex-shrink-0"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+                <div id="info-content" class="text-sm text-slate-600 leading-relaxed space-y-4">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATA & FUNGSI UNTUK MODAL INFO KOGNITIF
+        const dataInfoKognitif = {
+            'ecosystem': {
+                title: 'Ecosystem Role',
+                icon: 'fa-random',
+                color: 'from-blue-600 to-indigo-700',
+                content: `
+                    <p><strong>How the AI determines this:</strong> The NLP engine scans the vocabulary and terminology used by the participant across all submitted documents.</p>
+                    <p>Participants are categorized into archetypes based on their dominant language patterns:</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-2 text-xs">
+                        <li><strong>The Translator:</strong> Uses a balanced mix of clinical terms (e.g., "patient workflow") and IT terms (e.g., "API"). Crucial for bridging the gap between doctors and vendors.</li>
+                        <li><strong>The Specialist:</strong> Highly dense jargon specific to only one field (purely medical or purely technical).</li>
+                        <li><strong>The Strategist:</strong> Focuses on macro terms like "policy", "budget", and "long-term roadmap".</li>
+                    </ul>
+                `
+            },
+            'working': {
+                title: 'Working Style (Execution)',
+                icon: 'fa-tasks',
+                color: 'from-emerald-600 to-teal-700',
+                content: `
+                    <p><strong>How the AI determines this:</strong> The engine performs a semantic analysis of sentence structures to place the participant on a spectrum between 'Visionary' and 'Executor'.</p>
+                    <div class="bg-white p-4 rounded-lg border border-slate-200 mt-3 shadow-sm">
+                        <strong class="text-indigo-600 block mb-1">Visionary (Ideas):</strong>
+                        <p class="text-xs">Sentences often contain future-tense verbs, abstract concepts, and "what-if" scenarios. Good for brainstorming.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border border-slate-200 mt-2 shadow-sm">
+                        <strong class="text-emerald-600 block mb-1">Executor (Action):</strong>
+                        <p class="text-xs">Sentences are highly structured, often using bullet points, cost breakdowns, Standard Operating Procedures (SOPs), and immediate actionable steps.</p>
+                    </div>
+                `
+            },
+            'digital': {
+                title: 'Digital Readiness',
+                icon: 'fa-laptop-code',
+                color: 'from-amber-500 to-orange-600',
+                content: `
+                    <p><strong>How the AI determines this:</strong> The system scores the participant based on their fluency and accuracy when discussing modern technology paradigms.</p>
+                    <ul class="list-none space-y-3 mt-4">
+                        <li class="flex items-start gap-3"><span class="font-black text-amber-500 w-8">Lvl 1-2</span> <span class="text-xs">Basic IT literacy. Mentions basic software (Word, Excel) but struggles with systemic concepts.</span></li>
+                        <li class="flex items-start gap-3"><span class="font-black text-amber-500 w-8">Lvl 3</span> <span class="text-xs">Intermediate. Understands the need for new systems but lacks technical vocabulary.</span></li>
+                        <li class="flex items-start gap-3"><span class="font-black text-amber-500 w-8">Lvl 4-5</span> <span class="text-xs">Advanced. Fluently discusses Cloud architecture, API interoperability, Big Data, and systems integration.</span></li>
+                    </ul>
+                `
+            },
+            'blindspot': {
+                title: 'Cognitive Blindspots',
+                icon: 'fa-exclamation-triangle',
+                color: 'from-rose-600 to-red-700',
+                content: `
+                    <p><strong>How the AI determines this:</strong> This is a gap analysis. The AI compares the participant's inputs against a master framework of a "Perfect Digital Health Blueprint."</p>
+                    <p>If a critical pillar (like Cybersecurity or Change Management) is consistently missing or rarely mentioned in their extensive writing, the AI flags it as a "Blindspot."</p>
+                    <div class="bg-rose-50 border border-rose-100 p-4 rounded-lg mt-4 text-xs text-rose-800">
+                        <strong>Why this matters:</strong> Identifying blindspots allows organizers to pair this participant with other experts who specialize in those missing areas, creating a balanced working group.
+                    </div>
+                `
+            }
+        };
+
+        function bukaInfoKognitif(jenis) {
+            const data = dataInfoKognitif[jenis];
+            if (!data) return;
+
+            // Tukar warna header dan ikon
+            const header = document.getElementById('info-header');
+            header.className = `p-5 flex justify-between items-start text-white bg-gradient-to-r ${data.color}`;
+            
+            document.getElementById('info-icon').className = `fas ${data.icon} text-xl`;
+            document.getElementById('info-title').innerText = data.title;
+            document.getElementById('info-content').innerHTML = data.content;
+
+            // Tunjuk Modal
+            const modal = document.getElementById('modal-info-kognitif');
+            const box = document.getElementById('info-kognitif-box');
+            modal.classList.remove('pointer-events-none', 'opacity-0');
+            box.classList.remove('scale-95');
+        }
+
+        function tutupInfoKognitif() {
+            const modal = document.getElementById('modal-info-kognitif');
+            const box = document.getElementById('info-kognitif-box');
+            
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('pointer-events-none'); }, 300);
+        }
+    </script>
+</body>
+</html>

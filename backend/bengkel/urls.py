@@ -6,6 +6,9 @@ app_name = "bengkel"
 urlpatterns = [
     # ── Penganjur home ───────────────────────────────────────────────────────
     path("home/",                     views.penganjur_home,     name="penganjur_home"),
+    path("<int:pk>/insight/",            views.penganjur_insight,   name="insight"),
+    path("<int:pk>/forum/post/",         views.forum_post,          name="forum_post"),
+    path("peserta/<int:jid>/profil/",    views.profil_peserta,      name="profil_peserta"),
 
     # ── Workshop CRUD ────────────────────────────────────────────────────────
     path("",                          views.bengkel_list,       name="list"),
@@ -81,6 +84,7 @@ urlpatterns = [
 
     # SPAF — Situational Problem Analysis Framework
     path("analisis/spaf/",                              views.spaf_hub,                      name="spaf_hub"),
+    path("analisis/spaf/situational/",                  views.spaf_situational,              name="spaf_situational"),
     path("analisis/spaf/pain-point/",                   views.spaf_pain_point,               name="spaf_pain_point"),
     path("analisis/spaf/pain-point/<int:pk>/del/",      views.spaf_pain_point_delete,        name="spaf_pain_point_delete"),
     path("analisis/spaf/problem-statement/",            views.spaf_problem_statement,        name="spaf_problem_statement"),

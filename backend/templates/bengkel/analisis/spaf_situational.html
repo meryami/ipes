@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Situational Analysis | {{ bengkel.title }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+
+    /* ── Top Navbar ─────────────────────────────────────────── */
+    .topbar{
+      background:#fff;border-bottom:1px solid #e2e8f0;
+      padding:0 32px;height:60px;display:flex;align-items:center;
+      position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .topbar-left{display:flex;align-items:center;gap:12px}
+    .brand{font-size:15px;font-weight:800;color:#1e293b;letter-spacing:-.3px}
+    .brand span{color:#2563eb}
+    .topbar-sep{width:1px;height:20px;background:#e2e8f0;margin:0 4px}
+    .page-title{font-size:13px;font-weight:600;color:#64748b}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .step-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:#f1f5f9;border:1px solid #e2e8f0;
+      color:#475569;padding:4px 12px;border-radius:99px;
+      font-size:11px;font-weight:700;letter-spacing:.04em;
+    }
+    .step-badge svg{color:#2563eb}
+
+    /* ── Hero Header ───────────────────────────────────────── */
+    .hero{
+      background:linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#2563eb 100%);
+      padding:32px 24px 36px;position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:"";position:absolute;inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .hero::after{
+      content:"";position:absolute;bottom:-40px;right:-20px;
+      width:200px;height:200px;border-radius:50%;
+      background:rgba(255,255,255,.06);pointer-events:none;
+    }
+    .hero-inner{max-width:860px;margin:0 auto;position:relative;z-index:1}
+    .hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;
+      transition:.2s;text-decoration:none;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.25);text-decoration:none}
+    .back-btn svg{transition:transform .2s}
+    .back-btn:hover svg{transform:translateX(-2px)}
+    .module-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;
+      letter-spacing:.08em;text-transform:uppercase;
+    }
+    .hero-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.2}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.8);max-width:500px;line-height:1.6}
+
+    /* ── Main Content ──────────────────────────────────────── */
+    .main-wrap{padding:28px 24px 60px;max-width:860px;margin:0 auto}
+
+    /* ── Progress Card ─────────────────────────────────────── */
+    .progress-card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      padding:16px 20px;margin-bottom:24px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .prog-info{flex:1}
+    .prog-label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .prog-bar-wrap{background:#f1f5f9;border-radius:99px;height:8px;width:100%;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .6s ease}
+    .prog-count{font-size:28px;font-weight:900;color:#2563eb;line-height:1;text-align:right}
+    .prog-count span{font-size:12px;font-weight:700;color:#94a3b8;display:block;margin-top:2px}
+
+    /* ── Section Title ────────────────────────────────────── */
+    .section-title{
+      font-size:15px;font-weight:800;color:#1e293b;margin-bottom:14px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .section-title span{
+      flex:1;height:1px;background:#e2e8f0;
+    }
+
+    /* ── Framework Cards Grid ──────────────────────────────── */
+    .fw-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:16px;margin-bottom:24px;
+    }
+    .fw-card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      padding:20px;text-decoration:none;display:block;
+      transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.04);
+      position:relative;overflow:hidden;
+    }
+    .fw-card::before{
+      content:"";position:absolute;top:0;left:0;right:0;height:4px;
+      background:var(--fw-color);border-radius:16px 16px 0 0;
+    }
+    .fw-card-head{
+      display:flex;align-items:flex-start;justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .fw-icon{
+      width:44px;height:44px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--fw-light);border:1px solid var(--fw-border);
+    }
+    .fw-icon svg{color:var(--fw-color)}
+    .fw-label{
+      font-size:10px;font-weight:800;padding:3px 10px;border-radius:99px;
+      background:var(--fw-light);color:var(--fw-color);
+      border:1px solid var(--fw-border);
+      letter-spacing:.06em;text-transform:uppercase;
+    }
+    .fw-label.done{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+    .fw-title{font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px}
+    .fw-desc{font-size:11.5px;color:#64748b;line-height:1.5;margin-bottom:12px}
+    .fw-count{
+      font-size:11px;font-weight:700;
+      color:var(--fw-color);
+      background:var(--fw-light);
+      padding:3px 10px;border-radius:99px;
+      display:inline-block;
+    }
+    .fw-count.done{color:#15803d;background:#f0fdf4}
+    .fw-arrow{
+      position:absolute;bottom:16px;right:16px;
+      width:28px;height:28px;border-radius:50%;
+      background:var(--fw-light);border:1px solid var(--fw-border);
+      display:flex;align-items:center;justify-content:center;
+      transition:.2s;
+    }
+    .fw-card:hover .fw-arrow{background:var(--fw-color);border-color:var(--fw-color)}
+    .fw-card:hover .fw-arrow svg{color:#fff}
+    .fw-arrow svg{color:var(--fw-color);transition:.2s}
+
+    /* ── Info Box ──────────────────────────────────────────── */
+    .info-box{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      padding:20px 24px;margin-top:8px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;align-items:flex-start;gap:14px;
+    }
+    .info-icon{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .info-icon svg{color:#2563eb}
+    .info-title{font-size:13px;font-weight:800;color:#1e293b;margin-bottom:3px}
+    .info-text{font-size:12px;color:#64748b;line-height:1.6}
+  </style>
+</head>
+<body>
+
+<!-- Top Navbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="brand">IPES<span>.</span></div>
+    <div class="topbar-sep"></div>
+    <div class="page-title">SPAF</div>
+  </div>
+  <div class="topbar-right">
+    <div class="step-badge">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      MODULE 3
+    </div>
+  </div>
+</div>
+
+<!-- Hero Header -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <a href="{% url 'bengkel:blueprint_peserta' bengkel.pk %}?tab=spaf" class="back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to SPAF
+      </a>
+      <div class="module-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        MODULE 3
+      </div>
+    </div>
+    <h1 class="hero-title">Situational Analysis</h1>
+    <p class="hero-sub">Pilih framework analisis yang sesuai untuk menganalisis persekitaran dan keadaan semasa organisasi anda.</p>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-wrap">
+
+  <!-- Progress Card -->
+  <div class="progress-card">
+    <div class="prog-info">
+      <div class="prog-label">Analisis Ditimpan</div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:{{ total_done }}%"></div></div>
+    </div>
+    <div class="prog-count">
+      {{ total_done }}
+      <span>rekod</span>
+    </div>
+  </div>
+
+  <!-- Framework Cards -->
+  <div class="section-title">
+    Pilih Framework
+    <span></span>
+  </div>
+
+  <div class="fw-grid">
+    {% for fw in frameworks %}
+    <a href="{% url 'bengkel:'|add:fw.url %}" class="fw-card" style="--fw-color:{{ fw.color }};--fw-light:{{ fw.light }};--fw-border:#e2e8f0">
+      <div class="fw-card-head">
+        <div class="fw-icon">
+          {{ fw.icon|safe }}
+        </div>
+        <div class="fw-label {% if fw.count > 0 %}done{% endif %}">
+          {% if fw.count > 0 %}DONE{% else %}{{ fw.label }}{% endif %}
+        </div>
+      </div>
+      <div class="fw-title">{{ fw.title }}</div>
+      <div class="fw-desc">{{ fw.desc }}</div>
+      <div class="fw-count {% if fw.count > 0 %}done{% endif %}">
+        {% if fw.count > 0 %}{{ fw.count }} rekod{% else %}Belum mengisi{% endif %}
+      </div>
+      <div class="fw-arrow">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Info Box -->
+  <div class="info-box">
+    <div class="info-icon">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div>
+      <div class="info-title">Pilih framework yang paling relevan</div>
+      <div class="info-text">Setiap framework memberikan perspektif berbeza. Anda boleh mengisi semua framework atau hanya yang diperlukan. Kesemua data akan digunakan untuk analisis Root Cause seterusnya.</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Problem Statements | {{ bengkel.title }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+
+    /* ── Top Navbar ─────────────────────────────────────────── */
+    .topbar{
+      background:#fff;border-bottom:1px solid #e2e8f0;
+      padding:0 32px;height:60px;display:flex;align-items:center;
+      position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    .topbar-left{display:flex;align-items:center;gap:12px}
+    .brand{font-size:15px;font-weight:800;color:#1e293b;letter-spacing:-.3px}
+    .brand span{color:#2563eb}
+    .topbar-sep{width:1px;height:20px;background:#e2e8f0;margin:0 4px}
+    .page-title{font-size:13px;font-weight:600;color:#64748b}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .step-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:#f1f5f9;border:1px solid #e2e8f0;
+      color:#475569;padding:4px 12px;border-radius:99px;
+      font-size:11px;font-weight:700;letter-spacing:.04em;
+    }
+    .step-badge svg{color:#2563eb}
+
+    /* ── Hero Header ───────────────────────────────────────── */
+    .hero{
+      background:linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#2563eb 100%);
+      padding:32px 24px 36px;position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:"";position:absolute;inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .hero::after{
+      content:"";position:absolute;bottom:-40px;right:-20px;
+      width:200px;height:200px;border-radius:50%;
+      background:rgba(255,255,255,.06);pointer-events:none;
+    }
+    .hero-inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+    .hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .back-btn{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700;
+      transition:.2s;text-decoration:none;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.25);text-decoration:none}
+    .back-btn svg{transition:transform .2s}
+    .back-btn:hover svg{transform:translateX(-2px)}
+    .module-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+      color:#fff;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:800;
+      letter-spacing:.08em;text-transform:uppercase;
+    }
+    .hero-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.2}
+    .hero-sub{font-size:14px;color:rgba(255,255,255,.8);max-width:500px;line-height:1.6}
+
+    /* ── Main Content ──────────────────────────────────────── */
+    .main-wrap{padding:28px 24px 60px;max-width:680px;margin:0 auto}
+
+    /* ── Progress Card ────────────────────────────────────── */
+    .progress-card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      padding:16px 20px;margin-bottom:20px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .prog-info{flex:1}
+    .prog-label{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .prog-bar-wrap{background:#f1f5f9;border-radius:99px;height:8px;width:100%;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .6s ease}
+    .prog-count{font-size:28px;font-weight:900;color:#2563eb;line-height:1}
+    .prog-count span{font-size:12px;font-weight:700;color:#94a3b8;display:block;margin-top:2px}
+
+    /* ── Card ─────────────────────────────────────────────── */
+    .card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.03);
+      overflow:hidden;margin-bottom:20px;
+    }
+
+    /* ── AI Suggestion Banner ────────────────────────────── */
+    .ai-banner{
+      background:linear-gradient(135deg,#eff6ff,#dbeafe);
+      border:1.5px solid #93c5fd;border-radius:16px;
+      padding:20px 22px;margin-bottom:20px;
+      box-shadow:0 1px 3px rgba(37,99,235,.1);
+    }
+    .ai-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .ai-icon{
+      width:38px;height:38px;border-radius:10px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+      box-shadow:0 2px 8px rgba(37,99,235,.25);
+    }
+    .ai-title{font-size:14px;font-weight:800;color:#1e3a5f}
+    .ai-sub{font-size:11px;color:#2563eb;margin-top:2px;font-weight:600}
+    .ai-text{
+      background:#fff;border:1px solid #bfdbfe;border-radius:12px;
+      padding:14px 16px;font-size:14px;color:#1e3a5f;line-height:1.7;
+      margin-bottom:16px;white-space:pre-wrap;
+      box-shadow:0 1px 2px rgba(37,99,235,.08);
+    }
+    .ai-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .ai-btn-accept{
+      flex:1;padding:11px 18px;border:none;border-radius:10px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;font-size:13px;font-weight:800;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s;
+      box-shadow:0 2px 8px rgba(37,99,235,.25);
+    }
+    .ai-btn-accept:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,.3)}
+    .ai-btn-edit{
+      padding:11px 18px;border:1.5px solid #2563eb;border-radius:10px;
+      background:#fff;color:#2563eb;font-size:13px;font-weight:700;
+      cursor:pointer;transition:.15s;
+    }
+    .ai-btn-edit:hover{background:#dbeafe}
+
+    /* ── Error Banner ─────────────────────────────────────── */
+    .err-banner{
+      background:#fef2f2;border:1.5px solid #fecaca;
+      border-radius:12px;padding:14px 16px;margin-bottom:20px;
+      font-size:13px;color:#991b1b;display:flex;align-items:flex-start;gap:8px;
+      box-shadow:0 1px 2px rgba(239,68,68,.08);
+    }
+    .err-banner svg{flex-shrink:0;margin-top:1px;color:#ef4444}
+
+    /* ── Form Card ─────────────────────────────────────────── */
+    .card-head{
+      padding:20px 24px 16px;
+      border-bottom:1px solid #f1f5f9;
+      display:flex;align-items:center;gap:10px;
+    }
+    .card-icon{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+      border:1px solid #93c5fd;display:flex;align-items:center;justify-content:center;
+    }
+    .card-icon svg{color:#2563eb}
+    .card-title{font-size:15px;font-weight:800;color:#0f172a}
+    .card-hint{font-size:11px;color:#94a3b8;margin-top:1px}
+    .card-body{padding:20px 24px 24px}
+    .form-label{font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+    .form-textarea{
+      width:100%;border:1.5px solid #e2e8f0;background:#fff;
+      border-radius:12px;padding:14px 16px;font-size:14px;color:#1e293b;
+      font-family:inherit;outline:none;resize:vertical;min-height:110px;
+      line-height:1.7;margin-bottom:16px;transition:border-color .2s,box-shadow .2s;
+    }
+    .form-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,237,.1)}
+    .form-textarea::placeholder{color:#94a3b8}
+    .submit-btn{
+      width:100%;padding:13px 20px;border:none;border-radius:12px;
+      background:linear-gradient(135deg,#2563eb,#1d4ed8);
+      color:#fff;font-size:14px;font-weight:800;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:.15s;letter-spacing:.02em;
+      box-shadow:0 2px 8px rgba(37,99,235,.25);
+    }
+    .submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.3)}
+
+    /* ── Existing Records ─────────────────────────────────── */
+    .rec-section{margin-top:8px}
+    .rec-head{
+      font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;
+      letter-spacing:.1em;margin-bottom:12px;padding-bottom:8px;
+      border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;
+    }
+    .rec-head span{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;padding:2px 8px;border-radius:99px;font-size:10px}
+    .rec-card{
+      background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+      padding:16px;margin-bottom:10px;
+      box-shadow:0 1px 2px rgba(0,0,0,.03);
+    }
+    .rec-text{font-size:13.5px;color:#1e293b;line-height:1.65;margin-bottom:8px;white-space:pre-wrap}
+    .rec-meta{display:flex;align-items:center;justify-content:space-between}
+    .rec-date{font-size:11px;color:#94a3b8;font-weight:500}
+    .rec-del{
+      background:none;border:none;color:#cbd5e1;font-size:18px;font-weight:700;
+      cursor:pointer;padding:0 4px;transition:.15s;
+    }
+    .rec-del:hover{color:#ef4444}
+
+    /* ── Empty State ──────────────────────────────────────── */
+    .empty-state{
+      text-align:center;padding:40px 24px;
+      background:#fff;border:1.5px dashed #e2e8f0;border-radius:14px;
+    }
+    .empty-icon{font-size:36px;margin-bottom:10px}
+    .empty-title{font-size:15px;font-weight:800;color:#374151;margin-bottom:4px}
+    .empty-text{font-size:12.5px;color:#94a3b8;line-height:1.6}
+  </style>
+</head>
+<body>
+
+<!-- Top Navbar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="brand">IPES<span>.</span></div>
+    <div class="topbar-sep"></div>
+    <div class="page-title">SPAF</div>
+  </div>
+  <div class="topbar-right">
+    <div class="step-badge">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      MODULE 2
+    </div>
+  </div>
+</div>
+
+<!-- Hero Header -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <a href="{% url 'bengkel:blueprint_peserta' bengkel.pk %}?tab=spaf" class="back-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to SPAF
+      </a>
+      <div class="module-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        MODULE 2
+      </div>
+    </div>
+    <h1 class="hero-title">Problem Statements</h1>
+    <p class="hero-sub">Rumuskan Pernyataan Masalah Utama berdasarkan Pain Points yang dikenal pasti. AI menjana cadangan automatik.</p>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-wrap">
+
+  <!-- Progress Card -->
+  <div class="progress-card">
+    <div class="prog-info">
+      <div class="prog-label">Rekod Problem Statement</div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill" style="width:{% widthratio prob_stmts.count 10 100 %}%"></div></div>
+    </div>
+    <div class="prog-count">
+      {{ prob_stmts.count }}
+      <span>PS</span>
+    </div>
+  </div>
+
+  <!-- AI suggestion from Pain Points -->
+  {% if generated %}
+  <div class="ai-banner" id="aiBanner">
+    <div class="ai-head">
+      <div class="ai-icon">
+        <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </div>
+      <div>
+        <div class="ai-title">Cadangan AI</div>
+        <div class="ai-sub">Dihasilkan daripada Pain Points</div>
+      </div>
+    </div>
+    <div class="ai-text" id="aiText">{{ generated.masalah_utama }}</div>
+    <div class="ai-actions">
+      <form method="post" style="flex:1" id="acceptForm">
+        {% csrf_token %}
+        <input type="hidden" name="masalah_utama" id="hiddenMasalah" value="{{ generated.masalah_utama }}">
+        <button type="submit" class="ai-btn-accept">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Terima &amp; Simpan
+        </button>
+      </form>
+      <button type="button" class="ai-btn-edit" onclick="enableEdit()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit / Tulis Sendiri
+      </button>
+    </div>
+  </div>
+  {% elif ai_error %}
+  <div class="err-banner">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    AI tidak dapat menjana — {{ ai_error }}. Sila isi Problem Statement secara manual.
+  </div>
+  {% endif %}
+
+  <!-- Manual / Edit Form -->
+  <div class="card" id="manualForm">
+    <div class="card-head">
+      <div class="card-icon">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Tambah Problem Statement</div>
+        <div class="card-hint">Nyatakan masalah utama yang dikenal pasti.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-label">Pernyataan Masalah Utama</div>
+        <textarea
+          id="inp-masalah"
+          name="masalah_utama"
+          class="form-textarea"
+          placeholder="Nyatakan masalah utama yang dikenal pasti berdasarkan Pain Points..."
+        >{{ generated.masalah_utama|default:"" }}</textarea>
+        <button type="submit" class="submit-btn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          + Simpan Problem Statement
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Existing Records -->
+  {% if prob_stmts %}
+  <div class="rec-section">
+    <div class="rec-head">
+      Rekod Problem Statement
+      <span>{{ prob_stmts.count }}</span>
+    </div>
+    {% for ps in prob_stmts %}
+    <div class="rec-card">
+      <div class="rec-text">{{ ps.masalah_utama }}</div>
+      <div class="rec-meta">
+        <div class="rec-date">{{ ps.created_at|date:"d M Y" }}</div>
+        <form method="post" onsubmit="return confirm('Padam Problem Statement ini?')" style="flex-shrink:0">
+          {% csrf_token %}
+          <input type="hidden" name="del_ps" value="{{ ps.pk }}">
+          <button type="submit" class="rec-del">&times;</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  {% if not generated %}
+  <div class="empty-state" style="margin-top:8px">
+    <div class="empty-icon">📋</div>
+    <div class="empty-title">Belum ada Problem Statement</div>
+    <div class="empty-text">Sila isi Pain Points terlebih dahulu,<br>atau tambah Problem Statement secara manual.</div>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+
+<script>
+  function enableEdit() {
+    const inp = document.getElementById('inp-masalah');
+    inp.focus();
+    inp.scrollIntoView({behavior: 'smooth', block: 'center'});
+  }
+</script>
+
+</body>
+</html>
